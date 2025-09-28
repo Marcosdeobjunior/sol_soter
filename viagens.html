@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejamento de Viagens - Sol de Sóter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/financas.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/viagens.css"> </head>
+<body>
+  <header>
+    <div class="logo-container">
+      <a href="index.html" class="logo-link">
+        <img src="img/soldesoter_logo.png" alt="Logo">
+        <h1>Sol de Sóter</h1>
+      </a>
+    </div>
+
+    <div class="menu-profile">
+      <nav class="navbar">
+        <ul class="nav-menu">
+          <li class="dropdown">
+            <div class="dropdown-header">
+              <a href="#">Biblioteca</a>
+              <button class="dropdown-toggle">▼</button>
+            </div>
+            <ul class="dropdown-menu">
+              <li><a href="livraria.html">Livraria</a></li>
+              <li><a href="cinema.html">Cinema</a></li>
+              <li><a href="mangas.html">Mangas</a></li>
+            </ul>
+          </li>
+
+          <li class="dropdown">
+            <div class="dropdown-header">
+              <a href="#">Pessoal</a>
+              <button class="dropdown-toggle">▼</button>
+            </div>
+            <ul class="dropdown-menu">
+              <li><a href="viagens.html">Viagens</a></li>
+              <li><a href="wishlist.html">Carrinho</a></li>
+              <li><a href="financas.html">Finanças</a></li>
+              <li><a href="#">Academia</a></li>
+            </ul>
+          </li>
+
+          <li>
+            <div class="dropdown-header">
+              <a href="#">Livro</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="dropdown profile-dropdown">
+        <div class="profile">
+          <span>Marcos</span>
+          <img src="img/eu-gtp1.1.png" alt="Foto do Usuário">
+        </div>
+        <ul class="dropdown-menu profile-menu">
+          <li class="saldo-menu-item">
+            <div id="saldo-header">
+              <span class="saldo-header-label">Saldo Atual</span>
+              <div id="saldo-do-dia">R$ 0,00</div>
+            </div>
+          </li>
+          <li><a href="#"><i class="fas fa-cog"></i> Configurações</a></li>
+          <li><a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="travel-planner">
+      <h2>Meu Planejamento de Viagens</h2>
+      
+      <div class="planner-layout">
+        <div class="map-section">
+          <div id="map-container">
+            <h3>Mapa das Viagens</h3>
+            <div id="map"></div>
+          </div>
+        </div>
+
+        <div class="cards-section">
+          <div id="travel-cards-container">
+            <h3>Minhas Viagens</h3>
+            <div id="travel-cards"></div>
+            <div id="pagination-controls" style="display: none;">
+              <button id="prev-page" class="pagination-btn">
+                <i class="fas fa-chevron-left"></i> Anterior
+              </button>
+              <span id="page-info">Página 1 de 1</span>
+              <button id="next-page" class="pagination-btn">
+                Próxima <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hamburger-menu">
+        <button id="hamburger-btn" class="hamburger-btn" title="Menu de Ações">
+          <i class="fas fa-bars"></i>
+        </button>
+        
+        <div id="action-buttons" class="action-buttons" style="display: none;">
+          <button id="add-travel-btn" class="action-btn add-btn" title="Adicionar Viagem">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button id="data-management-btn" class="action-btn data-btn" title="Importar/Exportar">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="add-travel-popup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3 id="popup-title">Adicionar Nova Viagem</h3>
+        <button class="close-popup" data-popup="add-travel-popup">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="travel-form">
+        <label for="destination">Destino:</label>
+        <input type="text" id="destination" required>
+
+        <label for="start-date">Data de Início:</label>
+        <input type="date" id="start-date">
+
+        <label for="end-date">Data de Término:</label>
+        <input type="date" id="end-date">
+
+        <label for="budget">Orçamento (R$):</label>
+        <input type="number" id="budget" min="0" step="0.01">
+
+        <div class="popup-actions">
+          <button type="button" class="cancel-btn" data-popup="add-travel-popup">Cancelar</button>
+          <button type="button" id="delete-travel-btn" class="delete-btn">Excluir</button>
+          <button type="submit" id="submit-btn">Adicionar Viagem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="data-management-popup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>Gerenciar Dados</h3>
+        <button class="close-popup" data-popup="data-management-popup">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="data-management-options">
+        <button id="export-data" class="data-option-btn export-btn">
+          <i class="fas fa-download"></i>
+          <span>Exportar Dados</span>
+          <small>Baixar backup das suas viagens</small>
+        </button>
+        <button id="import-data" class="data-option-btn import-btn">
+          <i class="fas fa-upload"></i>
+          <span>Importar Dados</span>
+          <small>Carregar backup de viagens</small>
+        </button>
+        <input type="file" id="file-input" accept=".json" style="display: none;">
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/saldo-global.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/viagens.js"></script> </body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finanças - Sol de Sóter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/financas.css">
+</head>
+
+<body>
+  <header>
+    <div class="logo-container">
+      <a href="index.html" class="logo-link">
+        <img src="img/soldesoter_logo.png" alt="Logo">
+        <h1>Sol de Sóter</h1>
+      </a>
+    </div>
+
+    <div class="menu-profile">
+      <nav class="navbar">
+        <ul class="nav-menu">
+          <li class="dropdown">
+            <div class="dropdown-header">
+              <a href="#">Biblioteca</a>
+              <button class="dropdown-toggle">▼</button>
+            </div>
+            <ul class="dropdown-menu">
+              <li><a href="livraria.html">Livraria</a></li>
+              <li><a href="cinema.html">Cinema</a></li>
+              <li><a href="mangas.html">Mangas</a></li>
+            </ul>
+          </li>
+
+          <li class="dropdown">
+            <div class="dropdown-header">
+              <a href="#">Pessoal</a>
+              <button class="dropdown-toggle">▼</button>
+            </div>
+            <ul class="dropdown-menu">
+              <li><a href="viagens.html">Viagens</a></li>
+              <li><a href="wishlist.html">Carrinho</a></li>
+              <li><a href="financas.html" class="active">Finanças</a></li>
+              <li><a href="#">Academia</a></li>
+            </ul>
+          </li>
+
+          <li>
+            <div class="dropdown-header">
+              <a href="#">Livro</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="dropdown profile-dropdown">
+        <div class="profile">
+          <span>Marcos</span>
+          <img src="img/eu-gtp1.1.png" alt="Foto do Usuário">
+        </div>
+        <ul class="dropdown-menu profile-menu">
+          <li class="saldo-menu-item">
+            <div id="saldo-header">
+              <span class="saldo-header-label">Saldo Atual</span>
+              <div id="saldo-do-dia">R$ 0,00</div>
+            </div>
+          </li>
+          <li><a href="#"><i class="fas fa-cog"></i> Configurações</a></li>
+          <li><a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="financas">
+      <div class="financas-container">
+        <div class="tab-navigation">
+          <button class="tab-button active" data-tab="controle">
+            <i class="fas fa-calendar-alt"></i> Controle Financeiro
+          </button>
+          <button class="tab-button" data-tab="planejamento">
+            <i class="fas fa-chart-pie"></i> Planejamento de Gastos
+          </button>
+        </div>
+
+        <div id="tab-controle" class="tab-content active">
+          <div class="main-container">
+            <div class="sidebar">
+              <div class="saldo-container">
+                <div class="saldo-label"><i class="fas fa-coins"></i> Saldo Inicial:</div>
+                <input type="number" id="saldo-inicial" min="0" step="0.01">
+              </div>
+
+              <div class="despesas-container" id="despesas-container">
+                <div class="despesas-label"><i class="fas fa-shopping-cart"></i> Despesas do mês:</div>
+                <div class="despesas-valor" id="despesas-valor">Calculando...</div>
+              </div>
+
+              <div class="categorias-container">
+                <div class="categorias-header">
+                  <div class="categorias-titulo"><i class="fas fa-tags"></i> Categorias</div>
+                  <div class="categorias-acoes">
+                    <div class="toggle-categorias" id="toggle-categorias"><i class="fas fa-eye-slash"></i> Ocultar</div>
+                    <div class="gerenciar-categorias" id="gerenciar-categorias"><i class="fas fa-cog"></i> Gerenciar</div>
+                  </div>
+                </div>
+                <div class="categorias-lista" id="categorias-lista">
+                  </div>
+              </div>
+
+              <div class="filtro-container">
+                <div class="filtro-categoria">
+                  <i class="fas fa-filter"></i>
+                  <span>Filtrar por:</span>
+                  <select id="filtro-categoria">
+                    <option value="todas">Todas as categorias</option>
+                    </select>
+                </div>
+              </div>
+
+              <div class="melhor-dia" id="melhor-dia">
+                <i class="fas fa-calendar-day"></i> Melhor dia para comprar: Calculando...
+              </div>
+            </div>
+
+            <div class="calendar-container">
+              <div class="calendario-header">
+                <div class="calendario-mes" id="calendario-mes"><i class="fas fa-calendar-alt"></i> Maio 2025</div>
+                <div class="calendario-nav">
+                  <button id="mes-anterior"><i class="fas fa-chevron-left"></i> Anterior</button>
+                  <button id="mes-proximo">Próximo <i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+
+              <div class="calendario" id="calendario">
+                <div class="dia-semana">Dom</div>
+                <div class="dia-semana">Seg</div>
+                <div class="dia-semana">Ter</div>
+                <div class="dia-semana">Qua</div>
+                <div class="dia-semana">Qui</div>
+                <div class="dia-semana">Sex</div>
+                <div class="dia-semana">Sáb</div>
+
+                </div>
+              <div class="acoes-dados">
+                <button class="btn btn-secondary" id="btn-exportar"><i class="fas fa-download"></i> Exportar</button>
+                <button class="btn btn-primary" id="btn-importar"><i class="fas fa-upload"></i> Importar</button>
+                <input type="file" id="input-importar" accept="application/json" style="display:none;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-planejamento" class="tab-content">
+          <div class="planning-container">
+            <div class="chart-container">
+              <div class="chart-title">
+                <i class="fas fa-chart-line"></i> Entrada vs Saída
+              </div>
+              <div class="period-selector">
+                <button class="period-button active" data-period="mes">Mês</button>
+                <button class="period-button" data-period="semestre">Semestre</button>
+                <button class="period-button" data-period="ano">Ano</button>
+              </div>
+              <canvas id="chart-entrada-saida" class="chart-canvas"></canvas>
+            </div>
+
+            <div class="chart-container">
+              <div class="chart-title">
+                <i class="fas fa-chart-pie"></i> Gastos por Categoria
+              </div>
+              <div class="period-selector">
+                <button class="period-button active" data-period="mes" data-chart="categoria">Mês</button>
+                <button class="period-button" data-period="semestre" data-chart="categoria">Semestre</button>
+                <button class="period-button" data-period="ano" data-chart="categoria">Ano</button>
+              </div>
+              <canvas id="chart-categorias" class="chart-canvas"></canvas>
+            </div>
+
+            <div class="limits-container">
+              <div class="limits-title">
+                <i class="fas fa-exclamation-triangle"></i> Limites de Gastos por Categoria
+              </div>
+              <div class="limits-grid" id="limits-grid">
+                </div>
+              <div style="margin-top: 15px; text-align: center;">
+                <button class="btn btn-primary" id="btn-salvar-limites">
+                  <i class="fas fa-save"></i> Salvar Limites
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-transacao">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-exchange-alt"></i> Nova Transação</div>
+            <span class="modal-close">&times;</span>
+          </div>
+          <form id="form-transacao">
+            <input type="hidden" id="transacao-data">
+            <div class="form-group">
+              <label for="transacao-tipo">Tipo</label>
+              <select id="transacao-tipo">
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="transacao-categoria">Categoria</label>
+              <select id="transacao-categoria">
+                </select>
+            </div>
+            <div class="form-group">
+              <label for="transacao-valor">Valor</label>
+              <input type="number" id="transacao-valor" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="btn-cancelar">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-categorias">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-tags"></i> Gerenciar Categorias</div>
+            <span class="modal-close" id="categorias-modal-close">&times;</span>
+          </div>
+          <div id="categorias-gerenciar">
+            </div>
+          <div class="categoria-nova">
+            <input type="text" id="categoria-nova" placeholder="Nova categoria...">
+            <button id="btn-adicionar-categoria">Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-categoria">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-edit"></i> Editar Categoria</div>
+            <span class="modal-close" id="categoria-modal-close">&times;</span>
+          </div>
+          <form id="form-categoria">
+            <input type="hidden" id="categoria-id">
+            <div class="form-group">
+              <label for="categoria-nome">Nome da Categoria</label>
+              <input type="text" id="categoria-nome" required>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="btn-cancelar-categoria">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+  </footer>
+
+  <script src="js/financas.js"></script>
+</body>
+
+</html>
