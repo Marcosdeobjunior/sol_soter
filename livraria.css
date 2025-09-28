@@ -1,0 +1,1419 @@
+/* =============================================
+   ESTILIZAÇÃO GERAL E NOVA PALETA DE CORES
+   ============================================= */
+body {
+  background-color: #1E1E2E; /* Cor azul correta do body */
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.tracker-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+h2, h3 {
+  color: #ffffff; /* Branco para títulos sobre fundo azul */
+  text-align: left;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* =============================================
+   NOVO: BARRA DE PESQUISA
+   ============================================= */
+.search-bar-container {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#search-input {
+  width: 100%;
+  padding: 0.9rem 1rem 0.9rem 2.5rem; /* Espaço para o ícone */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+#search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#search-input:focus + .search-icon {
+  color: #fff;
+}
+
+/* =============================================
+   DESIGN DOS CARDS DE LIVRO - MELHORADO
+   ============================================= */
+.book-list {
+  list-style-type: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.book-item {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+  height: 350px; /* Altura aumentada para melhor visualização */
+}
+
+.book-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.book-item-cover {
+  width: 100%;
+  height: 200px; /* Altura fixa para a capa */
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-color: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.favorite-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #ffd700;
+  font-size: 1.4rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.progress-bar-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 18px;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.progress-overlay {
+  height: 100%;
+  background-color: #28a745;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: white;
+  font-weight: 600;
+  transition: width 0.5s ease;
+}
+
+.book-item-info {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 150px; /* Altura aumentada para melhor visualização */
+  overflow: hidden;
+}
+
+.book-item-info h4 {
+  margin: 0 0 0.8rem 0; /* Espaço aumentado entre título e autor */
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-item-info .autor {
+  color: #7f8c8d;
+  font-style: italic;
+  font-size: 0.85rem;
+  margin-bottom: 0.8rem; /* Espaço aumentado abaixo do autor */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-rating {
+  margin-bottom: 0.5rem;
+  color: #ffd700;
+  font-size: 0.9rem;
+}
+.card-rating .fa-regular {
+  color: #ced4da;
+}
+
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: auto;
+}
+
+.genre-tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.livros-lidos .book-item {
+  border-left: 4px solid #28a745;
+}
+.livros-lidos .progress-overlay {
+  background-color: #1e7e34;
+}
+
+/* =============================================
+   NOVO: ESTATÍSTICAS DE GÊNERO
+   ============================================= */
+.genre-stats-section {
+  margin-top: 3rem;
+}
+
+.genre-stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.genre-stat-item {
+  background-color: #3a3c4f;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.genre-stat-emoji {
+  font-size: 2.5rem;
+}
+
+.genre-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.genre-stat-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.genre-stat-count {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* =============================================
+   BOTÃO DE AÇÃO FLUTUANTE (FAB)
+   ============================================= */
+.fab {
+  position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px;
+  background-color: #e74c3c; color: white; border: none; border-radius: 50%;
+  box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
+  font-size: 1.8rem; display: flex;
+  align-items: center; justify-content: center; cursor: pointer;
+  transition: all 0.3s ease; z-index: 999;
+}
+.fab:hover {
+  background-color: #c0392b;
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 8px 16px rgba(231, 76, 60, 0.5);
+}
+
+/* =============================================
+   ESTILIZAÇÃO DOS MODAIS (POP-UPS) - CORRIGIDO
+   ============================================= */
+.modal {
+  display: none; /* Inicialmente oculto */
+  position: fixed; 
+  z-index: 1000; 
+  left: 0; 
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto;
+  background-color: rgba(37, 150, 190, 0.8); /* Fundo com base na cor do body */
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.4s;
+}
+
+.modal.show { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+@keyframes fadeIn { 
+  from {opacity: 0;} 
+  to {opacity: 1;} 
+}
+
+.modal-content {
+  background-color: #42445a; /* Cor padrão para modais (ex: Adicionar Livro) */
+  margin: 1rem;
+  padding: 2.5rem;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+  color: #fff;
+}
+
+.close-btn {
+  color: rgba(255, 255, 255, 0.7); 
+  position: absolute; 
+  top: 15px; 
+  right: 25px;
+  font-size: 32px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  z-index: 10;
+  transition: color 0.2s, transform 0.2s;
+}
+.close-btn:hover, .close-btn:focus {
+  color: #e74c3c;
+  transform: scale(1.2);
+}
+
+/* =============================================
+   MODAL DE ADICIONAR LIVRO - LAYOUT EM DUAS COLUNAS
+   ============================================= */
+#add-book-modal .modal-content {
+  width: 90%;
+  max-width: 800px; /* Aumentado para acomodar duas colunas */
+  max-height: 80vh; /* Diminuindo a altura máxima */
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior */
+}
+
+#add-book-modal h3 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 1rem;
+}
+
+.add-book-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Duas colunas */
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Campos que ocupam toda a largura */
+.add-book-form .full-width {
+  grid-column: 1 / -1;
+}
+
+.add-book-form input, .add-book-form textarea {
+  width: 100%; padding: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+}
+
+.add-book-form input::placeholder, .add-book-form textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.add-book-form input:focus, .add-book-form textarea:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.saga-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.date-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.date-fields label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.3rem;
+}
+
+.add-book-form button {
+  grid-column: 1 / -1;
+  padding: 1rem 2rem; background-color: #e74c3c; color: white;
+  border: none; border-radius: 8px; cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1.1rem; font-weight: 600;
+  margin-top: 1rem;
+}
+.add-book-form button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* =============================================
+   MODAL DE DETALHES DO LIVRO
+   ============================================= */
+#book-details-modal .modal-content {
+    background-color: #3a3c4f; /* Cor mais escura para o modal de detalhes */
+    width: 95%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.details-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.details-cover img {
+    width: 100%; height: auto; border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    margin-bottom: 1.5rem; /* Espaço entre a capa e os novos itens */
+}
+
+.details-info input, .details-info textarea {
+    width: 100%; border: 2px solid transparent; padding: 0.6rem;
+    border-radius: 6px; transition: border-color 0.3s, background-color 0.3s;
+    font-size: 1rem; background-color: rgba(255, 255, 255, 0.1);
+    color: #fff; box-sizing: border-box;
+}
+.details-info input::placeholder, .details-info textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+.details-info input:hover, .details-info textarea:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.details-info input:focus, .details-info textarea:focus {
+    border-color: #fff; background-color: rgba(255, 255, 255, 0.2);
+    outline: none;
+}
+
+/* Regras corrigidas e com espaçamento */
+#details-titulo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem; /* Espaço entre título e autor */
+    background: transparent;
+    border: 2px solid transparent;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+#details-autor {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem; /* Espaço abaixo do autor */
+    background: transparent;
+    border: 2px solid transparent;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.details-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+.details-field { margin-bottom: 1.5rem; }
+.details-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #fff; }
+.details-field input, .details-field textarea { border: 1px solid rgba(255, 255, 255, 0.3); }
+.details-field textarea { font-family: 'Poppins', sans-serif; resize: vertical; }
+
+.details-actions {
+    margin-top: 2rem; display: flex; justify-content: flex-end;
+    gap: 1rem; flex-wrap: wrap;
+}
+.details-actions button {
+    padding: 0.7rem 1.4rem; border-radius: 5px; border: none; cursor: pointer;
+    font-weight: 600; font-size: 0.9rem; display: flex;
+    align-items: center; gap: 0.5rem; transition: background-color 0.2s;
+}
+
+/* =============================================
+   ESTILOS PARA ELEMENTOS MOVIDOS
+   ============================================= */
+.details-rating {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+.details-rating label { font-weight: 600; color: #fff; }
+
+.star-rating { cursor: pointer; font-size: 1.5rem; }
+.star-rating i { color: rgba(255, 255, 255, 0.3); transition: color 0.2s; }
+.star-rating i.filled { color: #ffd700; }
+
+.details-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    color: #fff;
+}
+.details-progress label {
+    font-weight: 600;
+}
+.progress-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.details-progress input {
+    width: 70px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.6rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-align: center;
+}
+
+/* =============================================
+   BOTÕES E SEÇÕES RESTANTES
+   ============================================= */
+.btn-primary { background-color: #3498db; color: white; }
+.btn-primary:hover { background-color: #2980b9; }
+.btn-danger { background-color: #e74c3c; color: white; }
+.btn-danger:hover { background-color: #c0392b; }
+.btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: #fff; }
+.btn-secondary:hover { background-color: rgba(255, 255, 255, 0.3); }
+.favorite-btn { background-color: rgba(255, 255, 255, 0.1); color: #fff; }
+.favorite-btn.active { background-color: #ffd700; color: #333; }
+
+.related-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.mini-book-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mini-book-card:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.mini-book-cover {
+  width: 100%;
+  height: 80px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.mini-book-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.3rem;
+}
+
+.mini-book-author {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.other-books-section, .saga-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.other-books-section h4, .saga-section h4 {
+  color: #fff;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.modal-actions { 
+  margin-top: 1.5rem; 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .details-cover {
+    order: -1;
+  }
+  
+  .add-book-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .book-list {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .tracker-container {
+    padding: 1rem;
+  }
+  
+  .book-list {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+  
+  .book-item {
+    height: 300px;
+  }
+  
+  .book-item-info {
+    height: 120px;
+    padding: 0.8rem;
+  }
+}
+
+/* =============================================
+   SEÇÃO DE CITAÇÕES E META DE LEITURA - LAYOUT HORIZONTAL
+   ============================================= */
+.quote-section {
+  width: 100%;
+  max-width: 1400px;
+  margin: 2rem auto 0 auto;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.quote-display {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #3a3c4f;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.reading-goal-card {
+  background-color: #3a3c4f;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reading-goal-card:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.reading-goal-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #fff;
+  border: none;
+  padding: 0;
+}
+
+.goal-progress {
+  margin-bottom: 1rem;
+}
+
+.goal-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.goal-separator {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0.2rem;
+}
+
+.goal-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.3rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.goal-percentage {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.quote-text {
+  font-size: 1.4rem;
+  font-style: italic;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+  color: #e0e0e0;
+}
+
+.quote-author {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #bdbdbd;
+}
+
+/* Botão de editar citações */
+.edit-quotes-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-quotes-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .quote-text {
+    font-size: 1.1rem;
+  }
+  .quote-author {
+    font-size: 0.9rem;
+  }
+  
+  .quote-section {
+    margin: 1rem auto 0 auto;
+    gap: 1.5rem;
+  }
+  
+  .quote-display {
+    padding: 1.5rem;
+  }
+}
+
+/* =============================================
+   MODAL DE ESTATÍSTICAS DE LEITURA - MODIFICADO
+   ============================================= */
+.stats-modal {
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #3a3c4f;
+}
+
+.stats-modal h3 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stats-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-card h4 {
+  margin: 0 0 1rem 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.stats-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #28a745;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stats-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.stats-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.chart-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-container h4 {
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* GitHub-style chart - MODIFICADO COM CORES VERDES */
+.github-chart {
+  display: grid;
+  grid-template-columns: repeat(53, 1fr);
+  gap: 2px;
+  max-width: 100%;
+  overflow-x: auto;
+  position: relative;
+}
+
+.github-day {
+  width: 12px;
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Cores verdes para diferentes níveis de atividade */
+.github-day.level-1 { background-color: #0d4429; }
+.github-day.level-2 { background-color: #006d32; }
+.github-day.level-3 { background-color: #26a641; }
+.github-day.level-4 { background-color: #39d353; }
+
+.github-day:hover {
+  transform: scale(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Tooltip para o gráfico GitHub */
+.github-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  pointer-events: none;
+  z-index: 1001;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.github-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+}
+
+/* Charts for genres and authors */
+.genres-chart, .authors-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.chart-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chart-label {
+  min-width: 120px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.chart-bar {
+  flex: 1;
+  height: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.chart-value {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .github-chart {
+    grid-template-columns: repeat(26, 1fr);
+  }
+  
+  .github-day {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+
+
+/* =============================================
+   MODAL DE EDIÇÃO DE CITAÇÕES
+   ============================================= */
+#edit-quotes-modal .modal-content {
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #3a3c4f;
+}
+
+#edit-quotes-modal h3 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 1rem;
+}
+
+.quotes-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.quotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.quote-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.quote-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quote-text-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-style: italic;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.quote-author-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+.quote-text-input::placeholder,
+.quote-author-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.quote-text-input:focus,
+.quote-author-input:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.quote-actions {
+  display: flex;
+  align-items: center;
+}
+
+.delete-quote-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 50%;
+  background-color: #e74c3c;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-quote-btn:hover {
+  background-color: #c0392b;
+  transform: scale(1.1);
+}
+
+.add-quote-section {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-quote-section h4 {
+  color: #fff;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.add-quote-section textarea,
+.add-quote-section input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+.add-quote-section textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-style: italic;
+}
+
+.add-quote-section textarea::placeholder,
+.add-quote-section input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.add-quote-section textarea:focus,
+.add-quote-section input:focus {
+  outline: none;
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#add-quote-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+#add-quote-btn:hover {
+  background-color: #218838;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#save-quotes-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+#save-quotes-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Scrollbar personalizada para a lista de citações */
+.quotes-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quotes-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.quotes-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.quotes-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsividade para o modal de citações */
+@media (max-width: 768px) {
+  .quote-item {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .quote-actions {
+    align-self: flex-end;
+  }
+  
+  #edit-quotes-modal .modal-content {
+    width: 95%;
+    margin: 0.5rem;
+    padding: 1.5rem;
+  }
+}
+
+
+
+/* =============================================
+   ESTILOS PARA CONTADORES DE LIVROS
+   ============================================= */
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tracker-header h2 {
+  margin: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.book-counts {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.book-count-item {
+  background-color: #3a3c4f; /* Cor de fundo para os cards de contagem */
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  min-width: 100px;
+}
+
+.book-count-item .count-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #e74c3c; /* Cor de destaque para o número */
+  line-height: 1;
+}
+
+.book-count-item .count-label {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.3rem;
+}
+
+/* =============================================
+   ESTILOS PARA NAVEGAÇÃO POR ABAS
+   ============================================= */
+.tabs-container {
+  margin-top: 2rem;
+}
+
+.tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s, border-bottom-color 0.3s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; /* Para alinhar com a borda inferior */
+}
+
+.tab-button:hover {
+  color: #fff;
+}
+
+.tab-button.active {
+  color: #fff;
+  border-bottom-color: #e74c3c; /* Cor de destaque para a aba ativa */
+}
+
+.tabs-content .tab-pane {
+  display: none;
+}
+
+.tabs-content .tab-pane.active {
+  display: block;
+}
+
+/* Estilos para o filtro de gêneros dentro da aba de Gêneros */
+.generos-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #3a3c4f;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.generos-filter-container .genre-tag {
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: background-color 0.3s, color 0.3s;
+  border: 1px solid transparent;
+}
+
+.generos-filter-container .genre-tag:hover {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.generos-filter-container .genre-tag.active {
+  background-color: #e74c3c;
+  color: #fff;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+}
+
+/* Media Queries para responsividade */
+@media (max-width: 768px) {
+  .tracker-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .book-counts {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .tab-button {
+    flex-grow: 1;
+    text-align: center;
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-count-item {
+    min-width: unset;
+    flex-grow: 1;
+  }
+
+  .tabs-nav {
+    flex-direction: column;
+  }
+}

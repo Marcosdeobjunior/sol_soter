@@ -1,0 +1,673 @@
+/* Estilos para a página de planejamento de viagens */
+#travel-planner {
+  padding: 20px;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#travel-planner h2 {
+  color: #007bff; /* Cor similar aos links do menu */
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Layout principal - mapa à esquerda, cards à direita */
+.planner-layout {
+  display: flex;
+  gap: 20px;
+  min-height: 600px;
+  width: 100%;
+}
+
+/* Seção do mapa - canto superior esquerdo */
+.map-section {
+  flex: 0 0 400px;
+  min-height: 650px;
+}
+
+/* Seção dos cards - lado direito */
+.cards-section {
+  flex: 1;
+  min-height: 650px;
+}
+
+/* Estilos do mapa */
+#map-container {
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  height: 100%;
+}
+
+#map-container h3 {
+  color: #007bff; /* Cor similar aos links do menu */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#map {
+  height: 650px;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Container dos cards */
+#travel-cards-container {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  height: 100%;
+}
+
+#travel-cards-container h3 {
+  color: #007bff; /* Cor similar aos links do menu */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Grid de cards 3x5 */
+#travel-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+/* Estilos dos cards */
+.travel-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: auto;
+  cursor: pointer;
+}
+
+.travel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.travel-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.travel-card:hover::before {
+  opacity: 1;
+}
+
+.travel-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.travel-card h4 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+.travel-card-icon {
+  font-size: 1.2em;
+  opacity: 0.8;
+}
+
+.travel-card-details {
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.travel-card-details p {
+  margin: 3px 0;
+  font-size: 0.8em;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+}
+
+.travel-card-details i {
+  width: 12px;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.travel-card-budget {
+  font-size: 1em;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.travel-card-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.travel-card-actions button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 5px 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.75em;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.travel-card-actions button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.travel-card-actions button.delete {
+  background: rgba(220, 53, 69, 0.8);
+  border-color: rgba(220, 53, 69, 1);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.travel-card-actions button.delete:hover {
+  background: rgba(220, 53, 69, 1);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5);
+}
+
+/* Categoria "Desejo" */
+.travel-card.wish-category .travel-card-header h4:after {
+    content: " (Desejo)";
+    font-size: 0.8em;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* Controles de paginação */
+#pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 15px;
+}
+
+.pagination-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pagination-btn:hover {
+  background-color: #0056b3;
+}
+
+.pagination-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#page-info {
+  font-weight: 600;
+  color: #007bff; /* Cor similar aos links do menu */
+}
+
+/* Menu hambúrguer */
+.hamburger-menu {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+}
+
+.hamburger-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5em;
+  color: white;
+  background: linear-gradient(135deg, #6c757d, #495057);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamburger-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hamburger-btn.active {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  transform: rotate(90deg);
+}
+
+/* Botões de ação que aparecem quando o hambúrguer é clicado */
+.action-buttons {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.action-buttons.show {
+  opacity: 1;
+  transform: translateY(0);
+  display: flex;
+}
+
+.action-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5em;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.data-btn {
+  background: linear-gradient(135deg, #17a2b8, #007bff);
+}
+
+/* Estilos dos popups */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.popup-content {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+}
+
+.popup-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-popup:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* Estilos do formulário no popup */
+#travel-form {
+  padding: 20px;
+}
+
+#travel-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+}
+
+#travel-form input[type="text"],
+#travel-form input[type="date"],
+#travel-form input[type="number"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.popup-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+.popup-actions button[type="submit"] {
+  background-color: #007bff;
+  color: white;
+}
+
+.popup-actions button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #545b62;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    display: none; /* Ocultar por padrão, será exibido no modo de edição */
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Opções de gerenciamento de dados */
+.data-management-options {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.data-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.data-option-btn:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
+}
+
+.data-option-btn i {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.data-option-btn span {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.data-option-btn small {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.export-btn i {
+  color: #28a745;
+}
+
+.import-btn i {
+  color: #17a2b8;
+}
+
+/* Estado vazio */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state i {
+  font-size: 3em;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: #007bff; /* Cor similar aos links do menu */
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.9em;
+  opacity: 0.8;
+  color: #007bff; /* Cor similar aos links do menu */
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .planner-layout {
+    flex-direction: column;
+  }
+  
+  .map-section {
+    flex: none;
+  }
+  
+  .cards-section {
+    flex: none;
+  }
+  
+  #travel-cards {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+  }
+  
+  #map {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  #travel-planner {
+    padding: 15px;
+  }
+  
+  .planner-layout {
+    gap: 15px;
+  }
+  
+  #travel-cards {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, 1fr);
+    height: auto;
+  }
+  
+  .travel-card {
+    height: auto;
+  }
+  
+  #map {
+    height: 300px;
+  }
+  
+  .hamburger-menu {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .hamburger-btn,
+  .action-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2em;
+  }
+}
+
+/* Animações */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.travel-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popup-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popup-content {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.action-buttons.show .action-btn {
+  animation: bounceIn 0.5s ease-out;
+}
+
+.action-buttons.show .action-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.action-buttons.show .action-btn:nth-child(2) {
+  animation-delay: 0.2s;
+}
