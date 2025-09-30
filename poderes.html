@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batalha de Poderes</title>
+    <link rel="stylesheet" href="poderes.css">
+</head>
+<body>
+    <header>
+        <h1>Batalha de Poderes Aleatórios</h1>
+    </header>
+    <main>
+        <section id="power-generation">
+            <button id="generate-powers">Gerar Novos Poderes</button>
+            <button id="start-battle" disabled>Iniciar Batalha</button>
+        </section>
+
+        <section id="power-display">
+            <div class="power-card" id="power1">
+                <h2>Poder 1</h2>
+                <p>Nome: <span data-attr="name"></span></p>
+                <p>Tipo: <span data-attr="type"></span></p>
+                <p>Raridade: <span data-attr="rarity"></span></p>
+                <p>Nível: <span data-attr="level"></span></p>
+                <p>Maestria: <span data-attr="mastery"></span>%</p>
+                <p>Vida: <span data-attr="hp"></span></p>
+                <p>Recurso: <span data-attr="resource_name"></span> (<span data-attr="resource_value"></span>)</p>
+                <p>Ataque: <span data-attr="attack"></span></p>
+                <p>Defesa: <span data-attr="defense"></span></p>
+                <p>Velocidade: <span data-attr="speed"></span></p>
+                <p>Crítico: <span data-attr="critical_chance"></span>%</p>
+                <p>Especial: <span data-attr="special_bar"></span>%</p>
+            </div>
+            <div class="power-card" id="power2">
+                <h2>Poder 2</h2>
+                <p>Nome: <span data-attr="name"></span></p>
+                <p>Tipo: <span data-attr="type"></span></p>
+                <p>Raridade: <span data-attr="rarity"></span></p>
+                <p>Nível: <span data-attr="level"></span></p>
+                <p>Maestria: <span data-attr="mastery"></span>%</p>
+                <p>Vida: <span data-attr="hp"></span></p>
+                <p>Recurso: <span data-attr="resource_name"></span> (<span data-attr="resource_value"></span>)</p>
+                <p>Ataque: <span data-attr="attack"></span></p>
+                <p>Defesa: <span data-attr="defense"></span></p>
+                <p>Velocidade: <span data-attr="speed"></span></p>
+                <p>Crítico: <span data-attr="critical_chance"></span>%</p>
+                <p>Especial: <span data-attr="special_bar"></span>%</p>
+            </div>
+        </section>
+
+        <section id="battle-log">
+            <h2>Registro de Batalha</h2>
+            <div id="log-entries"></div>
+        </section>
+
+        <section id="saved-powers">
+            <h2>Poderes Salvos</h2>
+            <ul id="saved-powers-list"></ul>
+        </section>
+    </main>
+
+    <script src="poderes"></script>
+</body>
+</html>
+
