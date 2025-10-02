@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bem-vindo ao Sol de Sóter - Seu Hub Pessoal</title>
+    <title>Dashboard - Sol de Sóter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
@@ -19,6 +19,7 @@
     />
 
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
     <link rel="stylesheet" href="css/financas.css" />
     <link rel="stylesheet" href="css/style_viagens.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
@@ -68,14 +69,8 @@
                 <button class="dropdown-toggle">▼</button>
               </div>
               <ul class="dropdown-menu">
-                <li><a href="diario.html">Diário</a></li>
+                <li><a href="diario.html">Diario</a></li>
               </ul>
-            </li>
-
-            <li>
-              <div class="dropdown-header">
-                <a href="financas.html">Livro</a>
-              </div>
             </li>
           </ul>
         </nav>
@@ -102,6 +97,7 @@
             </ul>
           </div>
         </div>
+
         <div class="dropdown profile-dropdown">
           <div class="profile">
             <span>Marcos</span>
@@ -125,73 +121,141 @@
       </div>
     </header>
 
-    <main class="hero-section">
-      <div class="presentation-content">
-        <h2 class="animate-fade-in">
-          Bem-vindo ao <span class="highlight-text">Sol de Sóter</span>, Marcos!
-        </h2>
-        <p class="subtitle animate-fade-in delay-1">
-          Seu painel pessoal completo para organizar, planejar e enriquecer sua
-          vida.
-        </p>
+    <main class="dashboard-section">
+      <div class="dashboard-container">
+        <div class="dashboard-header">
+          <h2 class="animate-fade-in">
+            Bem-vindo ao seu <span class="highlight-text">Dashboard</span>, Marcos!
+          </h2>
+          <p class="dashboard-subtitle animate-fade-in delay-1">
+            Acompanhe suas informações mais importantes em um só lugar.
+          </p>
+        </div>
 
-        <div class="features-grid">
-          <div class="feature-item animate-slide-up delay-2">
-            <div class="feature-icon-wrapper">
-              <i class="fas fa-rocket feature-icon"></i>
+        <div class="widgets-grid">
+          <!-- Widget Financeiro -->
+          <div class="widget widget-financeiro animate-slide-up delay-2" data-link="financas.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-wallet widget-icon"></i>
+              </div>
+              <h3>Finanças</h3>
             </div>
-            <h3>Sonhos e Objetivos</h3>
-            <p>
-              Defina suas grandes aspirações e quebre-as em metas alcançáveis.
-              Visualize seu progresso e mantenha a motivação.
-            </p>
+            <div class="widget-content">
+              <div class="saldo-display">
+                <span class="saldo-label">Saldo Atual</span>
+                <div class="saldo-valor" id="widget-saldo">R$ 0,00</div>
+              </div>
+              <div class="saldo-variacao" id="widget-variacao">
+                <i class="fas fa-arrow-up"></i>
+                <span>+2.5% hoje</span>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Ver detalhes <i class="fas fa-arrow-right"></i></span>
+            </div>
           </div>
 
-          <div class="feature-item animate-slide-up delay-3">
-            <div class="feature-icon-wrapper">
-              <i class="fas fa-book-open feature-icon"></i>
+          <!-- Widget Diário -->
+          <div class="widget widget-diario animate-slide-up delay-3" data-link="diario.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-book widget-icon"></i>
+              </div>
+              <h3>Diário</h3>
             </div>
-            <h3>Biblioteca e Entretenimento</h3>
-            <p>
-              Gerencie seus livros, filmes, séries e animes. Acompanhe seu
-              progresso e explore novas mídias.
-            </p>
+            <div class="widget-content">
+              <div class="ultima-entrada">
+                <span class="entrada-data" id="widget-entrada-data">Hoje, 15:30</span>
+                <p class="entrada-preview" id="widget-entrada-preview">
+                  Hoje foi um dia produtivo. Consegui finalizar o projeto...
+                </p>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Nova entrada <i class="fas fa-plus"></i></span>
+            </div>
           </div>
 
-          <div class="feature-item animate-slide-up delay-4">
-            <div class="feature-icon-wrapper">
-              <i class="fas fa-wallet feature-icon"></i>
+          <!-- Widget Biblioteca -->
+          <div class="widget widget-biblioteca animate-slide-up delay-4" data-link="livraria.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-book-open widget-icon"></i>
+              </div>
+              <h3>Biblioteca</h3>
             </div>
-            <h3>Controle Financeiro Inteligente</h3>
-            <p>
-              Mantenha suas finanças em ordem, visualize seu saldo em tempo real
-              e planeje seu futuro financeiro.
-            </p>
+            <div class="widget-content">
+              <div class="media-atual">
+                <div class="media-info">
+                  <span class="media-tipo" id="widget-media-tipo">Livro</span>
+                  <h4 class="media-titulo" id="widget-media-titulo">O Hobbit</h4>
+                  <div class="media-progresso">
+                    <div class="progresso-bar">
+                      <div class="progresso-fill" id="widget-progresso-fill" style="width: 65%"></div>
+                    </div>
+                    <span class="progresso-texto" id="widget-progresso-texto">65%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Ver biblioteca <i class="fas fa-arrow-right"></i></span>
+            </div>
           </div>
 
-          <div class="feature-item animate-slide-up delay-5">
-            <div class="feature-icon-wrapper">
-              <i class="fas fa-plane-departure feature-icon"></i>
+          <!-- Widget Viagens -->
+          <div class="widget widget-viagens animate-slide-up delay-5" data-link="viagens.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-plane-departure widget-icon"></i>
+              </div>
+              <h3>Viagens</h3>
             </div>
-            <h3>Planejamento de Viagens</h3>
-            <p>
-              Organize suas aventuras, crie roteiros, gerencie despesas e guarde
-              as melhores lembranças de suas viagens.
-            </p>
+            <div class="widget-content">
+              <div class="proxima-viagem">
+                <h4 class="destino" id="widget-destino">Paris, França</h4>
+                <div class="viagem-info">
+                  <span class="data-partida" id="widget-data-partida">15 de Dezembro</span>
+                  <div class="countdown" id="widget-countdown">
+                    <i class="fas fa-clock"></i>
+                    <span>45 dias</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Ver viagens <i class="fas fa-arrow-right"></i></span>
+            </div>
           </div>
 
-          <div class="feature-item animate-slide-up delay-6">
-            <div class="feature-icon-wrapper">
-              <i class="fas fa-shopping-cart feature-icon"></i>
+          <!-- Widget Sonhos -->
+          <div class="widget widget-sonhos animate-slide-up delay-6" data-link="sonhos.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-rocket widget-icon"></i>
+              </div>
+              <h3>Sonhos</h3>
             </div>
-            <h3>Sua Wishlist Pessoal</h3>
-            <p>
-              Crie e gerencie sua lista de desejos. Planeje suas próximas
-              aquisições e realize seus sonhos.
-            </p>
+            <div class="widget-content">
+              <div class="meta-atual">
+                <h4 class="meta-titulo" id="widget-meta-titulo">Aprender Francês</h4>
+                <div class="meta-progresso">
+                  <div class="progresso-bar">
+                    <div class="progresso-fill" id="widget-meta-fill" style="width: 40%"></div>
+                  </div>
+                  <span class="progresso-texto" id="widget-meta-texto">40%</span>
+                </div>
+                <span class="meta-prazo" id="widget-meta-prazo">Meta: Junho 2025</span>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Ver sonhos <i class="fas fa-arrow-right"></i></span>
+            </div>
           </div>
         </div>
 
+        <!-- Seção do Time (mantida) -->
         <div class="team-section animate-slide-up delay-7">
           <div class="team-header">
             <img
@@ -251,8 +315,10 @@
             <a target="_blank" href="https://www.scoreaxis.com/">Scoreaxis</a>
           </div>
         </div>
+
+        <!-- Call to Action (mantido) -->
         <div class="call-to-action-section animate-fade-in delay-8">
-          <p>Pronto para começar a transformar seu dia a dia?</p>
+          <p>Quer explorar uma seção específica em detalhes?</p>
           <a href="#" class="main-cta-button"
             >Explore as Seções <i class="fas fa-arrow-right"></i
           ></a>
@@ -267,10 +333,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/saldo-global.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/dashboard.js"></script>
     <script src="js/script_viagens.js"></script>
     <script src="js/notificacoes.js"></script>
   </body>
 </html>
-
-
-

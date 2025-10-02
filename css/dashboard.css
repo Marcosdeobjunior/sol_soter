@@ -1,0 +1,485 @@
+/* ===== DASHBOARD STYLES ===== */
+
+/* Dashboard Section */
+.dashboard-section {
+  flex: 1;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #1e1e2e 0%, #171725 100%);
+  min-height: calc(100vh - 120px);
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.dashboard-header h2 {
+  font-size: 2.5rem;
+  color: #89b4fa;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.dashboard-header .highlight-text {
+  color: #f9e2af;
+}
+
+.dashboard-subtitle {
+  font-size: 1.1rem;
+  color: #cdd6f4;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Widgets Grid */
+.widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 60px;
+}
+
+/* Widget Base Styles */
+.widget {
+  background: #313244;
+  border-radius: 12px;
+  border: 1px solid #45475a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.widget:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border-color: #89b4fa;
+}
+
+.widget:hover .widget-icon {
+  transform: scale(1.1);
+}
+
+/* Widget Header */
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 20px 15px 20px;
+  border-bottom: 1px solid #45475a;
+}
+
+.widget-icon-wrapper {
+  background: #45475a;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.widget-icon {
+  font-size: 1.5rem;
+  color: #89b4fa;
+  transition: all 0.3s ease;
+}
+
+.widget-header h3 {
+  font-size: 1.2rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Widget Content */
+.widget-content {
+  padding: 20px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Widget Footer */
+.widget-footer {
+  padding: 15px 20px;
+  background: rgba(69, 71, 90, 0.3);
+  border-top: 1px solid #45475a;
+}
+
+.widget-link {
+  color: #89b4fa;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color 0.3s ease;
+}
+
+.widget:hover .widget-link {
+  color: #f9e2af;
+}
+
+.widget-link i {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.widget:hover .widget-link i {
+  transform: translateX(3px);
+}
+
+/* ===== WIDGET ESPECÍFICOS ===== */
+
+/* Widget Financeiro */
+.widget-financeiro .widget-icon-wrapper {
+  background: linear-gradient(135deg, #a6e3a1 0%, #94e2d5 100%);
+}
+
+.widget-financeiro .widget-icon {
+  color: #1e1e2e;
+}
+
+.saldo-display {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.saldo-label {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.saldo-valor {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f9e2af;
+  line-height: 1;
+}
+
+.saldo-variacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #a6e3a1;
+}
+
+.saldo-variacao.negativa {
+  color: #f38ba8;
+}
+
+.saldo-variacao.negativa i {
+  transform: rotate(180deg);
+}
+
+/* Widget Diário */
+.widget-diario .widget-icon-wrapper {
+  background: linear-gradient(135deg, #f9e2af 0%, #fab387 100%);
+}
+
+.widget-diario .widget-icon {
+  color: #1e1e2e;
+}
+
+.ultima-entrada {
+  text-align: left;
+}
+
+.entrada-data {
+  font-size: 0.8rem;
+  color: #a6adc8;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.entrada-preview {
+  font-size: 0.9rem;
+  color: #cdd6f4;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Widget Biblioteca */
+.widget-biblioteca .widget-icon-wrapper {
+  background: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);
+}
+
+.widget-biblioteca .widget-icon {
+  color: #1e1e2e;
+}
+
+.media-atual {
+  text-align: left;
+}
+
+.media-tipo {
+  font-size: 0.8rem;
+  color: #a6adc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.media-titulo {
+  font-size: 1.1rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  margin: 5px 0 15px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.media-progresso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progresso-bar {
+  flex: 1;
+  height: 6px;
+  background: #45475a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progresso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #cba6f7, #f5c2e7);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progresso-texto {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  font-weight: 500;
+  min-width: 35px;
+}
+
+/* Widget Viagens */
+.widget-viagens .widget-icon-wrapper {
+  background: linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%);
+}
+
+.widget-viagens .widget-icon {
+  color: #1e1e2e;
+}
+
+.proxima-viagem {
+  text-align: center;
+}
+
+.destino {
+  font-size: 1.2rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.viagem-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.data-partida {
+  font-size: 0.9rem;
+  color: #a6adc8;
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: #89b4fa;
+  font-weight: 500;
+}
+
+/* Widget Sonhos */
+.widget-sonhos .widget-icon-wrapper {
+  background: linear-gradient(135deg, #f38ba8 0%, #eba0ac 100%);
+}
+
+.widget-sonhos .widget-icon {
+  color: #1e1e2e;
+}
+
+.meta-atual {
+  text-align: left;
+}
+
+.meta-titulo {
+  font-size: 1.1rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta-progresso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.widget-sonhos .progresso-fill {
+  background: linear-gradient(90deg, #f38ba8, #eba0ac);
+}
+
+.meta-prazo {
+  font-size: 0.8rem;
+  color: #a6adc8;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 768px) {
+  .dashboard-section {
+    padding: 30px 15px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 2rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1rem;
+  }
+
+  .widgets-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .widget-header {
+    padding: 15px 15px 12px 15px;
+  }
+
+  .widget-content {
+    padding: 15px;
+    min-height: 70px;
+  }
+
+  .widget-footer {
+    padding: 12px 15px;
+  }
+
+  .widget-icon-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+
+  .widget-icon {
+    font-size: 1.3rem;
+  }
+
+  .widget-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .saldo-valor {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .widgets-grid {
+    gap: 15px;
+  }
+
+  .widget-header {
+    gap: 12px;
+  }
+
+  .widget-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .widget-icon {
+    font-size: 1.2rem;
+  }
+
+  .saldo-valor {
+    font-size: 1.4rem;
+  }
+
+  .destino,
+  .meta-titulo,
+  .media-titulo {
+    font-size: 1rem;
+  }
+}
+
+/* ===== ANIMAÇÕES ADICIONAIS ===== */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.widget-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Efeito de shimmer para carregamento */
+.widget-shimmer {
+  background: linear-gradient(90deg, #313244 25%, #45475a 50%, #313244 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
