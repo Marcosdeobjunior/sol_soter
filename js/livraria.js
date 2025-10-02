@@ -1,451 +1,494 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Livraria - Tracker de Leitura</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
-    <link rel="stylesheet" href="css/financas.css" />
-    <link rel="stylesheet" href="css/style_viagens.css" />
-    <link rel="stylesheet" href="css/livraria.css" />
-    <link rel="stylesheet" href="css/notificacoes.css">
-  </head>
-  <body>
-    <header>
-      <div class="logo-container">
-        <a href="index.html" class="logo-link">
-          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-          <h1>Sol de Sóter</h1>
-        </a>
-      </div>
+document.addEventListener('DOMContentLoaded', () => {
+  // Elementos do DOM existentes
+  const addBookModal = document.getElementById('add-book-modal');
+  const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+  const bookDetailsModal = document.getElementById('book-details-modal');
+  const addBookForm = document.getElementById('add-book-form');
+  const openAddBookModalBtn = document.getElementById('open-add-book-modal-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const saveChangesBtn = document.getElementById('save-changes-btn');
+  const toggleFavoriteBtn = document.getElementById('toggle-favorite-btn');
+  const deleteFromDetailsBtn = document.getElementById('delete-from-details-btn');
+  const closeButtons = document.querySelectorAll('.close-btn');
+  const detailsNotaStars = document.getElementById('details-nota-stars');
 
-      <div class="menu-profile">
-        <nav class="navbar">
-          <ul class="nav-menu">
-            <li class="dropdown">
-              <div class="dropdown-header">
-                <a href="#">Biblioteca</a>
-                <button class="dropdown-toggle">▼</button>
-              </div>
-              <ul class="dropdown-menu">
-                <li><a href="livraria.html">Livraria</a></li>
-                <li><a href="cinema.html">Cinema</a></li>
-                <li><a href="mangas.html">Mangas</a></li>
-              </ul>
-            </li>
+  // Novos elementos do DOM para contadores e abas
+  const countALer = document.getElementById('count-a-ler');
+  const countLido = document.getElementById('count-lido');
+  const countQueroLer = document.getElementById('count-quero-ler');
+  const tabsNav = document.querySelector('.tabs-nav');
+  const generosFilterContainer = document.getElementById('generos-filter-container');
 
-            <li class="dropdown">
-              <div class="dropdown-header">
-                <a href="#">Pessoal</a>
-                <button class="dropdown-toggle">▼</button>
-              </div>
-              <ul class="dropdown-menu">
-                <li><a href="sonhos.html">Sonhos</a></li>
-                <li><a href="viagens.html">Viagens</a></li>
-                <li><a href="wishlist.html">Carrinho</a></li>
-                <li><a href="financas.html">Finanças</a></li>
-                <li><a href="planejamento.html">Planejamento</a></li>
-                <li><a href="#">Academia</a></li>
-              </ul>
-            </li>
+  // NOVOS ELEMENTOS DO DOM
+  const searchInput = document.getElementById('search-input');
+  const genreStatsContainer = document.getElementById('genre-stats-container');
 
-            <li>
-              <div class="dropdown-header">
-                <a href="#">Livro</a>
-              </div>
-            </li>
-          </ul>
-        </nav>
+  let livros = JSON.parse(localStorage.getItem('livrosTracker')) || [];
+  let livroIdParaExcluir = null;
+  let activeTab = 'todos'; // Aba ativa padrão
+  let activeGenreFilter = 'todos'; // Filtro de gênero ativo padrão
 
-        <div class="notification-center">
-          <button id="notification-bell" class="notification-bell">
-            <i class="fas fa-bell"></i>
-            <span
-              id="notification-count"
-              class="notification-count"
-              style="display: none"
-              >0</span
-            >
-          </button>
-          <div id="notification-panel" class="notification-panel">
-            <div class="notification-panel-header">
-              <h3>Notificações</h3>
-            </div>
-            <ul id="notification-list" class="notification-list">
-              <li class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>Nenhuma notificação nova</p>
-              </li>
-            </ul>
-          </div>
+  // NOVO: Mapa de emojis para gêneros
+  const genreEmojis = {
+    'Fantasia': '🧙', 'Ficção Científica': '🚀', 'Romance': '💖',
+    'Suspense': '🔪', 'Terror': '👻', 'Aventura': '🗺️',
+    'Mistério': '🕵️', 'Histórico': '📜', 'Biografia': '👤',
+    'Autoajuda': '💡', 'Técnico': '💻', 'Clássico': '🏛️',
+    'default': '📚' // Emoji padrão
+  };
+
+  // NOVO: Função para atualizar o histórico de leitura
+  const atualizarHistoricoDeLeitura = (livro, paginasLidasAntes) => {
+    const paginasLidasAgora = livro.paginaAtual;
+    const paginasNovas = paginasLidasAgora - paginasLidasAntes;
+
+    if (paginasNovas <= 0) return; // Nenhuma página nova lida
+
+    const hoje = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const historico = JSON.parse(localStorage.getItem('historicoProgresso') || '{}');
+
+    if (!historico[hoje]) {
+      historico[hoje] = { pagesRead: 0 };
+    }
+
+    historico[hoje].pagesRead += paginasNovas;
+    localStorage.setItem('historicoProgresso', JSON.stringify(historico));
+  };
+
+  const salvarLivros = () => {
+    localStorage.setItem('livrosTracker', JSON.stringify(livros));
+    const livrosLidos = livros.filter(livro => livro.lido);
+    localStorage.setItem('livrosLidos', JSON.stringify(livrosLidos));
+    if (window.readingStats) {
+      window.readingStats.refresh();
+    }
+    updateBookCounts();
+    renderizarLivros();
+    renderizarGenreStats(); // NOVO: Atualiza as estatísticas de gênero
+  };
+
+  const getRatingStars = (rating = 0) => {
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+          starsHtml += `<i class="${i <= rating ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
+      }
+      return starsHtml;
+  };
+
+  const updateBookCounts = () => {
+    const lendo = livros.filter(livro => !livro.lido && livro.paginaAtual > 0).length;
+    const lido = livros.filter(livro => livro.lido).length;
+    const queroLer = livros.filter(livro => !livro.lido && livro.paginaAtual === 0).length;
+
+    if (countALer) countALer.textContent = lendo;
+    if (countLido) countLido.textContent = lido;
+    if (countQueroLer) countQueroLer.textContent = queroLer;
+  };
+
+  const renderizarListaLivros = (listaElement, livrosParaRenderizar) => {
+    listaElement.innerHTML = '';
+    if (livrosParaRenderizar.length === 0) {
+      listaElement.innerHTML = '<p class="no-books-message">Nenhum livro encontrado.</p>';
+      return;
+    }
+    livrosParaRenderizar.sort((a, b) => b.id - a.id).forEach(livro => {
+      const li = document.createElement('li');
+      li.className = 'book-item';
+      li.dataset.id = livro.id;
+      const percentual = livro.totalPaginas > 0 ? ((livro.paginaAtual / livro.totalPaginas) * 100).toFixed(0) : 0;
+      let generosArray = [];
+      if (Array.isArray(livro.generos)) {
+        generosArray = livro.generos;
+      } else if (typeof livro.generos === 'string' && livro.generos) {
+        generosArray = livro.generos.split(',').map(g => g.trim());
+      }
+      const generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      li.innerHTML = `<div class="book-item-cover" style="background-image: url('${livro.capaUrl || 'img/default_cover.png'}');">
+          ${livro.isFavorite ? '<i class="fas fa-star favorite-icon"></i>' : ''}
+          <div class="progress-bar-overlay"><div class="progress-overlay" style="width: ${percentual}%;">${percentual > 10 ? percentual + '%' : ''}</div></div>
         </div>
-        <div class="dropdown profile-dropdown">
-          <div class="profile">
-            <span>Marcos</span>
-            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
-          </div>
-          <ul class="dropdown-menu profile-menu">
-            <li class="saldo-menu-item">
-              <div id="saldo-header">
-                <span class="saldo-header-label">Saldo Atual</span>
-                <div id="saldo-do-dia">R$ 0,00</div>
-              </div>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-            </li>
-          </ul>
+        <div class="book-item-info">
+          <h4>${livro.titulo}</h4>
+          <p class="autor">por ${livro.autor}</p>
+          <div class="card-rating">${getRatingStars(livro.nota)}</div>
+          <div class="genre-tags">${generosHtml}</div>
+        </div>`;
+      listaElement.appendChild(li);
+    });
+  };
+
+  const renderizarLivros = () => {
+    const listaTodos = document.getElementById('lista-livros-todos');
+    const listaFavoritos = document.getElementById('lista-livros-favoritos');
+    const listaALer = document.getElementById('lista-livros-a-ler');
+    const listaQueroLer = document.getElementById('lista-livros-quero-ler');
+    const listaLido = document.getElementById('lista-livros-lido');
+    const listaGeneros = document.getElementById('lista-livros-generos');
+
+    [listaTodos, listaFavoritos, listaALer, listaQueroLer, listaLido, listaGeneros].forEach(list => {
+      if (list) list.innerHTML = '';
+    });
+    
+    // NOVO: Aplica o filtro de pesquisa
+    const searchTerm = searchInput.value.toLowerCase();
+    const livrosBase = searchTerm
+      ? livros.filter(livro => 
+          livro.titulo.toLowerCase().includes(searchTerm) || 
+          livro.autor.toLowerCase().includes(searchTerm)
+        )
+      : livros;
+
+
+    let livrosFiltrados = [];
+
+    switch (activeTab) {
+      case 'todos':
+        livrosFiltrados = livrosBase;
+        break;
+      case 'favoritos':
+        livrosFiltrados = livrosBase.filter(livro => livro.isFavorite);
+        break;
+      case 'a-ler':
+        livrosFiltrados = livrosBase.filter(livro => !livro.lido && livro.paginaAtual > 0);
+        break;
+      case 'quero-ler':
+        livrosFiltrados = livrosBase.filter(livro => !livro.lido && livro.paginaAtual === 0);
+        break;
+      case 'lido':
+        livrosFiltrados = livrosBase.filter(livro => livro.lido);
+        break;
+      case 'generos':
+        if (activeGenreFilter === 'todos') {
+          livrosFiltrados = livrosBase;
+        } else {
+          livrosFiltrados = livrosBase.filter(livro => 
+            Array.isArray(livro.generos) && livro.generos.includes(activeGenreFilter)
+          );
+        }
+        break;
+      default:
+        livrosFiltrados = livrosBase;
+    }
+
+    const currentListElement = document.getElementById(`lista-livros-${activeTab}`);
+    if (currentListElement) {
+      renderizarListaLivros(currentListElement, livrosFiltrados);
+    }
+
+    updateGenreFilters();
+  };
+
+  const switchTab = (tabId) => {
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
+    activeTab = tabId;
+    renderizarLivros();
+  };
+
+  const getAllUniqueGenres = () => {
+    const uniqueGenres = new Set();
+    livros.forEach(livro => {
+      if (Array.isArray(livro.generos)) {
+        livro.generos.forEach(genre => uniqueGenres.add(genre));
+      }
+    });
+    return Array.from(uniqueGenres).sort();
+  };
+
+  // NOVO: Função para renderizar as estatísticas de gênero
+  const renderizarGenreStats = () => {
+    if (!genreStatsContainer) return;
+    genreStatsContainer.innerHTML = '';
+    const genreCounts = {};
+
+    livros.forEach(livro => {
+      if (Array.isArray(livro.generos)) {
+        livro.generos.forEach(genre => {
+          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+        });
+      }
+    });
+
+    // Ordena os gêneros pela quantidade de livros (do maior para o menor)
+    const sortedGenres = Object.entries(genreCounts).sort(([,a],[,b]) => b-a);
+    
+    if (sortedGenres.length === 0) {
+      genreStatsContainer.innerHTML = '<p class="no-books-message">Adicione livros com gêneros para ver as estatísticas.</p>';
+      return;
+    }
+    
+    sortedGenres.forEach(([genre, count]) => {
+      const emoji = genreEmojis[genre] || genreEmojis.default;
+      const statItem = document.createElement('div');
+      statItem.className = 'genre-stat-item';
+      statItem.innerHTML = `
+        <div class="genre-stat-emoji">${emoji}</div>
+        <div class="genre-stat-info">
+          <span class="genre-stat-name">${genre}</span>
+          <span class="genre-stat-count">${count} ${count > 1 ? 'livros' : 'livro'}</span>
         </div>
-      </div>
-    </header>
+      `;
+      genreStatsContainer.appendChild(statItem);
+    });
+  };
 
-    <main>
-      <div class="quote-section">
-        <div id="quote-display" class="quote-display"></div>
-        <div id="reading-goal-card" class="reading-goal-card">
-          <h3>Meta de Leitura 2025</h3>
-          <div class="goal-progress">
-            <div class="goal-number">
-              <span id="books-read-count">0</span>
-              <span class="goal-separator">/</span>
-              <span id="books-goal-target">24</span>
-            </div>
-            <div class="goal-label">livros lidos</div>
-          </div>
-          <div class="progress-bar">
-            <div id="goal-progress-fill" class="progress-fill"></div>
-          </div>
-          <div class="goal-percentage">
-            <span id="goal-percentage-text">0%</span> concluído
-          </div>
+  const updateGenreFilters = () => {
+    if (!generosFilterContainer) return;
+    generosFilterContainer.innerHTML = '';
+    const allGenres = getAllUniqueGenres();
+
+    const allButton = document.createElement('span');
+    allButton.className = `genre-tag ${activeGenreFilter === 'todos' ? 'active' : ''}`;
+    allButton.textContent = 'Todos';
+    allButton.addEventListener('click', () => {
+      activeGenreFilter = 'todos';
+      updateGenreFilters();
+      renderizarLivros();
+    });
+    generosFilterContainer.appendChild(allButton);
+
+    allGenres.forEach(genre => {
+      const genreButton = document.createElement('span');
+      genreButton.className = `genre-tag ${activeGenreFilter === genre ? 'active' : ''}`;
+      genreButton.textContent = genre;
+      genreButton.addEventListener('click', () => {
+        activeGenreFilter = genre;
+        updateGenreFilters();
+        renderizarLivros();
+      });
+      generosFilterContainer.appendChild(genreButton);
+    });
+  };
+
+  const adicionarLivro = (e) => {
+    e.preventDefault();
+    const titulo = document.getElementById('titulo').value.trim();
+    const autor = document.getElementById('autor').value.trim();
+    const totalPaginas = parseInt(document.getElementById('total-paginas').value);
+    const capaUrl = document.getElementById('capa-url').value.trim();
+    const generosInput = document.getElementById('generos').value.trim();
+    const sumario = document.getElementById('sumario').value.trim();
+    const resenha = document.getElementById('resenha').value.trim();
+    const dataInicio = document.getElementById('data-inicio').value;
+    const dataConclusao = document.getElementById('data-conclusao').value;
+    const sagaNome = document.getElementById('saga-nome').value.trim();
+    const sagaVolume = document.getElementById('saga-volume').value.trim();
+
+    if (titulo && autor && totalPaginas > 0) {
+      const novoLivro = {
+        id: Date.now(),
+        titulo, autor, totalPaginas,
+        paginaAtual: 0, lido: false, isFavorite: false, nota: 0,
+        capaUrl: capaUrl || 'img/default_cover.png',
+        generos: generosInput ? generosInput.split(',').map(g => g.trim()) : [],
+        sumario, resenha, dataInicio, dataConclusao,
+        saga: { nome: sagaNome, volume: sagaVolume },
+      };
+      livros.push(novoLivro);
+      salvarLivros();
+      addBookForm.reset();
+      fecharTodosModais();
+    } else {
+      alert('Por favor, preencha pelo menos Título, Autor e Total de Páginas.');
+    }
+  };
+
+  const excluirLivro = (id) => {
+    livros = livros.filter(l => l.id !== id);
+    salvarLivros();
+  };
+
+  const abrirModal = (modal) => modal.classList.add('show');
+  const fecharTodosModais = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+
+  const abrirModalExclusao = (id) => {
+    livroIdParaExcluir = id;
+    fecharTodosModais();
+    abrirModal(confirmDeleteModal);
+  };
+
+  const popularEAbrirModalDetalhes = (id) => {
+    const livro = livros.find(l => l.id === id);
+    if (!livro) return;
+    bookDetailsModal.dataset.currentBookId = livro.id;
+    document.getElementById('details-capa-img').src = livro.capaUrl || 'img/default_cover.png';
+    document.getElementById('details-titulo').value = livro.titulo;
+    document.getElementById('details-autor').value = livro.autor;
+    document.getElementById('details-pagina-atual').value = livro.paginaAtual;
+    document.getElementById('details-total-paginas').value = livro.totalPaginas;
+    document.getElementById('details-sumario').value = livro.sumario || '';
+    document.getElementById('details-resenha').value = livro.resenha || '';
+    document.getElementById('details-data-inicio').value = livro.dataInicio || '';
+    document.getElementById('details-data-conclusao').value = livro.dataConclusao || '';
+    
+    document.getElementById('details-saga-nome').value = livro.saga?.nome || '';
+    document.getElementById('details-saga-volume').value = livro.saga?.volume || '';
+
+    let generosString = Array.isArray(livro.generos) ? livro.generos.join(', ') : (typeof livro.generos === 'string' ? livro.generos : '');
+    document.getElementById('details-generos').value = generosString;
+    updateStarRating(livro.nota || 0);
+    toggleFavoriteBtn.classList.toggle('active', livro.isFavorite);
+
+    const outrosLivrosContainer = document.getElementById('other-books-by-author');
+    const outrosLivros = livros.filter(l => l.autor === livro.autor && l.id !== livro.id);
+    
+    if (outrosLivros.length > 0) {
+      outrosLivrosContainer.innerHTML = outrosLivros.map(l => `
+        <div class="mini-book-card" data-book-id="${l.id}">
+          <div class="mini-book-cover" style="background-image: url('${l.capaUrl || 'img/default_cover.png'}');"></div>
+          <div class="mini-book-title">${l.titulo}</div>
+          <div class="mini-book-author">por ${l.autor}</div>
         </div>
-      </div>
-
-      <div class="tracker-container">
-        <div class="tracker-header">
-          <h2>Meu Tracker de Leitura</h2>
-          <div class="book-counts">
-            <div class="book-count-item">
-              <span id="count-a-ler" class="count-number">0</span>
-              <span class="count-label">A ler</span>
-            </div>
-            <div class="book-count-item">
-              <span id="count-lido" class="count-number">0</span>
-              <span class="count-label">Lido</span>
-            </div>
-            <div class="book-count-item">
-              <span id="count-quero-ler" class="count-number">0</span>
-              <span class="count-label">Quero ler</span>
-            </div>
+      `).join('');
+    } else {
+      outrosLivrosContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.7); font-style: italic;">Nenhum outro livro deste autor cadastrado.</p>';
+    }
+        
+    const sagaSectionContainer = document.getElementById('saga-section-container');
+    const sagaContainer = document.getElementById('books-in-saga');
+    if (livro.saga?.nome) {
+      const outrosDaSaga = livros
+        .filter(l => l.saga?.nome === livro.saga.nome && l.id !== livro.id)
+        .sort((a, b) => parseFloat(a.saga.volume) - parseFloat(b.saga.volume));
+      
+      if (outrosDaSaga.length > 0) {
+        sagaContainer.innerHTML = outrosDaSaga.map(l => `
+          <div class="mini-book-card" data-book-id="${l.id}">
+            <div class="mini-book-cover" style="background-image: url('${l.capaUrl || 'img/default_cover.png'}');"></div>
+            <div class="mini-book-title">Vol. ${l.saga.volume}: ${l.titulo}</div>
+            <div class="mini-book-author">por ${l.autor}</div>
           </div>
-        </div>
+        `).join('');
+        sagaSectionContainer.style.display = 'block';
+      } else {
+        sagaSectionContainer.style.display = 'none';
+      }
+    } else {
+      sagaSectionContainer.style.display = 'none';
+    }
 
-        <div class="search-bar-container">
-          <i class="fas fa-search search-icon"></i>
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Pesquisar por título ou autor..."
-          />
-        </div>
+    abrirModal(bookDetailsModal);
+  };
 
-        <div class="tabs-container">
-          <div class="tabs-nav">
-            <button class="tab-button active" data-tab="todos">Todos</button>
-            <button class="tab-button" data-tab="favoritos">Favoritos</button>
-            <button class="tab-button" data-tab="a-ler">A ler</button>
-            <button class="tab-button" data-tab="quero-ler">Quero ler</button>
-            <button class="tab-button" data-tab="lido">Lido</button>
-            <button class="tab-button" data-tab="generos">Gêneros</button>
-          </div>
-          <div class="tabs-content">
-            <div id="tab-todos" class="tab-pane active">
-              <ul id="lista-livros-todos" class="book-list"></ul>
-            </div>
-            <div id="tab-favoritos" class="tab-pane">
-              <ul id="lista-livros-favoritos" class="book-list"></ul>
-            </div>
-            <div id="tab-a-ler" class="tab-pane">
-              <ul id="lista-livros-a-ler" class="book-list"></ul>
-            </div>
-            <div id="tab-quero-ler" class="tab-pane">
-              <ul id="lista-livros-quero-ler" class="book-list"></ul>
-            </div>
-            <div id="tab-lido" class="tab-pane">
-              <ul id="lista-livros-lido" class="book-list"></ul>
-            </div>
-            <div id="tab-generos" class="tab-pane">
-              <div
-                id="generos-filter-container"
-                class="generos-filter-container"
-              ></div>
-              <ul id="lista-livros-generos" class="book-list"></ul>
-            </div>
-          </div>
-        </div>
-        <div class="genre-stats-section">
-          <h3>Gêneros na Estante</h3>
-          <div id="genre-stats-container" class="genre-stats-container"></div>
-        </div>
-      </div>
-    </main>
+  const updateStarRating = (rating) => {
+    detailsNotaStars.dataset.rating = rating;
+    detailsNotaStars.querySelectorAll('i').forEach(star => {
+        star.classList.toggle('filled', parseInt(star.dataset.value) <= rating);
+    });
+  };
 
-    <button id="open-add-book-modal-btn" class="fab">
-      <i class="fas fa-plus"></i>
-    </button>
+  // Event Listeners
+  openAddBookModalBtn.addEventListener('click', () => abrirModal(addBookModal));
+  addBookForm.addEventListener('submit', adicionarLivro);
+  
+  closeButtons.forEach(btn => btn.addEventListener('click', fecharTodosModais));
+  
+  window.addEventListener('click', (e) => { 
+    if (e.target.classList.contains('modal')) fecharTodosModais(); 
+  });
+  
+  cancelDeleteBtn.addEventListener('click', fecharTodosModais);
+  
+  confirmDeleteBtn.addEventListener('click', () => {
+    if (livroIdParaExcluir) {
+      excluirLivro(livroIdParaExcluir);
+      livroIdParaExcluir = null;
+      fecharTodosModais();
+    }
+  });
 
-    <div id="add-book-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h3>Adicionar Novo Livro</h3>
-        <form id="add-book-form" class="add-book-form">
-          <input
-            type="text"
-            id="titulo"
-            placeholder="Título do Livro"
-            required
-          />
-          <input type="text" id="autor" placeholder="Autor" required />
+  saveChangesBtn.addEventListener('click', () => {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    const livro = livros.find(l => l.id === id);
+    if(livro) {
+      const paginasAntesDeSalvar = livro.paginaAtual;
 
-          <input
-            type="number"
-            id="total-paginas"
-            placeholder="Total de Páginas"
-            required
-            min="1"
-          />
-          <input type="url" id="capa-url" placeholder="URL da Imagem da Capa" />
+      livro.titulo = document.getElementById('details-titulo').value.trim();
+      livro.autor = document.getElementById('details-autor').value.trim();
+      livro.paginaAtual = parseInt(document.getElementById('details-pagina-atual').value) || 0;
+      livro.totalPaginas = parseInt(document.getElementById('details-total-paginas').value) || 1;
+      const generosInput = document.getElementById('details-generos').value.trim();
+      livro.generos = generosInput ? generosInput.split(',').map(g => g.trim()) : [];
+      livro.sumario = document.getElementById('details-sumario').value.trim();
+      livro.resenha = document.getElementById('details-resenha').value.trim();
+      livro.dataInicio = document.getElementById('details-data-inicio').value;
+      livro.dataConclusao = document.getElementById('details-data-conclusao').value;
+      livro.nota = parseInt(detailsNotaStars.dataset.rating) || 0;
+      
+      livro.saga = {
+          nome: document.getElementById('details-saga-nome').value.trim(),
+          volume: document.getElementById('details-saga-volume').value.trim()
+      };
 
-          <div class="saga-fields">
-            <input
-              type="text"
-              id="saga-nome"
-              placeholder="Nome da Saga/Série"
-            />
-            <input type="text" id="saga-volume" placeholder="Volume" />
-          </div>
+      livro.lido = livro.paginaAtual >= livro.totalPaginas;
+      atualizarHistoricoDeLeitura(livro, paginasAntesDeSalvar);
+      salvarLivros();
+      fecharTodosModais();
+    }
+  });
 
-          <div class="date-fields">
-            <label for="data-inicio">Data de Início:</label>
-            <input type="date" id="data-inicio" />
-            <label for="data-conclusao">Data de Conclusão:</label>
-            <input type="date" id="data-conclusao" />
-          </div>
+  toggleFavoriteBtn.addEventListener('click', function() {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    const livro = livros.find(l => l.id === id);
+    if (livro) {
+      livro.isFavorite = !livro.isFavorite;
+      this.classList.toggle('active', livro.isFavorite);
+      salvarLivros();
+    }
+  });
 
-          <input
-            type="text"
-            id="generos"
-            placeholder="Gêneros (separados por vírgula)"
-            class="full-width"
-          />
-          <textarea
-            id="sumario"
-            placeholder="Sumário / Sinopse do livro..."
-            rows="4"
-            class="full-width"
-          ></textarea>
-          <textarea
-            id="resenha"
-            placeholder="Sua resenha ou notas pessoais..."
-            rows="4"
-            class="full-width"
-          ></textarea>
+  deleteFromDetailsBtn.addEventListener('click', () => {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    if(id) abrirModalExclusao(id);
+  });
 
-          <button type="submit" id="add-livro-btn">Adicionar Livro</button>
-        </form>
-      </div>
-    </div>
+  document.querySelector('main').addEventListener('click', (e) => {
+    const card = e.target.closest('.book-item');
+    if (card?.dataset.id) {
+      if (e.target.closest('button, input')) return;
+      popularEAbrirModalDetalhes(parseInt(card.dataset.id));
+    }
+  });
 
-    <div id="confirm-delete-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h4>Confirmar Exclusão</h4>
-        <p>Você tem certeza de que deseja excluir este livro?</p>
-        <div class="modal-actions">
-          <button id="cancel-delete-btn" class="btn-secondary">Cancelar</button>
-          <button id="confirm-delete-btn" class="btn-danger">Excluir</button>
-        </div>
-      </div>
-    </div>
+  detailsNotaStars.addEventListener('click', (e) => {
+    const star = e.target.closest('i[data-value]');
+    if(star) updateStarRating(parseInt(star.dataset.value));
+  });
 
-    <div id="reading-stats-modal" class="modal">
-      <div class="modal-content stats-modal">
-        <span class="close-btn">&times;</span>
-        <h3>Estatísticas de Leitura 2025</h3>
+  bookDetailsModal.addEventListener('click', (e) => {
+    const miniCard = e.target.closest('.mini-book-card');
+    if (miniCard && miniCard.dataset.bookId) {
+      const bookId = parseInt(miniCard.dataset.bookId);
+      popularEAbrirModalDetalhes(bookId);
+    }
+  });
 
-        <div class="stats-grid">
-          <div class="stats-card">
-            <h4>Meta Anual</h4>
-            <div class="stats-number">
-              <span id="stats-books-read">0</span>/<span id="stats-books-goal"
-                >24</span
-              >
-            </div>
-            <div class="stats-label">livros lidos</div>
-            <div class="stats-progress-bar">
-              <div id="stats-progress-fill" class="stats-progress-fill"></div>
-            </div>
-          </div>
+  if (tabsNav) {
+    tabsNav.addEventListener('click', (e) => {
+      const button = e.target.closest('.tab-button');
+      if (button) {
+        switchTab(button.dataset.tab);
+      }
+    });
+  }
+  
+  // NOVO: Event listener para a barra de pesquisa
+  if (searchInput) {
+    searchInput.addEventListener('input', renderizarLivros);
+  }
 
-          <div class="stats-card">
-            <h4>Páginas Lidas</h4>
-            <div class="stats-number" id="stats-pages-read">0</div>
-            <div class="stats-label">páginas totais</div>
-          </div>
-
-          <div class="stats-card">
-            <h4>Tempo de Leitura</h4>
-            <div class="stats-number" id="stats-reading-days">0</div>
-            <div class="stats-label">dias lendo</div>
-          </div>
-
-          <div class="stats-card">
-            <h4>Média por Mês</h4>
-            <div class="stats-number" id="stats-monthly-average">0</div>
-            <div class="stats-label">livros/mês</div>
-          </div>
-        </div>
-
-        <div class="charts-section">
-          <div class="chart-container">
-            <h4>Atividade de Leitura (estilo GitHub)</h4>
-            <div id="github-chart" class="github-chart"></div>
-          </div>
-
-          <div class="chart-container">
-            <h4>Gêneros Mais Lidos</h4>
-            <div id="genres-chart" class="genres-chart"></div>
-          </div>
-
-          <div class="chart-container">
-            <h4>Autores Favoritos</h4>
-            <div id="authors-chart" class="authors-chart"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="book-details-modal" class="modal">
-      <div class="modal-content large">
-        <span class="close-btn">&times;</span>
-        <div class="details-grid">
-          <div class="details-cover">
-            <img id="details-capa-img" src="" alt="Capa do livro" />
-            <div class="details-rating">
-              <label>Nota:</label>
-              <div id="details-nota-stars" class="star-rating" data-rating="0">
-                <i class="fa-solid fa-star" data-value="1"></i
-                ><i class="fa-solid fa-star" data-value="2"></i
-                ><i class="fa-solid fa-star" data-value="3"></i
-                ><i class="fa-solid fa-star" data-value="4"></i
-                ><i class="fa-solid fa-star" data-value="5"></i>
-              </div>
-            </div>
-            <div class="details-progress">
-              <label>Progresso:</label>
-              <div class="progress-inputs">
-                <input type="number" id="details-pagina-atual" min="0" />
-                <span> / </span>
-                <input type="number" id="details-total-paginas" min="1" />
-                <span> páginas</span>
-              </div>
-            </div>
-          </div>
-          <div class="details-info">
-            <input
-              type="text"
-              id="details-titulo"
-              class="details-title-input"
-            />
-            <input
-              type="text"
-              id="details-autor"
-              class="details-author-input"
-            />
-            <div class="details-field">
-              <label>Saga / Série:</label>
-              <div class="saga-fields">
-                <input
-                  type="text"
-                  id="details-saga-nome"
-                  placeholder="Nome da Saga"
-                />
-                <input
-                  type="text"
-                  id="details-saga-volume"
-                  placeholder="Volume"
-                />
-              </div>
-            </div>
-            <div class="details-dates">
-              <div class="details-field">
-                <label for="details-data-inicio">Data de Início:</label
-                ><input type="date" id="details-data-inicio" />
-              </div>
-              <div class="details-field">
-                <label for="details-data-conclusao">Data de Conclusão:</label
-                ><input type="date" id="details-data-conclusao" />
-              </div>
-            </div>
-            <div class="details-field">
-              <label for="details-generos"
-                >Gêneros (separados por vírgula):</label
-              ><input type="text" id="details-generos" />
-            </div>
-            <div class="details-field">
-              <label for="details-sumario">Sumário / Sinopse:</label
-              ><textarea id="details-sumario" rows="5"></textarea>
-            </div>
-            <div class="details-field">
-              <label for="details-resenha">Resenha / Notas Pessoais:</label
-              ><textarea id="details-resenha" rows="5"></textarea>
-            </div>
-            <div class="details-actions">
-              <button id="toggle-favorite-btn" class="favorite-btn">
-                <i class="fas fa-star"></i> Favoritar
-              </button>
-              <button id="delete-from-details-btn" class="btn-danger">
-                <i class="fas fa-trash"></i> Excluir
-              </button>
-              <button id="save-changes-btn" class="btn-primary">
-                <i class="fas fa-save"></i> Salvar Alterações
-              </button>
-            </div>
-          </div>
-        </div>
-        <div
-          id="saga-section-container"
-          class="saga-section"
-          style="display: none"
-        >
-          <h4>Livros na mesma saga:</h4>
-          <div id="books-in-saga" class="related-books-grid"></div>
-        </div>
-        <div class="other-books-section">
-          <h4>Outros livros do autor:</h4>
-          <div id="other-books-by-author" class="related-books-grid"></div>
-        </div>
-      </div>
-    </div>
-
-    <footer>
-      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
-    </footer>
-    <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/script_viagens.js"></script>
-    <script src="js/quotes.js"></script>
-    <script src="js/reading-stats.js"></script>
-    <script src="js/livraria.js"></script>
-  </body>
-</html>
+  // Inicialização
+  updateBookCounts();
+  renderizarLivros();
+  renderizarGenreStats(); // NOVO: Renderiza as estatísticas de gênero
+  
+  setTimeout(() => {
+    if (window.readingStats) {
+      window.readingStats.refresh();
+    }
+  }, 100);
+});
