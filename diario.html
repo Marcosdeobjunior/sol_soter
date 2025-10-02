@@ -108,7 +108,6 @@
         </div>
 
         <div class="diario-content">
-            <!-- Seção de Criação de Entrada -->
             <section class="entrada-form-section">
                 <div class="form-container">
                     <h2>Nova Entrada</h2>
@@ -134,6 +133,17 @@
                             <input type="text" id="diario-tags" placeholder="Tags separadas por vírgula (ex: reflexão, trabalho, família)">
                         </div>
                         
+                        <div class="form-group">
+                            <label>Como você está se sentindo hoje?</label>
+                            <div id="diario-humor-selector" class="humor-selector">
+                                <button type="button" class="humor-btn" data-humor="feliz" title="Feliz"><i class="fas fa-smile-beam"></i></button>
+                                <button type="button" class="humor-btn" data-humor="normal" title="Normal"><i class="fas fa-smile"></i></button>
+                                <button type="button" class="humor-btn" data-humor="neutro" title="Neutro"><i class="fas fa-meh"></i></button>
+                                <button type="button" class="humor-btn" data-humor="triste" title="Triste"><i class="fas fa-sad-tear"></i></button>
+                                <button type="button" class="humor-btn" data-humor="irritado" title="Irritado"><i class="fas fa-angry"></i></button>
+                            </div>
+                        </div>
+
                         <div class="form-actions">
                             <button type="submit" id="salvar-entrada" class="btn-primary">
                                 <i class="fas fa-save"></i> Salvar Entrada
@@ -146,7 +156,6 @@
                 </div>
             </section>
 
-            <!-- Seção de Busca e Filtros -->
             <section class="busca-section">
                 <div class="busca-container">
                     <div class="busca-row">
@@ -167,28 +176,24 @@
                 </div>
             </section>
 
-            <!-- Seção de Lista de Entradas -->
             <section class="entradas-section">
                 <div class="entradas-header">
                     <h2>Minhas Entradas</h2>
-                    <<div class="entradas-actions">
-    <div class="entradas-count">
-        <span id="total-entradas">0 entradas</span>
-    </div>
-    
-    <button id="import-entradas" class="btn-import" title="Importar entradas de um arquivo JSON">
-        <i class="fas fa-upload"></i> Importar
-    </button>
-    <input type="file" id="import-file-input" accept=".json" style="display: none;">
-
-    <button id="download-entradas" class="btn-download" title="Baixar todas as entradas">
-        <i class="fas fa-download"></i> Download
-    </button>
-</div>
+                    <div class="entradas-actions">
+                        <div class="entradas-count">
+                            <span id="total-entradas">0 entradas</span>
+                        </div>
+                        <button id="import-entradas" class="btn-import" title="Importar entradas de um arquivo JSON">
+                            <i class="fas fa-upload"></i> Importar
+                        </button>
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                        <button id="download-entradas" class="btn-download" title="Baixar todas as entradas">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
                 </div>
                 <div id="lista-entradas" class="entradas-grid">
-                    <!-- As entradas serão inseridas aqui dinamicamente -->
-                </div>
+                    </div>
                 <div id="sem-entradas" class="empty-state" style="display: none;">
                     <i class="fas fa-book-open"></i>
                     <h3>Nenhuma entrada encontrada</h3>
