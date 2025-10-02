@@ -57,7 +57,8 @@ const estado = {
   }, ],
   limites: {},
   abaAtiva: 'controle',
-  periodoGrafico: 'mes'
+  periodoGrafico: 'mes',
+  metasSonhos: [], // NOVO: Para armazenar metas financeiras dos sonhos
 };
 
 // Gráficos Chart.js
@@ -98,7 +99,8 @@ const elementos = {
   categoriasLista: document.getElementById('categorias-lista'),
   limitsGrid: document.getElementById('limits-grid'),
   btnSalvarLimites: document.getElementById('btn-salvar-limites'),
-  saldoDoDia: document.getElementById('saldo-do-dia')
+  saldoDoDia: document.getElementById('saldo-do-dia'),
+  metasSonhosContainer: document.getElementById('metas-sonhos-container'), // NOVO
 };
 
 // Funções auxiliares
@@ -297,6 +299,7 @@ function adicionarTransacao(transacao) {
   calcularMelhorDia();
   calcularDespesasMes();
   renderizarSaldoDoDia();
+  renderizarMetasSonhos(); // ATUALIZADO: Re-renderiza metas após transação
 
   // Atualizar gráficos se estiver na aba de planejamento
   if (estado.abaAtiva === 'planejamento') {
@@ -312,6 +315,7 @@ function removerTransacao(id) {
   calcularMelhorDia();
   calcularDespesasMes();
   renderizarSaldoDoDia();
+  renderizarMetasSonhos(); // ATUALIZADO: Re-renderiza metas após transação
 
   // Atualizar gráficos se estiver na aba de planejamento
   if (estado.abaAtiva === 'planejamento') {
@@ -396,6 +400,14 @@ function editarCategoria(id, novoNome) {
 }
 
 function removerCategoria(id) {
+  const categoriaParaRemover = estado.categorias.find(c => c.id === id);
+
+  // ATUALIZADO: Impedir exclusão de categorias de metas de sonhos
+  if (categoriaParaRemover && categoriaParaRemover.isMetaSonho) {
+    alert('Não é possível excluir uma categoria de meta de sonho. Exclua o sonho na página de Sonhos.');
+    return false;
+  }
+
   // Verificar se existem transações usando esta categoria
   const transacoesComCategoria = estado.transacoes.filter(t => t.categoria === id);
 
@@ -421,6 +433,121 @@ function removerCategoria(id) {
 
   return true;
 }
+
+
+// --- INÍCIO: NOVAS FUNÇÕES DE INTEGRAÇÃO COM SONHOS ---
+
+// Carrega sonhos com custo do localStorage e cria categorias de economia se necessário.
+function carregarMetasSonhos() {
+  const sonhoseObjetivos = localStorage.getItem('sonhos-objetivos');
+  if (sonhoseObjetivos) {
+    try {
+      const todosSonhos = JSON.parse(sonhoseObjetivos);
+      estado.metasSonhos = todosSonhos.filter(s => s.custo > 0 && !s.concluido);
+
+      let categoriasForamModificadas = false;
+
+      estado.metasSonhos.forEach(sonho => {
+        // Verifica se já existe uma categoria para esta meta de sonho
+        const categoriaExistente = estado.categorias.find(c => c.sonhoId === sonho.id);
+
+        if (!categoriaExistente) {
+          // Cria uma nova categoria de economia para o sonho
+          const novaCategoriaMeta = {
+            id: `meta_${sonho.id}`, // ID previsível
+            nome: `Meta: ${sonho.titulo}`,
+            isMetaSonho: true, // Flag especial para identificação
+            sonhoId: sonho.id
+          };
+          estado.categorias.push(novaCategoriaMeta);
+          categoriasForamModificadas = true;
+        }
+      });
+
+      if (categoriasForamModificadas) {
+        salvarDados(); // Salva as novas categorias
+        atualizarSelectsCategorias(); // Atualiza os dropdowns da interface
+      }
+
+    } catch (e) {
+      console.error("Erro ao carregar metas dos sonhos:", e);
+      estado.metasSonhos = [];
+    }
+  }
+}
+
+// Renderiza o card de progresso para cada meta financeira.
+function renderizarMetasSonhos() {
+  if (!elementos.metasSonhosContainer) return;
+  elementos.metasSonhosContainer.innerHTML = ''; // Limpa o contêiner
+
+  const titulo = document.createElement('div');
+  titulo.className = 'metas-sonhos-titulo';
+  titulo.innerHTML = `<i class="fas fa-piggy-bank"></i> Metas Financeiras (Sonhos)`;
+  elementos.metasSonhosContainer.appendChild(titulo);
+
+  if (estado.metasSonhos.length === 0) {
+    elementos.metasSonhosContainer.innerHTML += `<div class="meta-sonho-empty">Nenhuma meta financeira de sonhos encontrada.</div>`;
+    return;
+  }
+
+  estado.metasSonhos.forEach(sonho => {
+    // Encontra a categoria de economia correspondente
+    const categoriaMeta = estado.categorias.find(c => c.sonhoId === sonho.id);
+    if (!categoriaMeta) return;
+
+    // Calcula o total economizado para esta meta (soma de todas as entradas nesta categoria)
+    const totalSalvo = estado.transacoes
+      .filter(t => t.tipo === 'entrada' && t.categoria === categoriaMeta.id)
+      .reduce((total, t) => total + t.valor, 0);
+
+    // Calcula o progresso percentual
+    const progressoPercentual = Math.min((totalSalvo / sonho.custo) * 100, 100);
+
+    // Atualiza o progresso no localStorage de Sonhos para manter a sincronia
+    atualizarProgressoSonhoNoLocalStorage(sonho.id, parseFloat(progressoPercentual));
+
+    // Cria e adiciona o elemento HTML da meta no contêiner
+    const item = document.createElement('div');
+    item.className = 'meta-sonho-item';
+    item.innerHTML = `
+      <div class="meta-sonho-header">
+        <div class="meta-sonho-nome">${sonho.titulo}</div>
+        <div class="meta-sonho-valores">
+          <strong>${formatarMoeda(totalSalvo)}</strong> / ${formatarMoeda(sonho.custo)}
+        </div>
+      </div>
+      <div class="meta-sonho-progresso-bar">
+        <div class="meta-sonho-progresso-fill" style="width: ${progressoPercentual.toFixed(2)}%;"></div>
+      </div>
+    `;
+    elementos.metasSonhosContainer.appendChild(item);
+  });
+}
+
+// Atualiza a propriedade 'progresso' de um sonho específico no localStorage.
+function atualizarProgressoSonhoNoLocalStorage(sonhoId, novoProgresso) {
+  const sonhoseObjetivos = localStorage.getItem('sonhos-objetivos');
+  if (sonhoseObjetivos) {
+    try {
+      let todosSonhos = JSON.parse(sonhoseObjetivos);
+      const sonhoIndex = todosSonhos.findIndex(s => s.id === sonhoId);
+
+      if (sonhoIndex !== -1) {
+        // Apenas atualiza se o valor do progresso mudou
+        if (todosSonhos[sonhoIndex].progresso !== novoProgresso) {
+          todosSonhos[sonhoIndex].progresso = novoProgresso;
+          localStorage.setItem('sonhos-objetivos', JSON.stringify(todosSonhos));
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao atualizar progresso do sonho no localStorage:", e);
+    }
+  }
+}
+
+// --- FIM: NOVAS FUNÇÕES DE INTEGRAÇÃO COM SONHOS ---
+
 
 // Funções de cálculo para gráficos
 function obterDadosEntradaSaida(periodo) {
@@ -976,19 +1103,26 @@ function renderizarCategorias() {
   container.innerHTML = '';
 
   estado.categorias.forEach(categoria => {
+    // ATUALIZADO: Mostrar categorias de meta, mas desabilitar ações
+    if (categoria.isMetaSonho) return; // Vamos ocultá-las da lista de gerenciamento para simplificar
+
     const categoriaItem = document.createElement('div');
     categoriaItem.className = 'categoria-item';
+
+    const acoesHTML = `
+      <div class="categoria-acoes">
+        <span class="categoria-editar" data-id="${categoria.id}">✎</span>
+        <span class="categoria-excluir" data-id="${categoria.id}">✕</span>
+      </div>`;
+
     categoriaItem.innerHTML = `
-            <div class="categoria-nome">${categoria.nome}</div>
-            <div class="categoria-acoes">
-                <span class="categoria-editar" data-id="${categoria.id}">✎</span>
-                <span class="categoria-excluir" data-id="${categoria.id}">✕</span>
-            </div>
-        `;
+      <div class="categoria-nome">${categoria.nome}</div>
+      ${acoesHTML}
+    `;
     container.appendChild(categoriaItem);
   });
 
-  // Adicionar event listeners
+  // Adiciona event listeners apenas aos botões de categorias gerenciáveis
   container.querySelectorAll('.categoria-editar').forEach(btn => {
     btn.addEventListener('click', () => {
       const cat = estado.categorias.find(c => c.id === btn.dataset.id);
@@ -1004,6 +1138,7 @@ function renderizarCategorias() {
     });
   });
 }
+
 
 function atualizarSelectsCategorias() {
   elementos.transacaoCategoria.innerHTML = '';
@@ -1098,9 +1233,11 @@ function importarDados(arquivo) {
       salvarDados();
       // Re-renderizar tudo
       elementos.saldoInicial.value = estado.saldoInicial;
+      carregarMetasSonhos(); // ATUALIZADO: Recarregar metas após importação
       renderizarCategorias();
       atualizarSelectsCategorias();
       renderizarCalendario();
+      renderizarMetasSonhos(); // ATUALIZADO: Renderizar metas após importação
       calcularMelhorDia();
       calcularDespesasMes();
       renderizarSaldoDoDia();
@@ -1120,12 +1257,15 @@ function importarDados(arquivo) {
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
   carregarDados();
+  carregarMetasSonhos(); // ATUALIZADO: Carrega as metas dos sonhos
   renderizarCalendario();
   renderizarCategorias();
   atualizarSelectsCategorias();
+  renderizarMetasSonhos(); // ATUALIZADO: Renderiza as metas na inicialização
   calcularMelhorDia();
   calcularDespesasMes();
   renderizarSaldoDoDia();
+
 
   // Navegação de abas
   document.querySelectorAll('.tab-button').forEach(button => {

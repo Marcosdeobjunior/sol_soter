@@ -1,0 +1,827 @@
+/* ===== PLANEJAMENTO DE TAREFAS - ESTILOS ESPECÍFICOS ===== */
+
+.planejamento-main {
+  flex: 1;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #1e1e2e 0%, #171725 100%);
+  min-height: calc(100vh - 120px);
+}
+
+.planejamento-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ===== CABEÇALHO DA PÁGINA ===== */
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-header h1 {
+  font-size: 2.5rem;
+  color: #89b4fa;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.page-header p {
+  font-size: 1.1rem;
+  color: #cdd6f4;
+  font-weight: 400;
+}
+
+/* ===== SEÇÕES ===== */
+.tasks-section,
+.calendar-section {
+  background: #313244;
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid #45475a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #45475a;
+}
+
+.section-header h2 {
+  font-size: 1.4rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===== CALENDÁRIO ===== */
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.calendar-nav-btn {
+  background: #45475a;
+  border: none;
+  color: #cdd6f4;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.calendar-nav-btn:hover {
+  background: #585b70;
+  color: #89b4fa;
+}
+
+#current-month-year {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f9e2af;
+  min-width: 180px;
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  background: #45475a;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.calendar-header {
+  background: #585b70;
+  color: #cdd6f4;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.calendar-day {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+}
+
+.calendar-day:hover {
+  background: #45475a;
+  color: #89b4fa;
+}
+
+.calendar-day.other-month {
+  color: #6c7086;
+  background: #181825;
+}
+
+.calendar-day.today {
+  background: #89b4fa;
+  color: #1e1e2e;
+  font-weight: 700;
+}
+
+.calendar-day.selected {
+  background: #f9e2af;
+  color: #1e1e2e;
+  font-weight: 600;
+}
+
+.calendar-day-number {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.calendar-tasks {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.calendar-task {
+  background: rgba(137, 180, 250, 0.8);
+  color: #1e1e2e;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-task:hover {
+  background: rgba(137, 180, 250, 1);
+  transform: scale(1.02);
+}
+
+/* NOVOS ESTILOS: Cores para sonhos e metas no calendário */
+.calendar-task-sonho {
+  background: rgba(203, 166, 247, 0.8) !important; /* Roxo */
+}
+.calendar-task-sonho:hover {
+  background: rgba(203, 166, 247, 1) !important;
+}
+
+.calendar-task-meta {
+  background: rgba(250, 179, 135, 0.8) !important; /* Laranja */
+}
+.calendar-task-meta:hover {
+  background: rgba(250, 179, 135, 1) !important;
+}
+
+
+.calendar-task.completed {
+  background: rgba(166, 227, 161, 0.8);
+  text-decoration: line-through;
+}
+
+.calendar-task.completed:hover {
+  background: rgba(166, 227, 161, 1);
+}
+
+.calendar-task.high-priority {
+  background: rgba(243, 139, 168, 0.8);
+}
+
+.calendar-task.high-priority:hover {
+  background: rgba(243, 139, 168, 1);
+}
+
+.calendar-task.medium-priority {
+  background: rgba(249, 226, 175, 0.8);
+}
+
+.calendar-task.medium-priority:hover {
+  background: rgba(249, 226, 175, 1);
+}
+
+.calendar-task.low-priority {
+  background: rgba(137, 180, 250, 0.8);
+}
+
+.calendar-task.low-priority:hover {
+  background: rgba(137, 180, 250, 1);
+}
+
+.calendar-task.no-priority {
+  background: rgba(166, 173, 200, 0.8);
+}
+
+.calendar-task.no-priority:hover {
+  background: rgba(166, 173, 200, 1);
+}
+
+.calendar-more-tasks {
+  font-size: 0.6rem;
+  color: #6c7086;
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* ===== TAREFAS ===== */
+.add-task-btn {
+  background: #89b4fa;
+  color: #1e1e2e;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-task-btn:hover {
+  background: #a6e3a1;
+  transform: translateY(-2px);
+}
+
+.task-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #45475a;
+  color: #cdd6f4;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-btn:hover {
+  background: #585b70;
+  color: #89b4fa;
+}
+
+.filter-btn.active {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+.tasks-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.task-item {
+  background: #45475a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 12px;
+  border-left: 4px solid #6c7086;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  background: #585b70;
+  transform: translateX(5px);
+}
+
+.task-item.completed {
+  opacity: 0.7;
+  border-left-color: #a6e3a1;
+}
+
+.task-item.high-priority {
+  border-left-color: #f38ba8;
+}
+
+.task-item.medium-priority {
+  border-left-color: #f9e2af;
+}
+
+.task-item.low-priority {
+  border-left-color: #89b4fa;
+}
+
+.task-item.no-priority {
+  border-left-color: #a6adc8;
+}
+
+.task-item.no-date {
+  border-left-color: #cba6f7;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.task-title {
+  font-weight: 600;
+  color: #cdd6f4;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: #a6adc8;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.task-action-btn {
+  background: none;
+  border: none;
+  color: #a6adc8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.task-action-btn:hover {
+  color: #cdd6f4;
+  background: #313244;
+}
+
+.task-action-btn.complete-btn:hover {
+  color: #a6e3a1;
+}
+
+.task-action-btn.edit-btn:hover {
+  color: #f9e2af;
+}
+
+.task-action-btn.delete-btn:hover {
+  color: #f38ba8;
+}
+
+.task-description {
+  color: #a6adc8;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #6c7086;
+}
+
+.task-datetime {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-category {
+  background: #585b70;
+  color: #cdd6f4;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.task-recurring {
+  color: #cba6f7;
+  font-size: 0.7rem;
+  margin-left: 8px;
+}
+
+/* NOVOS ESTILOS: Tags para Sonhos e Metas na lista */
+.item-type-tag {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sonho-tag {
+  background-color: #cba6f7; /* Roxo */
+  color: #1e1e2e;
+}
+
+.meta-tag {
+  background-color: #fab387; /* Laranja */
+  color: #1e1e2e;
+}
+
+
+/* ===== ESTATÍSTICAS ===== */
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: #313244;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #45475a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-icon {
+  background: #45475a;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #89b4fa;
+  font-size: 1.2rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #a6adc8;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #313244;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid #45475a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #45475a;
+}
+
+.modal-header h3 {
+  color: #cdd6f4;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #a6adc8;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #f38ba8;
+  background: #45475a;
+}
+
+#task-form {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-group label {
+  display: block;
+  color: #cdd6f4;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: #45475a;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  padding: 12px;
+  color: #cdd6f4;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #89b4fa;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.form-checkbox label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #a6adc8;
+}
+
+.recurring-options {
+  margin-top: 10px;
+  padding: 10px;
+  background: #45475a;
+  border-radius: 6px;
+}
+
+.recurring-options label {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+
+.btn-primary:hover {
+  background: #a6e3a1;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #45475a;
+  color: #cdd6f4;
+}
+
+.btn-secondary:hover {
+  background: #585b70;
+}
+
+/* ===== SCROLLBAR CUSTOMIZADA ===== */
+.tasks-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tasks-list::-webkit-scrollbar-track {
+  background: #45475a;
+  border-radius: 3px;
+}
+
+.tasks-list::-webkit-scrollbar-thumb {
+  background: #585b70;
+  border-radius: 3px;
+}
+
+.tasks-list::-webkit-scrollbar-thumb:hover {
+  background: #6c7086;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 1024px) {
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .planejamento-main {
+    padding: 20px 15px;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .tasks-section,
+  .calendar-section {
+    padding: 20px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .calendar-controls {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  
+  #current-month-year {
+    min-width: auto;
+  }
+  
+  .task-filters {
+    justify-content: center;
+  }
+  
+  .stats-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    width: 95%;
+  }
+  
+  .task-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .task-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .calendar-day {
+    min-height: 60px;
+    padding: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid {
+    font-size: 0.8rem;
+  }
+  
+  .calendar-day {
+    min-height: 50px;
+    padding: 3px;
+  }
+  
+  .calendar-task {
+    font-size: 0.6rem;
+    padding: 1px 2px;
+  }
+  
+  .task-item {
+    padding: 12px;
+  }
+  
+  .filter-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+
+/* Estilos para o dropdown do perfil */
+.profile-dropdown {
+  position: relative;
+}
+
+.profile-dropdown .dropdown-menu.profile-menu {
+  position: absolute;
+  top: 100%; /* Posiciona o topo do dropdown abaixo do elemento pai */
+  right: 0; /* Alinha o dropdown à direita do elemento pai */
+  min-width: 200px; /* Garante uma largura mínima para o menu */
+  z-index: 100; /* Garante que o dropdown apareça acima de outros elementos */
+  transform: translateY(10px); /* Adiciona um pequeno espaçamento */
+  opacity: 0; /* Esconde o dropdown por padrão */
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.profile-dropdown.active .dropdown-menu.profile-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); /* Remove o espaçamento ao mostrar */
+}
+
+
+
+/* Garante que o dropdown-menu não seja ocultado por overflow em elementos pai */
+.menu-profile {
+  overflow: visible; /* Permite que o conteúdo transborde */
+  z-index: 10; /* Garante que o menu-profile esteja acima de outros elementos */
+}
+
+.dropdown {
+  position: relative;
+}

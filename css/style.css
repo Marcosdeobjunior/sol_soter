@@ -278,6 +278,52 @@ header {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* ===== SEÇÃO DO TIME (NOVO) ===== */
+.team-section {
+    background: #313244;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #45475a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    margin-top: 40px;
+    margin-bottom: 60px;
+    text-align: center;
+}
+.team-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.team-logo {
+    width: 50px;
+    height: auto;
+}
+.team-section h3 {
+    font-size: 1.8rem;
+    color: #cdd6f4;
+    font-weight: 600;
+}
+.team-section p {
+    font-size: 1rem;
+    color: #bac2de;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+#scoreaxis-widget-2d496 {
+    margin: 0 auto;
+    max-width: 600px;
+}
+#scoreaxis-widget-2d496 + div {
+    max-width: 600px;
+    margin: 8px auto 0;
+    color: #a6adc8 !important;
+}
+#scoreaxis-widget-2d496 + div a {
+    color: #89b4fa !important;
+}
+
 /* ===== CALL TO ACTION ===== */
 .call-to-action-section {
     margin-top: 50px;
@@ -310,11 +356,6 @@ header {
 }
 
 /* ===== ANIMAÇÕES ===== */
-/* Adicione esta nova classe no final da seção de ANIMAÇÕES */
-
-/* ... (todo o CSS anterior permanece o mesmo) ... */
-
-/* ===== ANIMAÇÕES ===== */
 .animate-fade-in {
   opacity: 0;
   animation: fadeIn 1s ease forwards;
@@ -340,9 +381,8 @@ header {
 .delay-4 { animation-delay: 0.8s; }
 .delay-5 { animation-delay: 1.0s; }
 .delay-6 { animation-delay: 1.2s; }
-.delay-7 { animation-delay: 1.4s; } /* <-- NOVA CLASSE ADICIONADA */
-
-/* ... (o restante do CSS continua igual) ... */
+.delay-7 { animation-delay: 1.4s; }
+.delay-8 { animation-delay: 1.6s; } /* <-- NOVA CLASSE ADICIONADA */
 
 
 /* ===== FOOTER ===== */

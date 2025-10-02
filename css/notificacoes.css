@@ -1,0 +1,156 @@
+/* ===== CENTRAL DE NOTIFICAÇÕES ===== */
+
+.notification-center {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.notification-bell {
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: relative;
+  padding: 5px;
+}
+
+.notification-bell:hover {
+  color: #89b4fa;
+}
+
+.notification-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #f38ba8; /* Vermelho */
+  color: #1e1e2e;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1e1e2e; /* Cor de fundo do header */
+}
+
+.notification-panel {
+  display: none; /* Oculto por padrão */
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 350px;
+  max-height: 400px;
+  background-color: #313244;
+  border: 1px solid #45475a;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  z-index: 1001; /* Acima de outros elementos */
+  overflow: hidden;
+  transform: translateY(10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-panel.active {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.notification-panel-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #45475a;
+}
+
+.notification-panel-header h3 {
+  margin: 0;
+  color: #cdd6f4;
+  font-size: 1.1rem;
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Scrollbar customizada */
+.notification-list::-webkit-scrollbar {
+  width: 5px;
+}
+.notification-list::-webkit-scrollbar-thumb {
+  background: #585b70;
+  border-radius: 3px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #45475a;
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #45475a;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+  width: 25px;
+  text-align: center;
+  flex-shrink: 0;
+}
+/* Cores dos ícones por tipo */
+.notification-icon.meta { color: #fab387; } /* Laranja */
+.notification-icon.tarefa { color: #89b4fa; } /* Azul */
+.notification-icon.financa { color: #f38ba8; } /* Vermelho */
+.notification-icon.conquista { color: #a6e3a1; } /* Verde */
+
+
+.notification-content p {
+  margin: 0;
+  color: #cdd6f4;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.notification-content span {
+  font-size: 0.75rem;
+  color: #6c7086;
+  margin-top: 4px;
+  display: block;
+}
+
+.notification-item .empty-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c7086;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin: 0;
+}
