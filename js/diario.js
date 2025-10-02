@@ -4,8 +4,17 @@ class DiarioPessoal {
     constructor() {
         this.entradas = [];
         this.entradaEditando = null;
+        this.humorSelecionado = null;
         this.storageKey = 'diario-pessoal-entradas';
         
+        this.humorIconMap = {
+            feliz: 'fa-smile-beam',
+            normal: 'fa-smile',
+            neutro: 'fa-meh',
+            triste: 'fa-sad-tear',
+            irritado: 'fa-angry'
+        };
+
         this.initializeElements();
         this.bindEvents();
         this.loadEntradas();
@@ -21,6 +30,7 @@ class DiarioPessoal {
         this.tagsInput = document.getElementById('diario-tags');
         this.salvarBtn = document.getElementById('salvar-entrada');
         this.cancelarBtn = document.getElementById('cancelar-edicao');
+        this.humorSelector = document.getElementById('diario-humor-selector');
 
         // Elementos de busca
         this.buscaInput = document.getElementById('busca-diario');
@@ -31,51 +41,49 @@ class DiarioPessoal {
         this.listaEntradas = document.getElementById('lista-entradas');
         this.totalEntradas = document.getElementById('total-entradas');
         this.semEntradas = document.getElementById('sem-entradas');
+        
+        // Elementos de Ações
         this.downloadBtn = document.getElementById('download-entradas');
-
-        // Elementos de importação
         this.importBtn = document.getElementById('import-entradas');
         this.importFileInput = document.getElementById('import-file-input');
     }
 
     bindEvents() {
-        // Eventos do formulário
         this.form.addEventListener('submit', (e) => this.handleSubmit(e));
         this.cancelarBtn.addEventListener('click', () => this.cancelarEdicao());
-
-        // Eventos de busca e filtro
         this.buscaInput.addEventListener('input', () => this.filtrarEntradas());
         this.filtroDataInput.addEventListener('change', () => this.filtrarEntradas());
         this.limparFiltrosBtn.addEventListener('click', () => this.limparFiltros());
-
-        // Evento do botão de download
         this.downloadBtn.addEventListener('click', () => this.downloadEntradas());
-
-        // Eventos de importação
         this.importBtn.addEventListener('click', () => this.importFileInput.click());
         this.importFileInput.addEventListener('change', (e) => this.handleFileImport(e));
 
-        // Auto-save no localStorage quando há mudanças
-        window.addEventListener('storage', (e) => {
-            if (e.key === this.storageKey) {
-                this.loadEntradas();
+        this.humorSelector.addEventListener('click', (e) => {
+            const humorBtn = e.target.closest('.humor-btn');
+            if (humorBtn) {
+                this.selecionarHumor(humorBtn.dataset.humor);
             }
         });
-    }
 
-    setDataAtual() {
-        const hoje = new Date();
-        const dataFormatada = hoje.toISOString().split('T')[0];
-        this.dataInput.value = dataFormatada;
+        window.addEventListener('storage', (e) => {
+            if (e.key === this.storageKey) this.loadEntradas();
+        });
     }
+    
+    selecionarHumor(humor) {
+        if (this.humorSelecionado === humor) {
+            this.humorSelecionado = null; // Permite desmarcar
+        } else {
+            this.humorSelecionado = humor;
+        }
 
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        this.humorSelector.querySelectorAll('.humor-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.humor === this.humorSelecionado);
+        });
     }
 
     handleSubmit(e) {
         e.preventDefault();
-        
         const titulo = this.tituloInput.value.trim();
         const data = this.dataInput.value;
         const conteudo = this.conteudoTextarea.value.trim();
@@ -86,14 +94,13 @@ class DiarioPessoal {
             return;
         }
 
-        const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+        const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : [];
 
         const entrada = {
             id: this.entradaEditando ? this.entradaEditando.id : this.generateId(),
-            titulo,
-            data,
-            conteudo,
-            tags,
+            titulo, data, conteudo, tags,
+            humor: this.humorSelecionado,
+            favorito: this.entradaEditando ? this.entradaEditando.favorito : false,
             criadoEm: this.entradaEditando ? this.entradaEditando.criadoEm : new Date().toISOString(),
             atualizadoEm: new Date().toISOString()
         };
@@ -106,22 +113,8 @@ class DiarioPessoal {
 
         this.resetForm();
         this.saveToStorage();
-        this.renderEntradas();
+        this.filtrarEntradas(); // Usa filtrar para manter a busca ativa
         this.showNotification('Entrada salva com sucesso!', 'success');
-    }
-
-    addEntrada(entrada) {
-        this.entradas.unshift(entrada); // Adiciona no início para mostrar as mais recentes primeiro
-    }
-
-    updateEntrada(entradaAtualizada) {
-        const index = this.entradas.findIndex(e => e.id === entradaAtualizada.id);
-        if (index !== -1) {
-            this.entradas[index] = entradaAtualizada;
-        }
-        this.entradaEditando = null;
-        this.cancelarBtn.style.display = 'none';
-        this.salvarBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Entrada';
     }
 
     editarEntrada(id) {
@@ -129,166 +122,66 @@ class DiarioPessoal {
         if (!entrada) return;
 
         this.entradaEditando = entrada;
-        
-        // Preenche o formulário
         this.tituloInput.value = entrada.titulo;
         this.dataInput.value = entrada.data;
         this.conteudoTextarea.value = entrada.conteudo;
-        this.tagsInput.value = entrada.tags.join(', ');
+        this.tagsInput.value = (entrada.tags || []).join(', ');
+        
+        this.selecionarHumor(entrada.humor || null);
 
-        // Atualiza a interface
         this.cancelarBtn.style.display = 'inline-flex';
         this.salvarBtn.innerHTML = '<i class="fas fa-edit"></i> Atualizar Entrada';
-
-        // Scroll para o formulário
-        document.querySelector('.entrada-form-section').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
-    }
-
-    excluirEntrada(id) {
-        if (!confirm('Tem certeza que deseja excluir esta entrada? Esta ação não pode ser desfeita.')) {
-            return;
-        }
-
-        this.entradas = this.entradas.filter(e => e.id !== id);
-        this.saveToStorage();
-        this.renderEntradas();
-        this.showNotification('Entrada excluída com sucesso.', 'success');
-    }
-
-    cancelarEdicao() {
-        this.entradaEditando = null;
-        this.resetForm();
-        this.cancelarBtn.style.display = 'none';
-        this.salvarBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Entrada';
+        document.querySelector('.entrada-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     resetForm() {
         this.form.reset();
         this.setDataAtual();
+        this.selecionarHumor(null);
+        this.entradaEditando = null;
+        this.cancelarBtn.style.display = 'none';
+        this.salvarBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Entrada';
     }
 
-    filtrarEntradas() {
-        const termoBusca = this.buscaInput.value.toLowerCase().trim();
-        const dataFiltro = this.filtroDataInput.value;
-
-        let entradasFiltradas = this.entradas;
-
-        // Filtro por texto
-        if (termoBusca) {
-            entradasFiltradas = entradasFiltradas.filter(entrada => {
-                return entrada.titulo.toLowerCase().includes(termoBusca) ||
-                       entrada.conteudo.toLowerCase().includes(termoBusca) ||
-                       entrada.tags.some(tag => tag.toLowerCase().includes(termoBusca));
-            });
-        }
-
-        // Filtro por data
-        if (dataFiltro) {
-            entradasFiltradas = entradasFiltradas.filter(entrada => entrada.data === dataFiltro);
-        }
-
-        this.renderEntradas(entradasFiltradas);
+    cancelarEdicao() {
+        this.resetForm();
     }
 
-    limparFiltros() {
-        this.buscaInput.value = '';
-        this.filtroDataInput.value = '';
-        this.renderEntradas();
-    }
-
-    handleFileImport(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        if (file.type !== 'application/json') {
-            this.showNotification('Formato de arquivo inválido. Por favor, selecione um arquivo .json.', 'error');
-            event.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                
-                if (!data.entradas || !Array.isArray(data.entradas)) {
-                    throw new Error('O arquivo JSON não contém um array de "entradas" válido.');
-                }
-                
-                this.mergeEntradas(data.entradas);
-
-            } catch (error) {
-                console.error("Erro ao processar o arquivo JSON:", error);
-                this.showNotification('Erro ao ler o arquivo. Verifique se o formato está correto.', 'error');
-            } finally {
-                event.target.value = '';
-            }
-        };
-
-        reader.onerror = () => {
-            this.showNotification('Ocorreu um erro ao tentar ler o arquivo.', 'error');
-            event.target.value = '';
-        };
-
-        reader.readAsText(file);
-    }
-
-    mergeEntradas(entradasImportadas) {
-        let novasEntradasCount = 0;
-        const idsExistentes = new Set(this.entradas.map(e => e.id));
-
-        entradasImportadas.forEach(entrada => {
-            if (entrada.id && entrada.titulo && entrada.data && entrada.conteudo) {
-                if (!idsExistentes.has(entrada.id)) {
-                    this.entradas.push(entrada);
-                    novasEntradasCount++;
-                }
-            }
-        });
-
-        if (novasEntradasCount > 0) {
+    toggleFavorito(id) {
+        const index = this.entradas.findIndex(e => e.id === id);
+        if (index !== -1) {
+            this.entradas[index].favorito = !this.entradas[index].favorito;
             this.saveToStorage();
-            this.loadEntradas(); // Recarrega para ordenar e renderizar
-            this.showNotification(`${novasEntradasCount} novas entradas importadas com sucesso!`, 'success');
-        } else {
-            this.showNotification('Nenhuma entrada nova para importar. As entradas do arquivo já existem no diário.', 'info');
+            this.filtrarEntradas();
         }
-    }
-
-    renderEntradas(entradas = null) {
-        const entradasParaRender = entradas || this.entradas;
-        
-        this.updateEntradasCount(entradasParaRender.length);
-
-        if (entradasParaRender.length === 0) {
-            this.listaEntradas.style.display = 'none';
-            this.semEntradas.style.display = 'block';
-            return;
-        }
-
-        this.listaEntradas.style.display = 'grid';
-        this.semEntradas.style.display = 'none';
-
-        this.listaEntradas.innerHTML = entradasParaRender.map(entrada => this.createEntradaCard(entrada)).join('');
     }
 
     createEntradaCard(entrada) {
         const dataFormatada = this.formatarData(entrada.data);
-        const tagsHtml = entrada.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+        const tagsHtml = (entrada.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('');
         
+        const humorIconClass = entrada.humor ? this.humorIconMap[entrada.humor] : '';
+        const humorHtml = humorIconClass ? `<i class="fas ${humorIconClass} entrada-humor" title="${entrada.humor}"></i>` : '';
+
+        const isFavorito = entrada.favorito;
+        const favoritoClass = isFavorito ? 'fas fa-star' : 'far fa-star';
+        const favoritoBtnClass = isFavorito ? 'favorited' : '';
+
         return `
             <div class="entrada-card" data-id="${entrada.id}">
                 <div class="entrada-header">
-                    <h3 class="entrada-titulo">${this.escapeHtml(entrada.titulo)}</h3>
+                    <div style="display: flex; align-items: center; min-width: 0;">
+                        ${humorHtml}
+                        <h3 class="entrada-titulo">${this.escapeHtml(entrada.titulo)}</h3>
+                    </div>
                     <span class="entrada-data">${dataFormatada}</span>
                 </div>
                 <div class="entrada-conteudo">${this.escapeHtml(entrada.conteudo)}</div>
                 ${(entrada.tags && entrada.tags.length > 0) ? `<div class="entrada-tags">${tagsHtml}</div>` : ''}
                 <div class="entrada-actions">
+                    <button class="btn-icon favorite ${favoritoBtnClass}" onclick="diario.toggleFavorito('${entrada.id}')" title="Favoritar entrada">
+                        <i class="${favoritoClass}"></i>
+                    </button>
                     <button class="btn-icon edit" onclick="diario.editarEntrada('${entrada.id}')" title="Editar entrada">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -299,77 +192,105 @@ class DiarioPessoal {
             </div>
         `;
     }
-
-    updateEntradasCount(count) {
-        const texto = count === 1 ? '1 entrada' : `${count} entradas`;
-        this.totalEntradas.textContent = texto;
+    
+    setDataAtual() { const hoje = new Date(); this.dataInput.value = hoje.toISOString().split('T')[0]; }
+    generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+    addEntrada(entrada) { this.entradas.unshift(entrada); }
+    updateEntrada(entradaAtualizada) {
+        const index = this.entradas.findIndex(e => e.id === entradaAtualizada.id);
+        if (index !== -1) this.entradas[index] = entradaAtualizada;
     }
-
-    formatarData(dataString) {
-        const data = new Date(dataString + 'T00:00:00');
-        return data.toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+    excluirEntrada(id) {
+        if (!confirm('Tem certeza que deseja excluir esta entrada?')) return;
+        this.entradas = this.entradas.filter(e => e.id !== id);
+        this.saveToStorage();
+        this.filtrarEntradas();
+        this.showNotification('Entrada excluída.', 'success');
     }
+    filtrarEntradas() {
+        const termoBusca = this.buscaInput.value.toLowerCase().trim();
+        const dataFiltro = this.filtroDataInput.value;
+        let entradasFiltradas = this.entradas;
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    saveToStorage() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.entradas));
-        } catch (error) {
-            console.error('Erro ao salvar no localStorage:', error);
-            this.showNotification('Erro ao salvar os dados. Verifique o espaço disponível.', 'error');
+        if (termoBusca) {
+            entradasFiltradas = entradasFiltradas.filter(e => 
+                e.titulo.toLowerCase().includes(termoBusca) ||
+                e.conteudo.toLowerCase().includes(termoBusca) ||
+                (e.tags || []).some(tag => tag.toLowerCase().includes(termoBusca))
+            );
         }
+        if (dataFiltro) {
+            entradasFiltradas = entradasFiltradas.filter(e => e.data === dataFiltro);
+        }
+        this.renderEntradas(entradasFiltradas);
     }
-
-    loadEntradas() {
-        try {
-            const dados = localStorage.getItem(this.storageKey);
-            if (dados) {
-                this.entradas = JSON.parse(dados);
-                // Ordena por data de criação (mais recentes primeiro)
-                this.entradas.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+    limparFiltros() { this.buscaInput.value = ''; this.filtroDataInput.value = ''; this.renderEntradas(); }
+    handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.type !== 'application/json') {
+            this.showNotification('Arquivo inválido. Selecione um .json.', 'error');
+            event.target.value = ''; return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data.entradas || !Array.isArray(data.entradas)) throw new Error('JSON inválido.');
+                this.mergeEntradas(data.entradas);
+            } catch (error) { this.showNotification('Erro ao ler o arquivo.', 'error'); } 
+            finally { event.target.value = ''; }
+        };
+        reader.onerror = () => { this.showNotification('Erro ao tentar ler o arquivo.', 'error'); event.target.value = ''; };
+        reader.readAsText(file);
+    }
+    mergeEntradas(entradasImportadas) {
+        let novasEntradasCount = 0;
+        const idsExistentes = new Set(this.entradas.map(e => e.id));
+        entradasImportadas.forEach(entrada => {
+            if (entrada.id && entrada.titulo && !idsExistentes.has(entrada.id)) {
+                this.entradas.push(entrada);
+                novasEntradasCount++;
             }
-            this.renderEntradas();
-        } catch (error) {
-            console.error('Erro ao carregar dados do localStorage:', error);
-            this.entradas = [];
-            this.renderEntradas();
-        }
+        });
+        if (novasEntradasCount > 0) {
+            this.saveToStorage();
+            this.loadEntradas();
+            this.showNotification(`${novasEntradasCount} novas entradas importadas!`, 'success');
+        } else { this.showNotification('Nenhuma entrada nova para importar.', 'info'); }
     }
-
-    showNotification(message, type = 'info') {
-        // Integração com o sistema de notificações existente
-        if (typeof adicionarNotificacao === 'function') {
-            const icon = type === 'success' ? 'fas fa-check-circle' : 
-                        type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
-            adicionarNotificacao(message, icon);
+    renderEntradas(entradas = this.entradas) {
+        this.updateEntradasCount(entradas.length);
+        if (entradas.length === 0) {
+            this.listaEntradas.style.display = 'none';
+            this.semEntradas.style.display = 'block';
         } else {
-            // Fallback para alert se o sistema de notificações não estiver disponível
-            alert(message);
+            this.listaEntradas.style.display = 'grid';
+            this.semEntradas.style.display = 'none';
+            this.listaEntradas.innerHTML = entradas.map(e => this.createEntradaCard(e)).join('');
         }
     }
-
-    // Método para download das entradas
+    updateEntradasCount(count) { this.totalEntradas.textContent = count === 1 ? '1 entrada' : `${count} entradas`; }
+    formatarData(dataString) { const data = new Date(dataString + 'T00:00:00'); return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });}
+    escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+    saveToStorage() { localStorage.setItem(this.storageKey, JSON.stringify(this.entradas)); }
+    loadEntradas() {
+        const dados = localStorage.getItem(this.storageKey);
+        this.entradas = dados ? JSON.parse(dados) : [];
+        this.entradas.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+        this.renderEntradas();
+    }
+    showNotification(message, type = 'info') { if (typeof adicionarNotificacao === 'function') { const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'; adicionarNotificacao(message, icon); } else { alert(message); } }
+    
     downloadEntradas() {
         if (this.entradas.length === 0) {
             this.showNotification('Não há entradas para baixar.', 'info');
             return;
         }
-
-        // Criar modal de opções de download
         this.showDownloadModal();
     }
 
     showDownloadModal() {
-        // Criar modal dinamicamente
         const modal = document.createElement('div');
         modal.className = 'download-modal-overlay';
         modal.innerHTML = `
@@ -408,40 +329,20 @@ class DiarioPessoal {
                 </div>
             </div>
         `;
-
-        // Adicionar estilos do modal
         if (!document.getElementById('download-modal-styles')) {
             const styles = document.createElement('style');
             styles.id = 'download-modal-styles';
             styles.textContent = `
-                .download-modal-overlay {
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0, 0, 0, 0.7); display: flex;
-                    justify-content: center; align-items: center; z-index: 1000;
-                }
-                .download-modal {
-                    background: #313244; border-radius: 12px; width: 90%;
-                    max-width: 500px; border: 1px solid #45475a;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                }
-                .download-modal-header {
-                    padding: 20px; border-bottom: 1px solid #45475a;
-                    display: flex; justify-content: space-between; align-items: center;
-                }
-                .download-modal-header h3 {
-                    color: #cdd6f4; margin: 0; font-size: 1.2rem;
-                    display: flex; align-items: center; gap: 10px;
-                }
+                .download-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+                .download-modal { background: #313244; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid #45475a; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+                .download-modal-header { padding: 20px; border-bottom: 1px solid #45475a; display: flex; justify-content: space-between; align-items: center; }
+                .download-modal-header h3 { color: #cdd6f4; margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
                 .modal-close { background: none; border: none; color: #a6adc8; cursor: pointer; padding: 5px; border-radius: 4px; transition: all 0.3s ease; }
                 .modal-close:hover { background: #45475a; color: #cdd6f4; }
                 .download-modal-body { padding: 20px; }
                 .download-modal-body p { color: #bac2de; margin-bottom: 20px; }
                 .download-options { display: flex; flex-direction: column; gap: 10px; }
-                .download-option {
-                    background: #45475a; border: 1px solid #585b70; border-radius: 8px;
-                    padding: 15px; cursor: pointer; transition: all 0.3s ease;
-                    display: flex; align-items: center; gap: 15px; text-align: left;
-                }
+                .download-option { background: #45475a; border: 1px solid #585b70; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 15px; text-align: left; }
                 .download-option:hover { background: #585b70; border-color: #89b4fa; transform: translateY(-2px); }
                 .download-option i { font-size: 1.5rem; color: #89b4fa; width: 30px; text-align: center; }
                 .download-option div { flex: 1; }
@@ -450,14 +351,8 @@ class DiarioPessoal {
             `;
             document.head.appendChild(styles);
         }
-
         document.body.appendChild(modal);
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     }
 
     downloadJSON() {
@@ -475,14 +370,12 @@ class DiarioPessoal {
         let conteudo = `DIÁRIO PESSOAL - SOL DE SÓTER\n`;
         conteudo += `Exportado em: ${new Date().toLocaleString('pt-BR')}\n`;
         conteudo += `Total de entradas: ${this.entradas.length}\n${'='.repeat(50)}\n\n`;
-
         this.entradas.forEach((entrada, index) => {
             conteudo += `ENTRADA ${index + 1}\n`;
             conteudo += `Título: ${entrada.titulo}\n`;
             conteudo += `Data: ${this.formatarData(entrada.data)}\n`;
-            if (entrada.tags.length > 0) {
-                conteudo += `Tags: ${entrada.tags.join(', ')}\n`;
-            }
+            if (entrada.tags && entrada.tags.length > 0) conteudo += `Tags: ${entrada.tags.join(', ')}\n`;
+            if (entrada.humor) conteudo += `Humor: ${entrada.humor}\n`;
             conteudo += `\n${entrada.conteudo}\n\n${'-'.repeat(30)}\n\n`;
         });
         this.createDownload(conteudo, `diario-pessoal-${this.getDateString()}.txt`, 'text/plain');
@@ -494,17 +387,13 @@ class DiarioPessoal {
         let conteudo = `# Diário Pessoal - Sol de Sóter\n\n`;
         conteudo += `**Exportado em:** ${new Date().toLocaleString('pt-BR')}  \n`;
         conteudo += `**Total de entradas:** ${this.entradas.length}\n\n---\n\n`;
-
         this.entradas.forEach((entrada, index) => {
             conteudo += `## ${entrada.titulo}\n\n`;
             conteudo += `**Data:** ${this.formatarData(entrada.data)}  \n`;
-            if (entrada.tags.length > 0) {
-                conteudo += `**Tags:** ${entrada.tags.map(tag => `\`${tag}\``).join(', ')}  \n`;
-            }
+            if (entrada.humor) conteudo += `**Humor:** ${entrada.humor}  \n`;
+            if (entrada.tags && entrada.tags.length > 0) conteudo += `**Tags:** ${entrada.tags.map(tag => `\`${tag}\``).join(', ')}  \n`;
             conteudo += `\n${entrada.conteudo}\n\n`;
-            if (index < this.entradas.length - 1) {
-                conteudo += `---\n\n`;
-            }
+            if (index < this.entradas.length - 1) conteudo += `---\n\n`;
         });
         this.createDownload(conteudo, `diario-pessoal-${this.getDateString()}.md`, 'text/markdown');
         document.querySelector('.download-modal-overlay')?.remove();
@@ -530,16 +419,4 @@ class DiarioPessoal {
 // Inicialização quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
     window.diario = new DiarioPessoal();
-    
-    // Atualiza o saldo global se a função estiver disponível
-    if (typeof atualizarSaldoGlobal === 'function') {
-        atualizarSaldoGlobal();
-    }
-});
-
-// Atualização automática quando há mudanças em outras abas
-window.addEventListener('storage', (event) => {
-    if (event.key === 'diario-pessoal-entradas' && window.diario) {
-        window.diario.loadEntradas();
-    }
 });
