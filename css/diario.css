@@ -4,8 +4,8 @@
 .diario-container {
     flex: 1;
     padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%; /* MODIFICADO: Ocupa a largura total */
+    margin: 0;   /* MODIFICADO: Remove a margem automática */
     background-color: #1e1e2e;
 }
 
@@ -224,10 +224,8 @@
     border-radius: 20px;
 }
 
-/* Botão de Download */
-.btn-download {
-    background: #a6e3a1;
-    color: #1e1e2e;
+/* Botão de Download e Importar */
+.btn-download, .btn-import {
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
@@ -241,10 +239,26 @@
     gap: 8px;
 }
 
+.btn-download {
+    background: #a6e3a1;
+    color: #1e1e2e;
+}
+
 .btn-download:hover {
     background: #94d3a2;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(166, 227, 161, 0.3);
+}
+
+.btn-import {
+    background: #f9e2af;
+    color: #1e1e2e;
+}
+
+.btn-import:hover {
+    background: #f3d9a1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 226, 175, 0.3);
 }
 
 .btn-download:disabled {
@@ -421,7 +435,7 @@
         justify-content: space-between;
     }
     
-    .btn-download {
+    .btn-download, .btn-import {
         padding: 6px 12px;
         font-size: 0.85rem;
     }
