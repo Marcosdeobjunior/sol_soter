@@ -32,6 +32,10 @@ class DiarioPessoal {
         this.totalEntradas = document.getElementById('total-entradas');
         this.semEntradas = document.getElementById('sem-entradas');
         this.downloadBtn = document.getElementById('download-entradas');
+
+        // Elementos de importação
+        this.importBtn = document.getElementById('import-entradas');
+        this.importFileInput = document.getElementById('import-file-input');
     }
 
     bindEvents() {
@@ -46,6 +50,10 @@ class DiarioPessoal {
 
         // Evento do botão de download
         this.downloadBtn.addEventListener('click', () => this.downloadEntradas());
+
+        // Eventos de importação
+        this.importBtn.addEventListener('click', () => this.importFileInput.click());
+        this.importFileInput.addEventListener('change', (e) => this.handleFileImport(e));
 
         // Auto-save no localStorage quando há mudanças
         window.addEventListener('storage', (e) => {
@@ -191,6 +199,66 @@ class DiarioPessoal {
         this.renderEntradas();
     }
 
+    handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.type !== 'application/json') {
+            this.showNotification('Formato de arquivo inválido. Por favor, selecione um arquivo .json.', 'error');
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!data.entradas || !Array.isArray(data.entradas)) {
+                    throw new Error('O arquivo JSON não contém um array de "entradas" válido.');
+                }
+                
+                this.mergeEntradas(data.entradas);
+
+            } catch (error) {
+                console.error("Erro ao processar o arquivo JSON:", error);
+                this.showNotification('Erro ao ler o arquivo. Verifique se o formato está correto.', 'error');
+            } finally {
+                event.target.value = '';
+            }
+        };
+
+        reader.onerror = () => {
+            this.showNotification('Ocorreu um erro ao tentar ler o arquivo.', 'error');
+            event.target.value = '';
+        };
+
+        reader.readAsText(file);
+    }
+
+    mergeEntradas(entradasImportadas) {
+        let novasEntradasCount = 0;
+        const idsExistentes = new Set(this.entradas.map(e => e.id));
+
+        entradasImportadas.forEach(entrada => {
+            if (entrada.id && entrada.titulo && entrada.data && entrada.conteudo) {
+                if (!idsExistentes.has(entrada.id)) {
+                    this.entradas.push(entrada);
+                    novasEntradasCount++;
+                }
+            }
+        });
+
+        if (novasEntradasCount > 0) {
+            this.saveToStorage();
+            this.loadEntradas(); // Recarrega para ordenar e renderizar
+            this.showNotification(`${novasEntradasCount} novas entradas importadas com sucesso!`, 'success');
+        } else {
+            this.showNotification('Nenhuma entrada nova para importar. As entradas do arquivo já existem no diário.', 'info');
+        }
+    }
+
     renderEntradas(entradas = null) {
         const entradasParaRender = entradas || this.entradas;
         
@@ -219,7 +287,7 @@ class DiarioPessoal {
                     <span class="entrada-data">${dataFormatada}</span>
                 </div>
                 <div class="entrada-conteudo">${this.escapeHtml(entrada.conteudo)}</div>
-                ${entrada.tags.length > 0 ? `<div class="entrada-tags">${tagsHtml}</div>` : ''}
+                ${(entrada.tags && entrada.tags.length > 0) ? `<div class="entrada-tags">${tagsHtml}</div>` : ''}
                 <div class="entrada-actions">
                     <button class="btn-icon edit" onclick="diario.editarEntrada('${entrada.id}')" title="Editar entrada">
                         <i class="fas fa-edit"></i>
@@ -347,108 +415,44 @@ class DiarioPessoal {
             styles.id = 'download-modal-styles';
             styles.textContent = `
                 .download-modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.7);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0, 0, 0, 0.7); display: flex;
+                    justify-content: center; align-items: center; z-index: 1000;
                 }
                 .download-modal {
-                    background: #313244;
-                    border-radius: 12px;
-                    width: 90%;
-                    max-width: 500px;
-                    border: 1px solid #45475a;
+                    background: #313244; border-radius: 12px; width: 90%;
+                    max-width: 500px; border: 1px solid #45475a;
                     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
                 }
                 .download-modal-header {
-                    padding: 20px;
-                    border-bottom: 1px solid #45475a;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
+                    padding: 20px; border-bottom: 1px solid #45475a;
+                    display: flex; justify-content: space-between; align-items: center;
                 }
                 .download-modal-header h3 {
-                    color: #cdd6f4;
-                    margin: 0;
-                    font-size: 1.2rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
+                    color: #cdd6f4; margin: 0; font-size: 1.2rem;
+                    display: flex; align-items: center; gap: 10px;
                 }
-                .modal-close {
-                    background: none;
-                    border: none;
-                    color: #a6adc8;
-                    cursor: pointer;
-                    padding: 5px;
-                    border-radius: 4px;
-                    transition: all 0.3s ease;
-                }
-                .modal-close:hover {
-                    background: #45475a;
-                    color: #cdd6f4;
-                }
-                .download-modal-body {
-                    padding: 20px;
-                }
-                .download-modal-body p {
-                    color: #bac2de;
-                    margin-bottom: 20px;
-                }
-                .download-options {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                }
+                .modal-close { background: none; border: none; color: #a6adc8; cursor: pointer; padding: 5px; border-radius: 4px; transition: all 0.3s ease; }
+                .modal-close:hover { background: #45475a; color: #cdd6f4; }
+                .download-modal-body { padding: 20px; }
+                .download-modal-body p { color: #bac2de; margin-bottom: 20px; }
+                .download-options { display: flex; flex-direction: column; gap: 10px; }
                 .download-option {
-                    background: #45475a;
-                    border: 1px solid #585b70;
-                    border-radius: 8px;
-                    padding: 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                    text-align: left;
+                    background: #45475a; border: 1px solid #585b70; border-radius: 8px;
+                    padding: 15px; cursor: pointer; transition: all 0.3s ease;
+                    display: flex; align-items: center; gap: 15px; text-align: left;
                 }
-                .download-option:hover {
-                    background: #585b70;
-                    border-color: #89b4fa;
-                    transform: translateY(-2px);
-                }
-                .download-option i {
-                    font-size: 1.5rem;
-                    color: #89b4fa;
-                    width: 30px;
-                    text-align: center;
-                }
-                .download-option div {
-                    flex: 1;
-                }
-                .download-option strong {
-                    color: #cdd6f4;
-                    display: block;
-                    font-size: 1rem;
-                    margin-bottom: 2px;
-                }
-                .download-option small {
-                    color: #a6adc8;
-                    font-size: 0.85rem;
-                }
+                .download-option:hover { background: #585b70; border-color: #89b4fa; transform: translateY(-2px); }
+                .download-option i { font-size: 1.5rem; color: #89b4fa; width: 30px; text-align: center; }
+                .download-option div { flex: 1; }
+                .download-option strong { color: #cdd6f4; display: block; font-size: 1rem; margin-bottom: 2px; }
+                .download-option small { color: #a6adc8; font-size: 0.85rem; }
             `;
             document.head.appendChild(styles);
         }
 
         document.body.appendChild(modal);
 
-        // Fechar modal ao clicar fora
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.remove();
@@ -459,18 +463,10 @@ class DiarioPessoal {
     downloadJSON() {
         const dados = {
             titulo: 'Diário Pessoal - Sol de Sóter',
-            entradas: this.entradas,
-            totalEntradas: this.entradas.length,
-            exportadoEm: new Date().toISOString(),
-            versao: '1.0'
+            entradas: this.entradas, totalEntradas: this.entradas.length,
+            exportadoEm: new Date().toISOString(), versao: '1.0'
         };
-        
-        this.createDownload(
-            JSON.stringify(dados, null, 2),
-            `diario-pessoal-${this.getDateString()}.json`,
-            'application/json'
-        );
-        
+        this.createDownload(JSON.stringify(dados, null, 2), `diario-pessoal-${this.getDateString()}.json`, 'application/json');
         document.querySelector('.download-modal-overlay')?.remove();
         this.showNotification('Arquivo JSON baixado com sucesso!', 'success');
     }
@@ -478,8 +474,7 @@ class DiarioPessoal {
     downloadTXT() {
         let conteudo = `DIÁRIO PESSOAL - SOL DE SÓTER\n`;
         conteudo += `Exportado em: ${new Date().toLocaleString('pt-BR')}\n`;
-        conteudo += `Total de entradas: ${this.entradas.length}\n`;
-        conteudo += `${'='.repeat(50)}\n\n`;
+        conteudo += `Total de entradas: ${this.entradas.length}\n${'='.repeat(50)}\n\n`;
 
         this.entradas.forEach((entrada, index) => {
             conteudo += `ENTRADA ${index + 1}\n`;
@@ -488,16 +483,9 @@ class DiarioPessoal {
             if (entrada.tags.length > 0) {
                 conteudo += `Tags: ${entrada.tags.join(', ')}\n`;
             }
-            conteudo += `\n${entrada.conteudo}\n`;
-            conteudo += `\n${'-'.repeat(30)}\n\n`;
+            conteudo += `\n${entrada.conteudo}\n\n${'-'.repeat(30)}\n\n`;
         });
-
-        this.createDownload(
-            conteudo,
-            `diario-pessoal-${this.getDateString()}.txt`,
-            'text/plain'
-        );
-        
+        this.createDownload(conteudo, `diario-pessoal-${this.getDateString()}.txt`, 'text/plain');
         document.querySelector('.download-modal-overlay')?.remove();
         this.showNotification('Arquivo de texto baixado com sucesso!', 'success');
     }
@@ -505,8 +493,7 @@ class DiarioPessoal {
     downloadMarkdown() {
         let conteudo = `# Diário Pessoal - Sol de Sóter\n\n`;
         conteudo += `**Exportado em:** ${new Date().toLocaleString('pt-BR')}  \n`;
-        conteudo += `**Total de entradas:** ${this.entradas.length}\n\n`;
-        conteudo += `---\n\n`;
+        conteudo += `**Total de entradas:** ${this.entradas.length}\n\n---\n\n`;
 
         this.entradas.forEach((entrada, index) => {
             conteudo += `## ${entrada.titulo}\n\n`;
@@ -519,13 +506,7 @@ class DiarioPessoal {
                 conteudo += `---\n\n`;
             }
         });
-
-        this.createDownload(
-            conteudo,
-            `diario-pessoal-${this.getDateString()}.md`,
-            'text/markdown'
-        );
-        
+        this.createDownload(conteudo, `diario-pessoal-${this.getDateString()}.md`, 'text/markdown');
         document.querySelector('.download-modal-overlay')?.remove();
         this.showNotification('Arquivo Markdown baixado com sucesso!', 'success');
     }
@@ -534,8 +515,7 @@ class DiarioPessoal {
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
+        a.href = url; a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
