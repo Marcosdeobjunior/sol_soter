@@ -171,14 +171,20 @@
             <section class="entradas-section">
                 <div class="entradas-header">
                     <h2>Minhas Entradas</h2>
-                    <div class="entradas-actions">
-                        <div class="entradas-count">
-                            <span id="total-entradas">0 entradas</span>
-                        </div>
-                        <button id="download-entradas" class="btn-download" title="Baixar todas as entradas">
-                            <i class="fas fa-download"></i> Download
-                        </button>
-                    </div>
+                    <<div class="entradas-actions">
+    <div class="entradas-count">
+        <span id="total-entradas">0 entradas</span>
+    </div>
+    
+    <button id="import-entradas" class="btn-import" title="Importar entradas de um arquivo JSON">
+        <i class="fas fa-upload"></i> Importar
+    </button>
+    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+    <button id="download-entradas" class="btn-download" title="Baixar todas as entradas">
+        <i class="fas fa-download"></i> Download
+    </button>
+</div>
                 </div>
                 <div id="lista-entradas" class="entradas-grid">
                     <!-- As entradas serão inseridas aqui dinamicamente -->
