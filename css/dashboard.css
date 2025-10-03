@@ -56,8 +56,11 @@
   transition: all 0.3s ease;
   cursor: pointer;
   overflow: hidden;
-  position: relative;
-}
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Garante que o widget ocupe toda a altura disponível na célula da grade */
+  box-sizing: border-box; /* Inclui padding e border no cálculo da altura */
+} 
 
 .widget:hover {
   transform: translateY(-5px);
@@ -106,10 +109,13 @@
 /* Widget Content */
 .widget-content {
   padding: 20px;
-  min-height: 80px;
+  min-height: 100px; /* Aumentado para garantir espaço suficiente e evitar redimensionamento */
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex-grow: 1;
+  overflow: hidden; /* Garante que o conteúdo não transborde */
+  height: 100%; /* Garante que o conteúdo ocupe toda a altura disponível */
 }
 
 /* Widget Footer */
@@ -117,6 +123,7 @@
   padding: 15px 20px;
   background: rgba(69, 71, 90, 0.3);
   border-top: 1px solid #45475a;
+  flex-shrink: 0; /* Impede que o footer encolha */
 }
 
 .widget-link {
@@ -708,5 +715,235 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+
+/* ===== ESTILOS PARA WIDGET BIBLIOTECA MELHORADO ===== */
+.widget-biblioteca .biblioteca-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.widget-biblioteca .stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.widget-biblioteca .stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #89b4fa;
+  margin-bottom: 5px;
+}
+
+.widget-biblioteca .stat-label {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-biblioteca .ultimo-livro {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  background: #45475a;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.widget-biblioteca .livro-capa {
+  width: 60px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.widget-biblioteca .livro-capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.widget-biblioteca .livro-detalhes {
+  flex: 1;
+  min-width: 0;
+}
+
+.widget-biblioteca .livro-detalhes h4 {
+  font-size: 1rem;
+  color: #cdd6f4;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-biblioteca .livro-detalhes p {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-biblioteca .livro-progresso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-biblioteca .progresso-bar {
+  flex: 1;
+  height: 6px;
+  background: #313244;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.widget-biblioteca .progresso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #89b4fa, #74c7ec);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.widget-biblioteca .progresso-texto {
+  font-size: 0.8rem;
+  color: #89b4fa;
+  font-weight: 600;
+  min-width: 35px;
+  text-align: right;
+}
+
+.widget-biblioteca .biblioteca-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #6c7086;
+}
+
+.widget-biblioteca .biblioteca-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.widget-biblioteca .biblioteca-empty p {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ===== ESTILOS PARA WIDGET PLANEJAMENTO ===== */
+.widget-planejamento .widget-icon-wrapper {
+  background: linear-gradient(135deg, #f38ba8, #eba0ac);
+}
+
+.widget-planejamento .widget-icon {
+  color: #1e1e2e;
+}
+
+.widget-planejamento .planejamento-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.widget-planejamento .stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.widget-planejamento .stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f38ba8;
+  margin-bottom: 5px;
+}
+
+.widget-planejamento .stat-label {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-planejamento .proxima-tarefa {
+  padding: 15px;
+  background: #45475a;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.widget-planejamento .tarefa-detalhes h4 {
+  font-size: 1rem;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-planejamento .tarefa-detalhes p {
+  font-size: 0.85rem;
+  color: #a6adc8;
+  margin-bottom: 8px;
+}
+
+.widget-planejamento .tarefa-categoria {
+  display: inline-block;
+  background: #f38ba8;
+  color: #1e1e2e;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-planejamento .planejamento-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #6c7086;
+}
+
+.widget-planejamento .planejamento-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.widget-planejamento .planejamento-empty p {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ===== RESPONSIVIDADE PARA NOVOS WIDGETS ===== */
+@media (max-width: 768px) {
+  .widget-biblioteca .ultimo-livro {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .widget-biblioteca .livro-capa {
+    align-self: center;
+  }
+  
+  .widget-biblioteca .livro-detalhes h4,
+  .widget-biblioteca .livro-detalhes p {
+    white-space: normal;
+    text-align: center;
+  }
+  
+  .widget-planejamento .tarefa-detalhes h4 {
+    white-space: normal;
   }
 }

@@ -202,7 +202,7 @@
             </div>
           </div>
 
-          <!-- Widget Biblioteca -->
+          <!-- Widget Biblioteca (MELHORADO) -->
           <div class="widget widget-biblioteca animate-slide-up delay-4" data-link="livraria.html">
             <div class="widget-header">
               <div class="widget-icon-wrapper">
@@ -211,16 +211,35 @@
               <h3>Biblioteca</h3>
             </div>
             <div class="widget-content">
-              <div class="media-atual">
-                <div class="media-info">
-                  <span class="media-tipo" id="widget-media-tipo">Livro</span>
-                  <h4 class="media-titulo" id="widget-media-titulo">O Hobbit</h4>
-                  <div class="media-progresso">
-                    <div class="progresso-bar">
-                      <div class="progresso-fill" id="widget-progresso-fill" style="width: 65%"></div>
-                    </div>
-                    <span class="progresso-texto" id="widget-progresso-texto">65%</span>
+              <div class="biblioteca-info" id="biblioteca-widget-content">
+                <div class="biblioteca-stats">
+                  <div class="stat-item">
+                    <span class="stat-number" id="total-livros">0</span>
+                    <span class="stat-label">Total de Livros</span>
                   </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="livros-lidos">0</span>
+                    <span class="stat-label">Lidos</span>
+                  </div>
+                </div>
+                <div class="ultimo-livro" id="ultimo-livro-info" style="display: none;">
+                  <div class="livro-capa">
+                    <img id="ultimo-livro-capa" src="" alt="Capa do livro" />
+                  </div>
+                  <div class="livro-detalhes">
+                    <h4 id="ultimo-livro-titulo">-</h4>
+                    <p id="ultimo-livro-autor">-</p>
+                    <div class="livro-progresso">
+                      <div class="progresso-bar">
+                        <div class="progresso-fill" id="ultimo-livro-progresso" style="width: 0%"></div>
+                      </div>
+                      <span class="progresso-texto" id="ultimo-livro-progresso-texto">0%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="biblioteca-empty" id="biblioteca-empty">
+                  <i class="fas fa-book-open"></i>
+                  <p>Nenhum livro na biblioteca</p>
                 </div>
               </div>
             </div>
@@ -229,8 +248,46 @@
             </div>
           </div>
 
+          <!-- Widget Planejamento (NOVO) -->
+          <div class="widget widget-planejamento animate-slide-up delay-5" data-link="planejamento.html">
+            <div class="widget-header">
+              <div class="widget-icon-wrapper">
+                <i class="fas fa-tasks widget-icon"></i>
+              </div>
+              <h3>Planejamento</h3>
+            </div>
+            <div class="widget-content">
+              <div class="planejamento-info" id="planejamento-widget-content">
+                <div class="planejamento-stats">
+                  <div class="stat-item">
+                    <span class="stat-number" id="total-tarefas">0</span>
+                    <span class="stat-label">Total de Tarefas</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="tarefas-pendentes">0</span>
+                    <span class="stat-label">Pendentes</span>
+                  </div>
+                </div>
+                <div class="proxima-tarefa" id="proxima-tarefa-info" style="display: none;">
+                  <div class="tarefa-detalhes">
+                    <h4 id="proxima-tarefa-titulo">-</h4>
+                    <p id="proxima-tarefa-data">-</p>
+                    <span class="tarefa-categoria" id="proxima-tarefa-categoria">-</span>
+                  </div>
+                </div>
+                <div class="planejamento-empty" id="planejamento-empty">
+                  <i class="fas fa-tasks"></i>
+                  <p>Nenhuma tarefa planejada</p>
+                </div>
+              </div>
+            </div>
+            <div class="widget-footer">
+              <span class="widget-link">Ver planejamento <i class="fas fa-arrow-right"></i></span>
+            </div>
+          </div>
+
           <!-- Widget Viagens -->
-          <div class="widget widget-viagens animate-slide-up delay-5" data-link="viagens.html">
+          <div class="widget widget-viagens animate-slide-up delay-6" data-link="viagens.html">
             <div class="widget-header">
               <div class="widget-icon-wrapper">
                 <i class="fas fa-plane-departure widget-icon"></i>
@@ -255,7 +312,7 @@
           </div>
 
           <!-- Widget Sonhos -->
-          <div class="widget widget-sonhos animate-slide-up delay-6" data-link="sonhos.html">
+          <div class="widget widget-sonhos animate-slide-up delay-7" data-link="sonhos.html">
             <div class="widget-header">
               <div class="widget-icon-wrapper">
                 <i class="fas fa-rocket widget-icon"></i>
@@ -281,7 +338,7 @@
         </div>
 
         <!-- Seção do Time (mantida) -->
-        <div class="team-section animate-slide-up delay-7">
+        <div class="team-section animate-slide-up delay-8">
           <div class="team-header">
             <img
               src="https://upload.wikimedia.org/wikipedia/pt/b/b4/Corinthians_simbolo.png"
@@ -342,7 +399,7 @@
         </div>
 
         <!-- Call to Action (mantido) -->
-        <div class="call-to-action-section animate-fade-in delay-8">
+        <div class="call-to-action-section animate-fade-in delay-9">
           <p>Quer explorar uma seção específica em detalhes?</p>
           <a href="#" class="main-cta-button"
             >Explore as Seções <i class="fas fa-arrow-right"></i
@@ -363,6 +420,7 @@
     <script src="js/script_viagens.js"></script>
     <script src="js/notificacoes.js"></script>
     <script src="js/unified-data-manager.js"></script>
+    <script src="js/dashboard-widgets.js"></script>
     <script src="js/index.js"></script>
   </body>
 </html>

@@ -469,3 +469,9 @@
         margin-right: 0;
     }
 }
+
+/* ===== FIX: Correção de Alinhamento do Dropdown de Perfil ===== */
+.profile-dropdown .dropdown-menu {
+  left: auto; /* Reseta o alinhamento à esquerda */
+  right: 0; /* Alinha o menu à direita do seu container */
+}

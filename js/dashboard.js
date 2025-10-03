@@ -6,10 +6,10 @@ class DashboardDataManager {
     this.storageKeys = {
       financeiro: 'financeiro-widget',
       diario: 'diario-pessoal-entradas',
-      livraria: 'livraria-livros',
+      livraria: 'livrosTracker', // CORRIGIDO: era 'livraria-livros'
       cinema: 'cinema-filmes',
       mangas: 'manga-list',
-      viagens: 'viagens-dados',
+      viagens: 'travels', // CORRIGIDO: era 'viagens-dados'
       sonhos: 'sonhos-objetivos'
     };
   }
@@ -106,17 +106,21 @@ class DashboardDataManager {
   // Obtém dados da biblioteca (livros, filmes, mangás)
   getBibliotecaData() {
     try {
-      // Tentar livros primeiro
+      // Tentar livros primeiro - CORRIGIDO: agora usa a chave correta
       let dados = localStorage.getItem(this.storageKeys.livraria);
       if (dados) {
         const livros = JSON.parse(dados);
-        const livroAtual = livros.find(l => l.status === 'lendo');
+        // CORRIGIDO: O formato correto é verificar se paginaAtual > 0 e não está lido
+        const livroAtual = livros.find(l => !l.lido && l.paginaAtual > 0);
         if (livroAtual) {
+          const progresso = livroAtual.totalPaginas > 0 
+            ? Math.round((livroAtual.paginaAtual / livroAtual.totalPaginas) * 100) 
+            : 0;
           return {
             mediaAtual: {
               tipo: "Livro",
               titulo: livroAtual.titulo,
-              progresso: livroAtual.progresso || 0
+              progresso: progresso
             }
           };
         }
@@ -161,35 +165,48 @@ class DashboardDataManager {
     }
   }
 
-  // Obtém dados de viagens reais
+  // Obtém dados de viagens reais - CORRIGIDO
   getViagensData() {
     try {
       const dados = localStorage.getItem(this.storageKeys.viagens);
       if (!dados) return this.getDefaultViagensData();
 
-      const viagens = JSON.parse(dados);
-      if (!Array.isArray(viagens) || viagens.length === 0) {
+      // CORRIGIDO: O formato correto é { travels: [...], lastUpdated, version }
+      const viagensData = JSON.parse(dados);
+      let viagens = [];
+      
+      // Compatibilidade com diferentes formatos
+      if (Array.isArray(viagensData)) {
+        viagens = viagensData;
+      } else if (viagensData.travels && Array.isArray(viagensData.travels)) {
+        viagens = viagensData.travels;
+      }
+
+      if (viagens.length === 0) {
         return this.getDefaultViagensData();
       }
 
       // Encontrar próxima viagem (data futura mais próxima)
       const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
       const viagensFuturas = viagens.filter(v => {
-        const dataViagem = new Date(v.dataInicio || v.data);
-        return dataViagem > hoje;
-      }).sort((a, b) => new Date(a.dataInicio || a.data) - new Date(b.dataInicio || b.data));
+        if (!v.startDate) return false;
+        const dataViagem = new Date(v.startDate);
+        return dataViagem >= hoje;
+      }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
       if (viagensFuturas.length === 0) {
         return this.getDefaultViagensData();
       }
 
       const proximaViagem = viagensFuturas[0];
-      const dataViagem = new Date(proximaViagem.dataInicio || proximaViagem.data);
+      const dataViagem = new Date(proximaViagem.startDate);
       const diasRestantes = Math.ceil((dataViagem - hoje) / (1000 * 60 * 60 * 24));
 
       return {
         proximaViagem: {
-          destino: proximaViagem.destino || proximaViagem.local || 'Destino não informado',
+          destino: proximaViagem.destination || 'Destino não informado',
           dataPartida: dataViagem.toLocaleDateString('pt-BR'),
           diasRestantes: diasRestantes
         }
@@ -499,21 +516,11 @@ class Dashboard {
     const x = e.clientX - rect.left - size / 2;
     const y = e.clientY - rect.top - size / 2;
     
-    ripple.style.cssText = `
-      position: absolute;
-      width: ${size}px;
-      height: ${size}px;
-      left: ${x}px;
-      top: ${y}px;
-      background: rgba(137, 180, 250, 0.3);
-      border-radius: 50%;
-      transform: scale(0);
-      animation: ripple 0.6s ease-out;
-      pointer-events: none;
-      z-index: 1;
-    `;
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    ripple.classList.add('ripple');
     
-    widget.style.position = 'relative';
     widget.appendChild(ripple);
     
     setTimeout(() => {
@@ -521,101 +528,16 @@ class Dashboard {
     }, 600);
   }
 
-  // Formata valores monetários
+  // Formata valor monetário
   formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   }
-
-  // Força atualização dos dados
-  forceUpdate() {
-    this.loadData();
-  }
-
-  // Método público para outras páginas dispararem atualização
-  static triggerUpdate() {
-    window.dispatchEvent(new CustomEvent('dashboardUpdate'));
-  }
 }
 
-// Utilitários para localStorage (preparação para dados reais)
-const DashboardStorage = {
-  // Salva dados no localStorage
-  saveData(key, data) {
-    try {
-      localStorage.setItem(`dashboard_${key}`, JSON.stringify(data));
-    } catch (error) {
-      console.warn('Erro ao salvar dados no localStorage:', error);
-    }
-  },
-
-  // Carrega dados do localStorage
-  loadData(key, defaultValue = null) {
-    try {
-      const data = localStorage.getItem(`dashboard_${key}`);
-      return data ? JSON.parse(data) : defaultValue;
-    } catch (error) {
-      console.warn('Erro ao carregar dados do localStorage:', error);
-      return defaultValue;
-    }
-  },
-
-  // Remove dados do localStorage
-  removeData(key) {
-    try {
-      localStorage.removeItem(`dashboard_${key}`);
-    } catch (error) {
-      console.warn('Erro ao remover dados do localStorage:', error);
-    }
-  }
-};
-
-// Adiciona CSS para animação de ripple
-const rippleCSS = `
-  @keyframes ripple {
-    to {
-      transform: scale(2);
-      opacity: 0;
-    }
-  }
-`;
-
-// Injeta CSS de animação
-const style = document.createElement('style');
-style.textContent = rippleCSS;
-document.head.appendChild(style);
-
-// Inicializa o dashboard quando o DOM estiver carregado
+// Inicializa o dashboard quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
-  // Verifica se estamos na página do dashboard
-  if (document.querySelector('.dashboard-section')) {
-    const dashboard = new Dashboard();
-    
-    // Adiciona dashboard ao objeto global para debug e acesso externo
-    window.dashboard = dashboard;
-    
-    // Adiciona método global para outras páginas dispararem atualização
-    window.updateDashboard = () => Dashboard.triggerUpdate();
-    
-    console.log('Dashboard inicializado com dados reais das páginas');
-  }
+  window.dashboard = new Dashboard();
 });
-
-// Integração com sistema de notificações (se existir)
-if (typeof window.notificationSystem !== 'undefined') {
-  // Adiciona notificações relacionadas ao dashboard
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      if (typeof addNotification === 'function') {
-        addNotification('Dashboard carregado com sucesso!', 'success');
-      }
-    }, 2000);
-  });
-}
-
-// Exporta para uso em outros módulos (se necessário)
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { Dashboard, DashboardStorage };
-}
