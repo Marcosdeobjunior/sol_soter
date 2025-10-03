@@ -132,6 +132,31 @@
           </p>
         </div>
 
+        <!-- Seção de Gerenciamento de Dados -->
+        <div class="data-management-section animate-fade-in delay-2">
+          <div class="data-management-header">
+            <h3><i class="fas fa-database"></i> Gerenciamento de Dados</h3>
+            <p>Faça backup ou restaure todos os seus dados do site</p>
+          </div>
+          <div class="data-management-actions">
+            <button id="unified-export-btn" class="data-action-btn export-btn">
+              <i class="fas fa-download"></i>
+              <div class="btn-content">
+                <span class="btn-title">Exportar Dados</span>
+                <span class="btn-subtitle">Fazer backup completo</span>
+              </div>
+            </button>
+            <button id="unified-import-btn" class="data-action-btn import-btn">
+              <i class="fas fa-upload"></i>
+              <div class="btn-content">
+                <span class="btn-title">Importar Dados</span>
+                <span class="btn-subtitle">Restaurar backup</span>
+              </div>
+            </button>
+            <input type="file" id="unified-import-file" accept=".json" style="display: none;">
+          </div>
+        </div>
+
         <div class="widgets-grid">
           <!-- Widget Financeiro -->
           <div class="widget widget-financeiro animate-slide-up delay-2" data-link="financas.html">
@@ -336,5 +361,6 @@
     <script src="js/dashboard.js"></script>
     <script src="js/script_viagens.js"></script>
     <script src="js/notificacoes.js"></script>
+    <script src="js/unified-data-manager.js"></script>
   </body>
 </html>
