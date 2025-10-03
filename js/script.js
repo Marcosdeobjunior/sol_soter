@@ -48,3 +48,48 @@ window.addEventListener('storage', (event) => {
         }
     }
 });
+
+// ADICIONE ESTE CÓDIGO AO FINAL DE js/script.js
+
+/**
+ * Busca o primeiro livro com o status "Lendo".
+ * @returns {object|null} O objeto do livro ou null se não encontrar.
+ */
+function buscarLivroAtual() {
+    try {
+        const livros = JSON.parse(localStorage.getItem('biblioteca-pessoal-livros')) || [];
+        // Encontra o primeiro livro com o status "Lendo"
+        const livroAtual = livros.find(livro => livro.status === 'Lendo');
+        return livroAtual || null;
+    } catch (error) {
+        console.error("Erro ao buscar livro atual:", error);
+        return null;
+    }
+}
+
+/**
+ * Busca a viagem planejada com a data mais próxima no futuro.
+ * @returns {object|null} O objeto da viagem ou null se não encontrar.
+ */
+function buscarProximaViagem() {
+    try {
+        const viagens = JSON.parse(localStorage.getItem('viagens-pessoais')) || [];
+        const hoje = new Date().toISOString().split('T')[0]; // Pega a data de hoje no formato YYYY-MM-DD
+
+        // Filtra por viagens "Planejada" que ainda não aconteceram
+        const viagensFuturas = viagens.filter(viagem => {
+            return viagem.status === 'Planejada' && viagem.dataInicio >= hoje;
+        });
+
+        // Ordena para encontrar a mais próxima
+        if (viagensFuturas.length > 0) {
+            viagensFuturas.sort((a, b) => new Date(a.dataInicio) - new Date(b.dataInicio));
+            return viagensFuturas[0];
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Erro ao buscar próxima viagem:", error);
+        return null;
+    }
+}
