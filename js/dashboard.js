@@ -1,44 +1,327 @@
 // ===== DASHBOARD FUNCTIONALITY =====
 
-// Dados simulados para os widgets
-const dashboardData = {
-  financeiro: {
-    saldo: 2847.50,
-    variacao: 2.5,
-    isPositiva: true
-  },
-  diario: {
-    ultimaEntrada: {
-      data: "Hoje, 15:30",
-      preview: "Hoje foi um dia produtivo. Consegui finalizar o projeto do dashboard e estou muito satisfeito com o resultado..."
-    }
-  },
-  biblioteca: {
-    mediaAtual: {
-      tipo: "Livro",
-      titulo: "O Hobbit - J.R.R. Tolkien",
-      progresso: 65
-    }
-  },
-  viagens: {
-    proximaViagem: {
-      destino: "Paris, França",
-      dataPartida: "15 de Dezembro",
-      diasRestantes: 45
-    }
-  },
-  sonhos: {
-    metaAtual: {
-      titulo: "Aprender Francês",
-      progresso: 40,
-      prazo: "Junho 2025"
+// Classe para gerenciar dados reais das outras páginas
+class DashboardDataManager {
+  constructor() {
+    this.storageKeys = {
+      financeiro: 'financeiro-widget',
+      diario: 'diario-pessoal-entradas',
+      livraria: 'livraria-livros',
+      cinema: 'cinema-filmes',
+      mangas: 'manga-list',
+      viagens: 'viagens-dados',
+      sonhos: 'sonhos-objetivos'
+    };
+  }
+
+  // Obtém dados financeiros reais
+  getFinanceiroData() {
+    try {
+      const dados = localStorage.getItem(this.storageKeys.financeiro);
+      if (!dados) return this.getDefaultFinanceiroData();
+
+      const financeiro = JSON.parse(dados);
+      const hoje = new Date();
+      let saldo = financeiro.saldoInicial || 0;
+
+      // Calcular saldo atual baseado nas transações
+      if (financeiro.transacoes && Array.isArray(financeiro.transacoes)) {
+        for (const transacao of financeiro.transacoes) {
+          const dataTransacao = new Date(transacao.data);
+          if (dataTransacao <= hoje) {
+            if (transacao.tipo === 'entrada') {
+              saldo += transacao.valor;
+            } else {
+              saldo -= transacao.valor;
+            }
+          }
+        }
+      }
+
+      // Calcular variação do dia
+      const ontem = new Date(hoje);
+      ontem.setDate(ontem.getDate() - 1);
+      
+      let saldoOntem = financeiro.saldoInicial || 0;
+      if (financeiro.transacoes && Array.isArray(financeiro.transacoes)) {
+        for (const transacao of financeiro.transacoes) {
+          const dataTransacao = new Date(transacao.data);
+          if (dataTransacao <= ontem) {
+            if (transacao.tipo === 'entrada') {
+              saldoOntem += transacao.valor;
+            } else {
+              saldoOntem -= transacao.valor;
+            }
+          }
+        }
+      }
+
+      const variacao = saldoOntem !== 0 ? ((saldo - saldoOntem) / saldoOntem) * 100 : 0;
+
+      return {
+        saldo: saldo,
+        variacao: Math.abs(variacao),
+        isPositiva: variacao >= 0
+      };
+    } catch (error) {
+      console.warn('Erro ao carregar dados financeiros:', error);
+      return this.getDefaultFinanceiroData();
     }
   }
-};
+
+  // Obtém dados do diário reais
+  getDiarioData() {
+    try {
+      const dados = localStorage.getItem(this.storageKeys.diario);
+      if (!dados) return this.getDefaultDiarioData();
+
+      const entradas = JSON.parse(dados);
+      if (!Array.isArray(entradas) || entradas.length === 0) {
+        return this.getDefaultDiarioData();
+      }
+
+      // Ordenar por data de criação (mais recente primeiro)
+      const entradasOrdenadas = entradas.sort((a, b) => 
+        new Date(b.criadoEm || b.data) - new Date(a.criadoEm || a.data)
+      );
+
+      const ultimaEntrada = entradasOrdenadas[0];
+      const dataEntrada = new Date(ultimaEntrada.criadoEm || ultimaEntrada.data);
+      const dataFormatada = this.formatarDataRelativa(dataEntrada);
+
+      return {
+        ultimaEntrada: {
+          data: dataFormatada,
+          preview: ultimaEntrada.conteudo ? 
+            ultimaEntrada.conteudo.substring(0, 80) + (ultimaEntrada.conteudo.length > 80 ? '...' : '') :
+            'Sem conteúdo disponível'
+        }
+      };
+    } catch (error) {
+      console.warn('Erro ao carregar dados do diário:', error);
+      return this.getDefaultDiarioData();
+    }
+  }
+
+  // Obtém dados da biblioteca (livros, filmes, mangás)
+  getBibliotecaData() {
+    try {
+      // Tentar livros primeiro
+      let dados = localStorage.getItem(this.storageKeys.livraria);
+      if (dados) {
+        const livros = JSON.parse(dados);
+        const livroAtual = livros.find(l => l.status === 'lendo');
+        if (livroAtual) {
+          return {
+            mediaAtual: {
+              tipo: "Livro",
+              titulo: livroAtual.titulo,
+              progresso: livroAtual.progresso || 0
+            }
+          };
+        }
+      }
+
+      // Tentar filmes
+      dados = localStorage.getItem(this.storageKeys.cinema);
+      if (dados) {
+        const filmes = JSON.parse(dados);
+        const filmeAtual = filmes.find(f => f.status === 'assistindo');
+        if (filmeAtual) {
+          return {
+            mediaAtual: {
+              tipo: "Filme",
+              titulo: filmeAtual.titulo,
+              progresso: filmeAtual.progresso || 0
+            }
+          };
+        }
+      }
+
+      // Tentar mangás
+      dados = localStorage.getItem(this.storageKeys.mangas);
+      if (dados) {
+        const mangas = JSON.parse(dados);
+        const mangaAtual = mangas.find(m => m.status === 'lendo');
+        if (mangaAtual) {
+          return {
+            mediaAtual: {
+              tipo: "Mangá",
+              titulo: mangaAtual.titulo,
+              progresso: mangaAtual.progresso || 0
+            }
+          };
+        }
+      }
+
+      return this.getDefaultBibliotecaData();
+    } catch (error) {
+      console.warn('Erro ao carregar dados da biblioteca:', error);
+      return this.getDefaultBibliotecaData();
+    }
+  }
+
+  // Obtém dados de viagens reais
+  getViagensData() {
+    try {
+      const dados = localStorage.getItem(this.storageKeys.viagens);
+      if (!dados) return this.getDefaultViagensData();
+
+      const viagens = JSON.parse(dados);
+      if (!Array.isArray(viagens) || viagens.length === 0) {
+        return this.getDefaultViagensData();
+      }
+
+      // Encontrar próxima viagem (data futura mais próxima)
+      const hoje = new Date();
+      const viagensFuturas = viagens.filter(v => {
+        const dataViagem = new Date(v.dataInicio || v.data);
+        return dataViagem > hoje;
+      }).sort((a, b) => new Date(a.dataInicio || a.data) - new Date(b.dataInicio || b.data));
+
+      if (viagensFuturas.length === 0) {
+        return this.getDefaultViagensData();
+      }
+
+      const proximaViagem = viagensFuturas[0];
+      const dataViagem = new Date(proximaViagem.dataInicio || proximaViagem.data);
+      const diasRestantes = Math.ceil((dataViagem - hoje) / (1000 * 60 * 60 * 24));
+
+      return {
+        proximaViagem: {
+          destino: proximaViagem.destino || proximaViagem.local || 'Destino não informado',
+          dataPartida: dataViagem.toLocaleDateString('pt-BR'),
+          diasRestantes: diasRestantes
+        }
+      };
+    } catch (error) {
+      console.warn('Erro ao carregar dados de viagens:', error);
+      return this.getDefaultViagensData();
+    }
+  }
+
+  // Obtém dados de sonhos reais
+  getSonhosData() {
+    try {
+      const dados = localStorage.getItem(this.storageKeys.sonhos);
+      if (!dados) return this.getDefaultSonhosData();
+
+      const sonhos = JSON.parse(dados);
+      if (!Array.isArray(sonhos) || sonhos.length === 0) {
+        return this.getDefaultSonhosData();
+      }
+
+      // Encontrar sonho em progresso com maior progresso
+      const sonhosAtivos = sonhos.filter(s => !s.concluido && s.progresso !== undefined)
+        .sort((a, b) => b.progresso - a.progresso);
+
+      if (sonhosAtivos.length === 0) {
+        return this.getDefaultSonhosData();
+      }
+
+      const sonhoAtual = sonhosAtivos[0];
+      const prazo = sonhoAtual.prazo ? new Date(sonhoAtual.prazo).toLocaleDateString('pt-BR') : 'Sem prazo definido';
+
+      return {
+        metaAtual: {
+          titulo: sonhoAtual.titulo || 'Sonho sem título',
+          progresso: sonhoAtual.progresso || 0,
+          prazo: `Meta: ${prazo}`
+        }
+      };
+    } catch (error) {
+      console.warn('Erro ao carregar dados de sonhos:', error);
+      return this.getDefaultSonhosData();
+    }
+  }
+
+  // Métodos para dados padrão
+  getDefaultFinanceiroData() {
+    return {
+      saldo: 0,
+      variacao: 0,
+      isPositiva: true
+    };
+  }
+
+  getDefaultDiarioData() {
+    return {
+      ultimaEntrada: {
+        data: "Nenhuma entrada",
+        preview: "Nenhuma entrada do diário encontrada. Que tal escrever a primeira?"
+      }
+    };
+  }
+
+  getDefaultBibliotecaData() {
+    return {
+      mediaAtual: {
+        tipo: "Mídia",
+        titulo: "Nenhuma mídia em progresso",
+        progresso: 0
+      }
+    };
+  }
+
+  getDefaultViagensData() {
+    return {
+      proximaViagem: {
+        destino: "Nenhuma viagem planejada",
+        dataPartida: "Sem data",
+        diasRestantes: 0
+      }
+    };
+  }
+
+  getDefaultSonhosData() {
+    return {
+      metaAtual: {
+        titulo: "Nenhum sonho ativo",
+        progresso: 0,
+        prazo: "Sem prazo"
+      }
+    };
+  }
+
+  // Utilitário para formatar data relativa
+  formatarDataRelativa(data) {
+    const agora = new Date();
+    const diferenca = agora - data;
+    const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
+    const horas = Math.floor(diferenca / (1000 * 60 * 60));
+    const minutos = Math.floor(diferenca / (1000 * 60));
+
+    if (dias === 0) {
+      if (horas === 0) {
+        if (minutos < 5) return 'Agora mesmo';
+        return `${minutos} min atrás`;
+      }
+      return `${horas}h atrás`;
+    } else if (dias === 1) {
+      return 'Ontem';
+    } else if (dias < 7) {
+      return `${dias} dias atrás`;
+    } else {
+      return data.toLocaleDateString('pt-BR');
+    }
+  }
+
+  // Método principal para obter todos os dados
+  getAllData() {
+    return {
+      financeiro: this.getFinanceiroData(),
+      diario: this.getDiarioData(),
+      biblioteca: this.getBibliotecaData(),
+      viagens: this.getViagensData(),
+      sonhos: this.getSonhosData()
+    };
+  }
+}
 
 // Classe principal do Dashboard
 class Dashboard {
   constructor() {
+    this.dataManager = new DashboardDataManager();
     this.initializeWidgets();
     this.setupEventListeners();
     this.loadData();
@@ -71,25 +354,36 @@ class Dashboard {
       }
     });
 
-    // Atualiza dados periodicamente (simulação)
+    // Atualiza dados periodicamente
     setInterval(() => {
-      this.updateFinanceiroWidget();
+      this.loadData();
     }, 30000); // Atualiza a cada 30 segundos
+
+    // Escuta mudanças no localStorage para atualizar em tempo real
+    window.addEventListener('storage', (e) => {
+      if (Object.values(this.dataManager.storageKeys).includes(e.key)) {
+        this.loadData();
+      }
+    });
+
+    // Escuta eventos customizados para atualizações imediatas
+    window.addEventListener('dashboardUpdate', () => {
+      this.loadData();
+    });
   }
 
-  // Carrega os dados iniciais
+  // Carrega os dados reais
   loadData() {
-    this.updateFinanceiroWidget();
-    this.updateDiarioWidget();
-    this.updateBibliotecaWidget();
-    this.updateViagensWidget();
-    this.updateSonhosWidget();
+    const dashboardData = this.dataManager.getAllData();
+    this.updateFinanceiroWidget(dashboardData.financeiro);
+    this.updateDiarioWidget(dashboardData.diario);
+    this.updateBibliotecaWidget(dashboardData.biblioteca);
+    this.updateViagensWidget(dashboardData.viagens);
+    this.updateSonhosWidget(dashboardData.sonhos);
   }
 
   // Atualiza widget financeiro
-  updateFinanceiroWidget() {
-    const data = dashboardData.financeiro;
-    
+  updateFinanceiroWidget(data) {
     // Atualiza saldo
     const saldoElement = document.getElementById('widget-saldo');
     if (saldoElement) {
@@ -100,14 +394,22 @@ class Dashboard {
     const variacaoElement = document.getElementById('widget-variacao');
     if (variacaoElement) {
       const icon = data.isPositiva ? 'fa-arrow-up' : 'fa-arrow-down';
-      const sinal = data.isPositiva ? '+' : '-';
+      const sinal = data.isPositiva ? '+' : '';
       const classe = data.isPositiva ? '' : 'negativa';
       
       variacaoElement.className = `saldo-variacao ${classe}`;
-      variacaoElement.innerHTML = `
-        <i class="fas ${icon}"></i>
-        <span>${sinal}${Math.abs(data.variacao)}% hoje</span>
-      `;
+      
+      if (data.variacao === 0) {
+        variacaoElement.innerHTML = `
+          <i class="fas fa-minus"></i>
+          <span>Sem variação hoje</span>
+        `;
+      } else {
+        variacaoElement.innerHTML = `
+          <i class="fas ${icon}"></i>
+          <span>${sinal}${data.variacao.toFixed(1)}% hoje</span>
+        `;
+      }
     }
 
     // Sincroniza com o saldo global (se existir)
@@ -117,62 +419,61 @@ class Dashboard {
   }
 
   // Atualiza widget diário
-  updateDiarioWidget() {
-    const data = dashboardData.diario.ultimaEntrada;
-    
+  updateDiarioWidget(data) {
     const dataElement = document.getElementById('widget-entrada-data');
     const previewElement = document.getElementById('widget-entrada-preview');
     
-    if (dataElement) dataElement.textContent = data.data;
-    if (previewElement) previewElement.textContent = data.preview;
+    if (dataElement) dataElement.textContent = data.ultimaEntrada.data;
+    if (previewElement) previewElement.textContent = data.ultimaEntrada.preview;
   }
 
   // Atualiza widget biblioteca
-  updateBibliotecaWidget() {
-    const data = dashboardData.biblioteca.mediaAtual;
-    
+  updateBibliotecaWidget(data) {
     const tipoElement = document.getElementById('widget-media-tipo');
     const tituloElement = document.getElementById('widget-media-titulo');
     const progressoFillElement = document.getElementById('widget-progresso-fill');
     const progressoTextoElement = document.getElementById('widget-progresso-texto');
     
-    if (tipoElement) tipoElement.textContent = data.tipo;
-    if (tituloElement) tituloElement.textContent = data.titulo;
-    if (progressoFillElement) progressoFillElement.style.width = `${data.progresso}%`;
-    if (progressoTextoElement) progressoTextoElement.textContent = `${data.progresso}%`;
+    if (tipoElement) tipoElement.textContent = data.mediaAtual.tipo;
+    if (tituloElement) tituloElement.textContent = data.mediaAtual.titulo;
+    if (progressoFillElement) progressoFillElement.style.width = `${data.mediaAtual.progresso}%`;
+    if (progressoTextoElement) progressoTextoElement.textContent = `${data.mediaAtual.progresso}%`;
   }
 
   // Atualiza widget viagens
-  updateViagensWidget() {
-    const data = dashboardData.viagens.proximaViagem;
-    
+  updateViagensWidget(data) {
     const destinoElement = document.getElementById('widget-destino');
     const dataPartidaElement = document.getElementById('widget-data-partida');
     const countdownElement = document.getElementById('widget-countdown');
     
-    if (destinoElement) destinoElement.textContent = data.destino;
-    if (dataPartidaElement) dataPartidaElement.textContent = data.dataPartida;
+    if (destinoElement) destinoElement.textContent = data.proximaViagem.destino;
+    if (dataPartidaElement) dataPartidaElement.textContent = data.proximaViagem.dataPartida;
     if (countdownElement) {
-      countdownElement.innerHTML = `
-        <i class="fas fa-clock"></i>
-        <span>${data.diasRestantes} dias</span>
-      `;
+      if (data.proximaViagem.diasRestantes > 0) {
+        countdownElement.innerHTML = `
+          <i class="fas fa-clock"></i>
+          <span>${data.proximaViagem.diasRestantes} dias</span>
+        `;
+      } else {
+        countdownElement.innerHTML = `
+          <i class="fas fa-calendar-times"></i>
+          <span>Sem viagens</span>
+        `;
+      }
     }
   }
 
   // Atualiza widget sonhos
-  updateSonhosWidget() {
-    const data = dashboardData.sonhos.metaAtual;
-    
+  updateSonhosWidget(data) {
     const tituloElement = document.getElementById('widget-meta-titulo');
     const progressoFillElement = document.getElementById('widget-meta-fill');
     const progressoTextoElement = document.getElementById('widget-meta-texto');
     const prazoElement = document.getElementById('widget-meta-prazo');
     
-    if (tituloElement) tituloElement.textContent = data.titulo;
-    if (progressoFillElement) progressoFillElement.style.width = `${data.progresso}%`;
-    if (progressoTextoElement) progressoTextoElement.textContent = `${data.progresso}%`;
-    if (prazoElement) prazoElement.textContent = `Meta: ${data.prazo}`;
+    if (tituloElement) tituloElement.textContent = data.metaAtual.titulo;
+    if (progressoFillElement) progressoFillElement.style.width = `${data.metaAtual.progresso}%`;
+    if (progressoTextoElement) progressoTextoElement.textContent = `${data.metaAtual.progresso}%`;
+    if (prazoElement) prazoElement.textContent = data.metaAtual.prazo;
   }
 
   // Navega para uma seção específica
@@ -228,37 +529,14 @@ class Dashboard {
     }).format(value);
   }
 
-  // Simula atualização de dados (para demonstração)
-  simulateDataUpdate() {
-    // Simula variação no saldo
-    const variacao = (Math.random() - 0.5) * 100; // -50 a +50
-    dashboardData.financeiro.saldo += variacao;
-    dashboardData.financeiro.variacao = (variacao / dashboardData.financeiro.saldo) * 100;
-    dashboardData.financeiro.isPositiva = variacao >= 0;
-
-    // Simula progresso na biblioteca
-    if (Math.random() > 0.7) {
-      dashboardData.biblioteca.mediaAtual.progresso = Math.min(100, 
-        dashboardData.biblioteca.mediaAtual.progresso + Math.floor(Math.random() * 5)
-      );
-    }
-
-    // Simula progresso nos sonhos
-    if (Math.random() > 0.8) {
-      dashboardData.sonhos.metaAtual.progresso = Math.min(100,
-        dashboardData.sonhos.metaAtual.progresso + Math.floor(Math.random() * 3)
-      );
-    }
-
-    // Atualiza countdown de viagem
-    if (dashboardData.viagens.proximaViagem.diasRestantes > 0) {
-      // Simula passagem do tempo (para demonstração, reduz aleatoriamente)
-      if (Math.random() > 0.9) {
-        dashboardData.viagens.proximaViagem.diasRestantes--;
-      }
-    }
-
+  // Força atualização dos dados
+  forceUpdate() {
     this.loadData();
+  }
+
+  // Método público para outras páginas dispararem atualização
+  static triggerUpdate() {
+    window.dispatchEvent(new CustomEvent('dashboardUpdate'));
   }
 }
 
@@ -315,15 +593,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.querySelector('.dashboard-section')) {
     const dashboard = new Dashboard();
     
-    // Adiciona dashboard ao objeto global para debug
+    // Adiciona dashboard ao objeto global para debug e acesso externo
     window.dashboard = dashboard;
     
-    // Simula atualizações de dados para demonstração
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      setInterval(() => {
-        dashboard.simulateDataUpdate();
-      }, 60000); // Atualiza a cada minuto em desenvolvimento
-    }
+    // Adiciona método global para outras páginas dispararem atualização
+    window.updateDashboard = () => Dashboard.triggerUpdate();
+    
+    console.log('Dashboard inicializado com dados reais das páginas');
   }
 });
 
