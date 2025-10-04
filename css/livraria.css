@@ -141,8 +141,8 @@ h2, h3 {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  height: 150px; /* Altura aumentada para melhor visualização */
-  overflow: hidden;
+  /* height: 150px; */ /* Altura aumentada para melhor visualização */
+  /* overflow: hidden; */
 }
 
 .book-item-info h4 {
@@ -152,7 +152,7 @@ h2, h3 {
   font-weight: 600;
   line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -163,9 +163,9 @@ h2, h3 {
   font-style: italic;
   font-size: 0.85rem;
   margin-bottom: 0.8rem; /* Espaço aumentado abaixo do autor */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* white-space: nowrap; */
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
 }
 
 .card-rating {
@@ -576,7 +576,7 @@ h2, h3 {
   color: #fff;
   line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -587,9 +587,9 @@ h2, h3 {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* white-space: nowrap; */
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
 }
 
 .other-books-section, .saga-section {
