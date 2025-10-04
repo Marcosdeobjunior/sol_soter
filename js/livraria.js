@@ -23,11 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // NOVOS ELEMENTOS DO DOM
   const searchInput = document.getElementById('search-input');
   const genreStatsContainer = document.getElementById('genre-stats-container');
+  
+  // NOVOS ELEMENTOS PARA FILTROS DE ORGANIZAÇÃO
+  const sortFiltersContainer = document.querySelector('.sort-filters-options');
 
   let livros = JSON.parse(localStorage.getItem('livrosTracker')) || [];
   let livroIdParaExcluir = null;
   let activeTab = 'todos'; // Aba ativa padrão
   let activeGenreFilter = 'todos'; // Filtro de gênero ativo padrão
+  let activeSortFilter = 'default'; // Filtro de organização ativo padrão
 
   // NOVO: Mapa de emojis para gêneros
   const genreEmojis = {
@@ -36,6 +40,91 @@ document.addEventListener('DOMContentLoaded', () => {
     'Mistério': '🕵️', 'Histórico': '📜', 'Biografia': '👤',
     'Autoajuda': '💡', 'Técnico': '💻', 'Clássico': '🏛️',
     'default': '📚' // Emoji padrão
+  };
+
+  // NOVO: Função para calcular duração da leitura em dias
+  const calcularDuracaoLeitura = (livro) => {
+    if (!livro.dataInicio) return 0;
+    
+    const dataInicio = new Date(livro.dataInicio);
+    let dataFim;
+    
+    if (livro.lido && livro.dataConclusao) {
+      dataFim = new Date(livro.dataConclusao);
+    } else {
+      dataFim = new Date(); // Data atual se ainda está lendo
+    }
+    
+    const diffTime = Math.abs(dataFim - dataInicio);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // NOVO: Função para ordenar livros baseado no filtro ativo
+  const ordenarLivros = (livrosArray) => {
+    const livrosCopia = [...livrosArray];
+    
+    switch (activeSortFilter) {
+      case 'title-asc':
+        return livrosCopia.sort((a, b) => a.titulo.localeCompare(b.titulo));
+      
+      case 'title-desc':
+        return livrosCopia.sort((a, b) => b.titulo.localeCompare(a.titulo));
+      
+      case 'author-asc':
+        return livrosCopia.sort((a, b) => a.autor.localeCompare(b.autor));
+      
+      case 'pages-asc':
+        return livrosCopia.sort((a, b) => a.totalPaginas - b.totalPaginas);
+      
+      case 'pages-desc':
+        return livrosCopia.sort((a, b) => b.totalPaginas - a.totalPaginas);
+      
+      case 'progress-desc':
+        return livrosCopia.sort((a, b) => {
+          const progressoA = a.totalPaginas > 0 ? (a.paginaAtual / a.totalPaginas) : 0;
+          const progressoB = b.totalPaginas > 0 ? (b.paginaAtual / b.totalPaginas) : 0;
+          return progressoB - progressoA;
+        });
+      
+      case 'start-date-desc':
+        return livrosCopia.sort((a, b) => {
+          if (!a.dataInicio && !b.dataInicio) return 0;
+          if (!a.dataInicio) return 1;
+          if (!b.dataInicio) return -1;
+          return new Date(b.dataInicio) - new Date(a.dataInicio);
+        });
+      
+      case 'start-date-asc':
+        return livrosCopia.sort((a, b) => {
+          if (!a.dataInicio && !b.dataInicio) return 0;
+          if (!a.dataInicio) return 1;
+          if (!b.dataInicio) return -1;
+          return new Date(a.dataInicio) - new Date(b.dataInicio);
+        });
+      
+      case 'end-date-desc':
+        return livrosCopia.sort((a, b) => {
+          if (!a.dataConclusao && !b.dataConclusao) return 0;
+          if (!a.dataConclusao) return 1;
+          if (!b.dataConclusao) return -1;
+          return new Date(b.dataConclusao) - new Date(a.dataConclusao);
+        });
+      
+      case 'rating-desc':
+        return livrosCopia.sort((a, b) => (b.nota || 0) - (a.nota || 0));
+      
+      case 'reading-time':
+        return livrosCopia.sort((a, b) => {
+          const duracaoA = calcularDuracaoLeitura(a);
+          const duracaoB = calcularDuracaoLeitura(b);
+          return duracaoB - duracaoA;
+        });
+      
+      case 'default':
+      default:
+        return livrosCopia.sort((a, b) => b.id - a.id); // Mais recentes primeiro
+    }
   };
 
   // NOVO: Função para atualizar o histórico de leitura
@@ -92,7 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
       listaElement.innerHTML = '<p class="no-books-message">Nenhum livro encontrado.</p>';
       return;
     }
-    livrosParaRenderizar.sort((a, b) => b.id - a.id).forEach(livro => {
+    
+    // MODIFICADO: Aplicar ordenação antes de renderizar
+    const livrosOrdenados = ordenarLivros(livrosParaRenderizar);
+    
+    livrosOrdenados.forEach(livro => {
       const li = document.createElement('li');
       li.className = 'book-item';
       li.dataset.id = livro.id;
@@ -186,6 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById(`tab-${tabId}`).classList.add('active');
     document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
     activeTab = tabId;
+    renderizarLivros();
+  };
+
+  // NOVO: Função para alternar filtro de organização
+  const switchSortFilter = (sortId) => {
+    document.querySelectorAll('.sort-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.sort-filter-btn[data-sort="${sortId}"]`).classList.add('active');
+    activeSortFilter = sortId;
     renderizarLivros();
   };
 
@@ -472,6 +573,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const button = e.target.closest('.tab-button');
       if (button) {
         switchTab(button.dataset.tab);
+      }
+    });
+  }
+  
+  // NOVO: Event listener para filtros de organização
+  if (sortFiltersContainer) {
+    sortFiltersContainer.addEventListener('click', (e) => {
+      const button = e.target.closest('.sort-filter-btn');
+      if (button) {
+        switchSortFilter(button.dataset.sort);
       }
     });
   }
