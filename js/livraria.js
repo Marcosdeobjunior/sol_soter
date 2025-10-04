@@ -33,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeGenreFilter = 'todos'; // Filtro de gênero ativo padrão
   let activeSortFilter = 'default'; // Filtro de organização ativo padrão
 
+  // NOVO: Variáveis para paginação
+  const LIVROS_POR_PAGINA = 30; // 6 colunas x 5 linhas
+  let currentPages = {
+    'todos': 1,
+    'favoritos': 1,
+    'a-ler': 1,
+    'quero-ler': 1,
+    'lido': 1,
+    'generos': 1
+  };
+
   // NOVO: Mapa de emojis para gêneros
   const genreEmojis = {
     'Fantasia': '🧙', 'Ficção Científica': '🚀', 'Romance': '💖',
@@ -127,6 +138,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // NOVO: Função para paginar livros
+  const paginarLivros = (livrosArray, pagina) => {
+    const inicio = (pagina - 1) * LIVROS_POR_PAGINA;
+    const fim = inicio + LIVROS_POR_PAGINA;
+    return livrosArray.slice(inicio, fim);
+  };
+
+  // NOVO: Função para calcular total de páginas
+  const calcularTotalPaginas = (totalLivros) => {
+    return Math.ceil(totalLivros / LIVROS_POR_PAGINA);
+  };
+
+  // NOVO: Função para renderizar controles de paginação
+  const renderizarPaginacao = (containerId, totalLivros, paginaAtual) => {
+    const container = document.getElementById(`pagination-${containerId}`);
+    if (!container) return;
+
+    const totalPaginas = calcularTotalPaginas(totalLivros);
+    
+    if (totalPaginas <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    let paginationHtml = '';
+
+    // Botão Anterior
+    paginationHtml += `
+      <button class="pagination-btn prev ${paginaAtual === 1 ? 'disabled' : ''}" 
+              data-page="${paginaAtual - 1}" data-tab="${containerId}">
+        <i class="fas fa-chevron-left"></i> Anterior
+      </button>
+    `;
+
+    // Números das páginas
+    paginationHtml += '<div class="pagination-numbers">';
+    
+    let startPage = Math.max(1, paginaAtual - 2);
+    let endPage = Math.min(totalPaginas, paginaAtual + 2);
+
+    // Ajustar para sempre mostrar 5 páginas quando possível
+    if (endPage - startPage < 4) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPaginas, startPage + 4);
+      } else if (endPage === totalPaginas) {
+        startPage = Math.max(1, endPage - 4);
+      }
+    }
+
+    // Primeira página se não estiver no range
+    if (startPage > 1) {
+      paginationHtml += `
+        <button class="pagination-btn" data-page="1" data-tab="${containerId}">1</button>
+      `;
+      if (startPage > 2) {
+        paginationHtml += '<span class="pagination-ellipsis">...</span>';
+      }
+    }
+
+    // Páginas no range
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHtml += `
+        <button class="pagination-btn ${i === paginaAtual ? 'active' : ''}" 
+                data-page="${i}" data-tab="${containerId}">${i}</button>
+      `;
+    }
+
+    // Última página se não estiver no range
+    if (endPage < totalPaginas) {
+      if (endPage < totalPaginas - 1) {
+        paginationHtml += '<span class="pagination-ellipsis">...</span>';
+      }
+      paginationHtml += `
+        <button class="pagination-btn" data-page="${totalPaginas}" data-tab="${containerId}">${totalPaginas}</button>
+      `;
+    }
+
+    paginationHtml += '</div>';
+
+    // Botão Próximo
+    paginationHtml += `
+      <button class="pagination-btn next ${paginaAtual === totalPaginas ? 'disabled' : ''}" 
+              data-page="${paginaAtual + 1}" data-tab="${containerId}">
+        Próximo <i class="fas fa-chevron-right"></i>
+      </button>
+    `;
+
+    // Info da paginação
+    const inicio = (paginaAtual - 1) * LIVROS_POR_PAGINA + 1;
+    const fim = Math.min(paginaAtual * LIVROS_POR_PAGINA, totalLivros);
+    paginationHtml += `
+      <div class="pagination-info">
+        Mostrando ${inicio}-${fim} de ${totalLivros} livros
+      </div>
+    `;
+
+    container.innerHTML = paginationHtml;
+  };
+
   // NOVO: Função para atualizar o histórico de leitura
   const atualizarHistoricoDeLeitura = (livro, paginasLidasAntes) => {
     const paginasLidasAgora = livro.paginaAtual;
@@ -175,17 +285,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (countQueroLer) countQueroLer.textContent = queroLer;
   };
 
-  const renderizarListaLivros = (listaElement, livrosParaRenderizar) => {
+  const renderizarListaLivros = (listaElement, livrosParaRenderizar, tabId) => {
     listaElement.innerHTML = '';
+    
     if (livrosParaRenderizar.length === 0) {
       listaElement.innerHTML = '<p class="no-books-message">Nenhum livro encontrado.</p>';
+      // Renderizar paginação vazia
+      renderizarPaginacao(tabId, 0, 1);
       return;
     }
     
-    // MODIFICADO: Aplicar ordenação antes de renderizar
+    // MODIFICADO: Aplicar ordenação antes de paginar
     const livrosOrdenados = ordenarLivros(livrosParaRenderizar);
     
-    livrosOrdenados.forEach(livro => {
+    // NOVO: Aplicar paginação
+    const paginaAtual = currentPages[tabId] || 1;
+    const livrosPaginados = paginarLivros(livrosOrdenados, paginaAtual);
+    
+    livrosPaginados.forEach(livro => {
       const li = document.createElement('li');
       li.className = 'book-item';
       li.dataset.id = livro.id;
@@ -209,6 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`;
       listaElement.appendChild(li);
     });
+
+    // NOVO: Renderizar controles de paginação
+    renderizarPaginacao(tabId, livrosOrdenados.length, paginaAtual);
   };
 
   const renderizarLivros = () => {
@@ -231,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
           livro.autor.toLowerCase().includes(searchTerm)
         )
       : livros;
-
 
     let livrosFiltrados = [];
 
@@ -266,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const currentListElement = document.getElementById(`lista-livros-${activeTab}`);
     if (currentListElement) {
-      renderizarListaLivros(currentListElement, livrosFiltrados);
+      renderizarListaLivros(currentListElement, livrosFiltrados, activeTab);
     }
 
     updateGenreFilters();
@@ -287,6 +406,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.sort-filter-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.sort-filter-btn[data-sort="${sortId}"]`).classList.add('active');
     activeSortFilter = sortId;
+    
+    // Reset páginas quando mudar filtro
+    Object.keys(currentPages).forEach(key => {
+      currentPages[key] = 1;
+    });
+    
+    renderizarLivros();
+  };
+
+  // NOVO: Função para mudar página
+  const mudarPagina = (tabId, novaPagina) => {
+    currentPages[tabId] = novaPagina;
     renderizarLivros();
   };
 
@@ -347,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     allButton.textContent = 'Todos';
     allButton.addEventListener('click', () => {
       activeGenreFilter = 'todos';
+      currentPages['generos'] = 1; // Reset página
       updateGenreFilters();
       renderizarLivros();
     });
@@ -358,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
       genreButton.textContent = genre;
       genreButton.addEventListener('click', () => {
         activeGenreFilter = genre;
+        currentPages['generos'] = 1; // Reset página
         updateGenreFilters();
         renderizarLivros();
       });
@@ -553,6 +686,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.closest('button, input')) return;
       popularEAbrirModalDetalhes(parseInt(card.dataset.id));
     }
+
+    // NOVO: Event listener para botões de paginação
+    const paginationBtn = e.target.closest('.pagination-btn');
+    if (paginationBtn && !paginationBtn.classList.contains('disabled')) {
+      const page = parseInt(paginationBtn.dataset.page);
+      const tab = paginationBtn.dataset.tab;
+      if (page && tab) {
+        mudarPagina(tab, page);
+      }
+    }
   });
 
   detailsNotaStars.addEventListener('click', (e) => {
@@ -589,7 +732,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // NOVO: Event listener para a barra de pesquisa
   if (searchInput) {
-    searchInput.addEventListener('input', renderizarLivros);
+    searchInput.addEventListener('input', () => {
+      // Reset páginas quando pesquisar
+      Object.keys(currentPages).forEach(key => {
+        currentPages[key] = 1;
+      });
+      renderizarLivros();
+    });
   }
 
   // Inicialização

@@ -74,8 +74,10 @@ h2, h3 {
   list-style-type: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(6, 1fr); /* Exatamente 6 colunas */
+  grid-template-rows: repeat(5, 1fr); /* Exatamente 5 linhas */
   gap: 1.5rem;
+  min-height: 1800px; /* Altura fixa para manter consistência */
 }
 
 .book-item {
@@ -1527,5 +1529,135 @@ h2, h3 {
   
   .sort-filters-header {
     font-size: 1rem;
+  }
+}
+
+/* =============================================
+   CONTROLES DE PAGINAÇÃO
+   ============================================= */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  text-decoration: none;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+}
+
+.pagination-btn.prev i,
+.pagination-btn.next i {
+  font-size: 0.8rem;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Responsividade para paginação */
+@media (max-width: 768px) {
+  .pagination-container {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .pagination-btn {
+    min-width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
+  }
+  
+  .pagination-info {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas em mobile */
+    grid-template-rows: repeat(15, 1fr); /* 15 linhas para manter 30 livros */
+    min-height: 4500px;
+  }
+  
+  .pagination-btn {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .book-list {
+    grid-template-columns: repeat(3, 1fr); /* 3 colunas em tablet */
+    grid-template-rows: repeat(10, 1fr); /* 10 linhas para manter 30 livros */
+    min-height: 3000px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .book-list {
+    grid-template-columns: repeat(4, 1fr); /* 4 colunas em tablet grande */
+    grid-template-rows: repeat(8, 1fr); /* 8 linhas para aproximar 30 livros */
+    min-height: 2400px;
   }
 }
