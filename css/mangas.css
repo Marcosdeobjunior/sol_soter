@@ -136,51 +136,65 @@ h2, h3 {
   transition: width 0.5s ease;
 }
 
-.book-item-info {
-  padding: 1rem;
+/* Em mangas.css - SUBSTITUA AS REGRAS ANTIGAS POR ESTAS */
+
+.book-item {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  height: 150px; /* Altura aumentada para melhor visualização */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
   overflow: hidden;
+  border: 1px solid #e9ecef;
+  /* A altura fixa garante que todos os cards tenham o mesmo tamanho */
+  height: 350px; 
+}
+
+.book-item-info {
+  padding: 1rem;
+  /* Habilita o layout flexível na vertical */
+  display: flex;
+  flex-direction: column; 
+  /* Faz esta área ocupar todo o espaço restante no card */
+  flex-grow: 1; 
+  /* Garante que a altura fixa seja respeitada, escondendo qualquer excesso raro */
+  overflow: hidden; 
 }
 
 .book-item-info h4 {
-  margin: 0 0 1.2rem 0; /* Espaço aumentado entre título e autor */
+  margin: 0 0 0.25rem 0; /* Margem inferior reduzida */
   color: #2c3e50;
   font-size: 1rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2; /* Limita em 2 linhas */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* ESTE É O NOVO CÓDIGO QUE VOCÊ DEVE COLOCAR NO LUGAR */
 
 .book-item-info .autor {
   color: #7f8c8d;
   font-style: italic;
   font-size: 0.85rem;
-  margin-bottom: 1rem; /* Espaço aumentado abaixo do autor */
-
-  /* A linha "white-space: nowrap;" foi removida para permitir a quebra de linha. */
-
-  /* As propriedades abaixo garantem que, mesmo com quebra de linha, o nome não ultrapasse 2 linhas. */
+  margin-bottom: 0.5rem; /* Margem inferior reduzida */
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limita em 2 linhas */
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 .card-rating {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem; /* Margem inferior ajustada */
   color: #ffd700;
   font-size: 0.9rem;
 }
+
 .card-rating .fa-regular {
   color: #ced4da;
 }
@@ -189,7 +203,11 @@ h2, h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  margin-top: auto;
+  
+  /* === A MÁGICA ACONTECE AQUI === */
+  /* Esta propriedade empurra as tags para o final do container, */
+  /* criando um espaço flexível que se ajusta ao conteúdo acima. */
+  margin-top: auto; 
 }
 
 .genre-tag {
@@ -1428,8 +1446,3 @@ h2, h3 {
     flex-direction: column;
   }
 }
-
-
-
-
-
