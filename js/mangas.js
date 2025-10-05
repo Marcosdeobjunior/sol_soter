@@ -98,13 +98,23 @@ document.addEventListener('DOMContentLoaded', () => {
       li.className = 'book-item';
       li.dataset.id = manga.id;
       const percentual = manga.totalPaginas > 0 ? ((manga.paginaAtual / manga.totalPaginas) * 100).toFixed(0) : 0;
+      
       let generosArray = [];
       if (Array.isArray(manga.generos)) {
         generosArray = manga.generos;
       } else if (typeof manga.generos === 'string' && manga.generos) {
-        generosArray = manga.generos.split(',').map(g => g.trim());
+        generosArray = manga.generos.split(',').map(g => g.trim()).filter(Boolean);
       }
-      const generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      
+      let generosHtml;
+      if (generosArray.length > 2) {
+        // Se houver mais de dois gêneros, exibe os dois primeiros e adiciona "..."
+        generosHtml = generosArray.slice(0, 2).map(g => `<span class="genre-tag">${g}</span>`).join('') + '<span class="genre-tag">...</span>';
+      } else {
+        // Caso contrário, exibe todos os gêneros
+        generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      }
+
       li.innerHTML = `<div class="book-item-cover" style="background-image: url('${manga.capaUrl || 'img/default_cover.png'}');">
           ${manga.isFavorite ? '<i class="fas fa-star favorite-icon"></i>' : ''}
           <div class="progress-bar-overlay"><div class="progress-overlay" style="width: ${percentual}%;">${percentual > 10 ? percentual + '%' : ''}</div></div>
