@@ -146,7 +146,7 @@ h2, h3 {
 }
 
 .book-item-info h4 {
-  margin: 0 0 1rem 0; /* Espaço aumentado entre título e autor */
+  margin: 0 0 1.2rem 0; /* Espaço aumentado entre título e autor */
   color: #2c3e50;
   font-size: 1rem;
   font-weight: 600;
@@ -1428,6 +1428,7 @@ h2, h3 {
     flex-direction: column;
   }
 }
+
 
 
 
