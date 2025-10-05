@@ -164,7 +164,6 @@ h2, h3 {
   color: #7f8c8d;
   font-style: italic;
   font-size: 0.85rem;
-  margin-bottom: 0.9rem; /* Espaço aumentado abaixo do autor */
 
   /* A linha "white-space: nowrap;" foi removida para permitir a quebra de linha. */
 
@@ -1428,4 +1427,5 @@ h2, h3 {
     flex-direction: column;
   }
 }
+
 
