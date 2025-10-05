@@ -1,0 +1,375 @@
+/* =============================================
+   NOVOS ESTILOS PARA DROPDOWN DE ORGANIZAÇÃO
+   ============================================= */
+
+.search-and-sort-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.search-bar-container {
+  position: relative;
+  flex: 1;
+}
+
+.sort-dropdown-container {
+  position: relative;
+  min-width: 200px;
+}
+
+.sort-dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 25px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sort-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sort-dropdown-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown-btn i {
+  transition: transform 0.3s ease;
+}
+
+.sort-dropdown-btn.active i {
+  transform: rotate(180deg);
+}
+
+.sort-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #2a2d3a;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.sort-dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.sort-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sort-option.active {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: #fff;
+}
+
+.sort-option i {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  min-width: 16px;
+}
+
+.sort-option.active i {
+  opacity: 1;
+}
+
+/* Scrollbar personalizada para o dropdown */
+.sort-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sort-dropdown-menu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sort-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.sort-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* =============================================
+   MELHORIAS NA PAGINAÇÃO
+   ============================================= */
+
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pagination-range {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.pagination-total {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* =============================================
+   MELHORIAS NOS GÊNEROS COM EMOJIS
+   ============================================= */
+
+.genre-stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.genre-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.genre-stat-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.genre-emoji {
+  font-size: 1.5rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.genre-info {
+  flex: 1;
+}
+
+.genre-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.genre-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.genre-count .count-number {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+/* =============================================
+   RESPONSIVIDADE PARA NOVOS ELEMENTOS
+   ============================================= */
+
+@media (max-width: 768px) {
+  .search-and-sort-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .sort-dropdown-container {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .pagination-container {
+    padding: 0.5rem;
+  }
+  
+  .pagination-info {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .genre-stats-container {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .genre-stat-item {
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .genre-emoji {
+    font-size: 1.2rem;
+  }
+  
+  .genre-name {
+    font-size: 0.8rem;
+  }
+  
+  .genre-count {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sort-dropdown-btn {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .sort-option {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .pagination-info {
+    font-size: 0.75rem;
+  }
+  
+  .genre-stats-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =============================================
+   ANIMAÇÕES E TRANSIÇÕES
+   ============================================= */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sort-dropdown-menu.show {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.genre-stat-item {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.genre-stat-item:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.genre-stat-item:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+/* =============================================
+   ESTADOS DE LOADING E EMPTY
+   ============================================= */
+
+.pagination-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.pagination-loading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.genre-stats-empty {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.genre-stats-empty i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.genre-stats-empty p {
+  font-size: 0.9rem;
+  margin: 0;
+}

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/financas.css" />
     <link rel="stylesheet" href="css/style_viagens.css" />
     <link rel="stylesheet" href="css/livraria.css" />
+    <link rel="stylesheet" href="css/livraria_new_styles.css" />
     <link rel="stylesheet" href="css/notificacoes.css">
     <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
 
@@ -152,70 +153,72 @@
           </div>
         </div>
 
-        <div class="search-bar-container">
-          <i class="fas fa-search search-icon"></i>
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Pesquisar por título ou autor..."
-          />
-        </div>
-
-        <!-- Nova seção de filtros de organização -->
-        <div class="sort-filters-container">
-          <div class="sort-filters-header">
-            <i class="fas fa-sort"></i>
-            <span>Organizar por:</span>
+        <div class="search-and-sort-container">
+          <div class="search-bar-container">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Pesquisar por título ou autor..."
+            />
           </div>
-          <div class="sort-filters-options">
-            <button class="sort-filter-btn active" data-sort="default">
-              <i class="fas fa-clock"></i>
-              Mais recentes
+          
+          <!-- Botão dropdown de organização -->
+          <div class="sort-dropdown-container">
+            <button class="sort-dropdown-btn" id="sort-dropdown-btn">
+              <span id="sort-current-text">Mais recentes</span>
+              <i class="fas fa-chevron-down"></i>
             </button>
-            <button class="sort-filter-btn" data-sort="title-asc">
-              <i class="fas fa-sort-alpha-down"></i>
-              Título (A-Z)
-            </button>
-            <button class="sort-filter-btn" data-sort="title-desc">
-              <i class="fas fa-sort-alpha-up"></i>
-              Título (Z-A)
-            </button>
-            <button class="sort-filter-btn" data-sort="author-asc">
-              <i class="fas fa-user"></i>
-              Autor (A-Z)
-            </button>
-            <button class="sort-filter-btn" data-sort="pages-asc">
-              <i class="fas fa-book-open"></i>
-              Menos páginas
-            </button>
-            <button class="sort-filter-btn" data-sort="pages-desc">
-              <i class="fas fa-book"></i>
-              Mais páginas
-            </button>
-            <button class="sort-filter-btn" data-sort="progress-desc">
-              <i class="fas fa-chart-line"></i>
-              Maior progresso
-            </button>
-            <button class="sort-filter-btn" data-sort="start-date-desc">
-              <i class="fas fa-calendar-plus"></i>
-              Data início (recente)
-            </button>
-            <button class="sort-filter-btn" data-sort="start-date-asc">
-              <i class="fas fa-calendar-minus"></i>
-              Data início (antiga)
-            </button>
-            <button class="sort-filter-btn" data-sort="end-date-desc">
-              <i class="fas fa-calendar-check"></i>
-              Data término (recente)
-            </button>
-            <button class="sort-filter-btn" data-sort="rating-desc">
-              <i class="fas fa-star"></i>
-              Melhor avaliação
-            </button>
-            <button class="sort-filter-btn" data-sort="reading-time">
-              <i class="fas fa-stopwatch"></i>
-              Duração da leitura
-            </button>
+            <div class="sort-dropdown-menu" id="sort-dropdown-menu">
+              <button class="sort-option active" data-sort="default">
+                <i class="fas fa-clock"></i>
+                Mais recentes
+              </button>
+              <button class="sort-option" data-sort="title-asc">
+                <i class="fas fa-sort-alpha-down"></i>
+                Título (A-Z)
+              </button>
+              <button class="sort-option" data-sort="title-desc">
+                <i class="fas fa-sort-alpha-up"></i>
+                Título (Z-A)
+              </button>
+              <button class="sort-option" data-sort="author-asc">
+                <i class="fas fa-user"></i>
+                Autor (A-Z)
+              </button>
+              <button class="sort-option" data-sort="pages-asc">
+                <i class="fas fa-book-open"></i>
+                Menos páginas
+              </button>
+              <button class="sort-option" data-sort="pages-desc">
+                <i class="fas fa-book"></i>
+                Mais páginas
+              </button>
+              <button class="sort-option" data-sort="progress-desc">
+                <i class="fas fa-chart-line"></i>
+                Maior progresso
+              </button>
+              <button class="sort-option" data-sort="start-date-desc">
+                <i class="fas fa-calendar-plus"></i>
+                Data início (recente)
+              </button>
+              <button class="sort-option" data-sort="start-date-asc">
+                <i class="fas fa-calendar-minus"></i>
+                Data início (antiga)
+              </button>
+              <button class="sort-option" data-sort="end-date-desc">
+                <i class="fas fa-calendar-check"></i>
+                Data término (recente)
+              </button>
+              <button class="sort-option" data-sort="rating-desc">
+                <i class="fas fa-star"></i>
+                Melhor avaliação
+              </button>
+              <button class="sort-option" data-sort="reading-time">
+                <i class="fas fa-stopwatch"></i>
+                Duração da leitura
+              </button>
+            </div>
           </div>
         </div>
 
@@ -509,9 +512,10 @@
     </footer>
     <script src="js/saldo-global.js"></script>
     <script src="js/script.js"></script>
-    <script src="js/script_viagens.js"></script>
-    <script src="js/quotes.js"></script>
+      <script src="js/livraria.js"></script>
+    <script src="js/livraria_new_features.js"></script>
     <script src="js/reading-stats.js"></script>
-    <script src="js/livraria.js"></script>
+    <script src="js/quotes.js"></script>
+    <script src="js/notificacoes.js"></script>
   </body>
 </html>
