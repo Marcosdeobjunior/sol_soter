@@ -153,7 +153,7 @@ function atualizarWidgetPlanejamento() {
             
             tituloEl.textContent = proximaTarefa.titulo;
             
-            const dataFormatada = new Date(proximaTarefa.data).toLocaleDateString('pt-BR');
+                      const dataFormatada = new Date(proximaTarefa.data + 'T00:00:00').toLocaleDateString('pt-BR', { timeZone: 'UTC' });
             dataEl.textContent = dataFormatada;
             
             // Mapear categorias

@@ -361,13 +361,7 @@ class Dashboard {
     Object.keys(this.widgets).forEach(widgetKey => {
       const widget = this.widgets[widgetKey];
       if (widget) {
-        widget.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.navigateToSection(widget.dataset.link);
-        });
-
-        // Adiciona efeito de ripple no clique
-        widget.addEventListener('mousedown', this.createRippleEffect);
+ 
       }
     });
 
@@ -493,40 +487,9 @@ class Dashboard {
     if (prazoElement) prazoElement.textContent = data.metaAtual.prazo;
   }
 
-  // Navega para uma seção específica
-  navigateToSection(link) {
-    if (link && link !== '#') {
-      // Adiciona uma pequena animação antes de navegar
-      const widget = event.currentTarget;
-      widget.style.transform = 'scale(0.95)';
-      
-      setTimeout(() => {
-        window.location.href = link;
-      }, 150);
-    }
-  }
 
-  // Cria efeito ripple no clique
-  createRippleEffect(e) {
-    const widget = e.currentTarget;
-    const rect = widget.getBoundingClientRect();
-    const ripple = document.createElement('div');
-    
-    const size = Math.max(rect.width, rect.height);
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
-    
-    ripple.style.width = ripple.style.height = `${size}px`;
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
-    ripple.classList.add('ripple');
-    
-    widget.appendChild(ripple);
-    
-    setTimeout(() => {
-      ripple.remove();
-    }, 600);
-  }
+
+
 
   // Formata valor monetário
   formatCurrency(value) {

@@ -44,13 +44,62 @@ document.addEventListener('DOMContentLoaded', () => {
     'generos': 1
   };
 
-  // NOVO: Mapa de emojis para gêneros
+  // NOVO E MELHORADO: "Banco de Dados" de Emojis para Gêneros
+  // Para adicionar um novo gênero, basta incluir uma nova linha no formato:
+  // 'Nome do Gênero': '📧',
   const genreEmojis = {
-    'Fantasia': '🧙', 'Ficção Científica': '🚀', 'Romance': '💖',
-    'Suspense': '🔪', 'Terror': '👻', 'Aventura': '🗺️',
-    'Mistério': '🕵️', 'Histórico': '📜', 'Biografia': '👤',
-    'Autoajuda': '💡', 'Técnico': '💻', 'Clássico': '🏛️',
-    'default': '📚' // Emoji padrão
+    // Ficção
+    'Fantasia': '🧙',
+    'Ficção Cientifica': '🚀',
+    'Ficção': '🌟',
+    'Aventura': '🗺️',
+    'Distopia': '🌆',
+    'Mistério': '🕵️',
+    'Policial': '🚓',
+    'Crime': '⚖️',
+    'Suspense': '🔪',
+    'Terror': '👻',
+    'Romance': '💖',
+    'Comédia Romantica': '👩‍❤️‍💋‍👨',
+    'Clássico': '🏛️',
+    'Drama': '🎭',
+    'Comédia': '😂',
+    'Sátira': '😏',
+    'Infantil': '🧸',
+    'Juvenil': '🧑',
+    'Ação': '💣',
+    'Medieval': '⚔️',
+    'Detetives': '🔍',
+    'Thriller': '😱',
+    'Viagem no Tempo': '⏳',
+    
+    
+    // Não-Ficção
+    'Histórico': '📜',
+    'Biografia': '👤',
+    'Autobiografia': '✍️',
+    'Autoajuda': '💡',
+    'Desenvolvimento Pessoal': '📈',
+    'Técnico': '💻',
+    'Ciência': '🔬',
+    'Filosofia': '🤔',
+    'Psicologia': '🧠',
+    'Política': '🏛️',
+    'Espiritualidade': '🙏',
+    'Religião': '⛪',
+    'Viagem': '✈️',
+    'Literatura Antiga': '📜',
+    'Economia Política': '📊',
+    'Culinária': '🍳',
+
+    // Outros
+    'Poesia': '✒️',
+    'Contos': '📖',
+    'Crônicas': '📰',
+    'Guerra': '⚔️',
+    
+    // Emoji padrão para qualquer gênero não listado acima
+    'default': '📚' 
   };
 
   // NOVO: Função para calcular duração da leitura em dias

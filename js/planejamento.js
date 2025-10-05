@@ -434,7 +434,7 @@ class TaskPlanner {
         
         if (item.date) {
             const taskDate = new Date(item.date + 'T00:00:00');
-            formattedDate = taskDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            formattedDate = taskDate.toLocaleDateString("pt-BR");
         }
         
         const categoryLabels = { 
