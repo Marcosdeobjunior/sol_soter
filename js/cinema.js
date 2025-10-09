@@ -1,486 +1,803 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Elementos do DOM ---
-    const fab = document.getElementById('fab-add-item');
-    const addModal = document.getElementById('add-item-modal');
-    const detailsModal = document.getElementById('details-modal');
-    const closeBtn = addModal.querySelector('.close-button');
-    const detailsCloseBtn = detailsModal.querySelector('.details-close');
-    const modalForm = document.getElementById('modal-form');
-    const itemTypeSelect = document.getElementById('item-type');
-    const seriesAnimeFields = document.getElementById('series-anime-fields');
-    const tabsContainer = document.getElementById('tabs-container');
-    const searchBar = document.getElementById('search-bar');
-    const genresContainer = document.getElementById('genres-summary-container');
+  // Elementos do DOM existentes
+  const addBookModal = document.getElementById('add-book-modal');
+  const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+  const bookDetailsModal = document.getElementById('book-details-modal');
+  const addBookForm = document.getElementById('add-book-form');
+  const openAddBookModalBtn = document.getElementById('open-add-book-modal-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const saveChangesBtn = document.getElementById('save-changes-btn');
+  const toggleFavoriteBtn = document.getElementById('toggle-favorite-btn');
+  const deleteFromDetailsBtn = document.getElementById('delete-from-details-btn');
+  const closeButtons = document.querySelectorAll('.close-btn');
+  const detailsNotaStars = document.getElementById('details-nota-stars');
+
+  // Novos elementos do DOM para contadores e abas
+  const countALer = document.getElementById('count-para-assistir');
+  const countAssistido = document.getElementById('count-assistido');
+  const countQueroLer = document.getElementById('count-quero-assistir');
+  const tabsNav = document.querySelector('.tabs-nav');
+  const generosFilterContainer = document.getElementById('generos-filter-container');
+
+  // NOVOS ELEMENTOS DO DOM
+  const searchInput = document.getElementById('search-input');
+  const genreStatsContainer = document.getElementById('genre-stats-container');
+  
+  // NOVOS ELEMENTOS PARA FILTROS DE ORGANIZAÇÃO
+  const sortFiltersContainer = document.querySelector('.sort-filters-options');
+
+  let filmes = JSON.parse(localStorage.getItem('filmesTracker')) || [];
+  let filmeIdParaExcluir = null;
+  let activeTab = 'todos'; // Aba ativa padrão
+  let activeGenreFilter = 'todos'; // Filtro de gênero ativo padrão
+  let activeSortFilter = 'default'; // Filtro de organização ativo padrão
+
+  // NOVO: Variáveis para paginação
+  const LIVROS_POR_PAGINA = 30; // 6 colunas x 5 linhas
+  let currentPages = {
+    'todos': 1,
+    'favoritos': 1,
+    'para-assistir': 1,
+    'quero-assistir': 1,
+    'assistido': 1,
+    'generos': 1
+  };
+
+  // NOVO E MELHORADO: "Banco de Dados" de Emojis para Gêneros
+  // Para adicionar um novo gênero, basta incluir uma nova linha no formato:
+  // 'Nome do Gênero': '📧',
+  const genreEmojis = {
+    // Ficção
+    'Fantasia': '🧙',
+    'Ficção Cientifica': '🚀',
+    'Ficção': '🌟',
+    'Aventura': '🗺️',
+    'Distopia': '🌆',
+    'Mistério': '🕵️',
+    'Policial': '🚓',
+    'Crime': '⚖️',
+    'Suspense': '🔪',
+    'Terror': '👻',
+    'Romance': '💖',
+    'Comédia Romantica': '👩‍❤️‍💋‍👨',
+    'Clássico': '🏛️',
+    'Drama': '🎭',
+    'Comédia': '😂',
+    'Sátira': '😏',
+    'Infantil': '🧸',
+    'Juvenil': '🧑',
+    'Ação': '💣',
+    'Medieval': '⚔️',
+    'Detetives': '🔍',
+    'Thriller': '😱',
+    'Viagem no Tempo': '⏳',
     
-    let currentFilter = 'movies';
-    let currentGenreFilter = null;
-    let editingItemId = null;
-
-    // --- Lógica de Modais e Eventos ---
     
-    function resetAddModal() {
-        editingItemId = null;
-        modalForm.reset();
-        document.querySelector('#add-item-modal h2').textContent = 'Adicionar Novo Item';
-        document.querySelector('#modal-form button[type="submit"]').textContent = 'Salvar Item';
-        seriesAnimeFields.style.display = 'none';
-    }
+    // Não-Ficção
+    'Histórico': '📜',
+    'Biografia': '👤',
+    'Autobiografia': '✍️',
+    'Autoajuda': '💡',
+    'Desenvolvimento Pessoal': '📈',
+    'Técnico': '💻',
+    'Ciência': '🔬',
+    'Filosofia': '🤔',
+    'Psicologia': '🧠',
+    'Política': '🏛️',
+    'Espiritualidade': '🙏',
+    'Religião': '⛪',
+    'Viagem': '✈️',
+    'Literatura Antiga': '📜',
+    'Economia Política': '📊',
+    'Culinária': '🍳',
 
-    fab.addEventListener('click', () => {
-        resetAddModal();
-        addModal.style.display = 'block';
-    });
+    // Outros
+    'Poesia': '✒️',
+    'Contos': '📖',
+    'Crônicas': '📰',
+    'Guerra': '⚔️',
     
-    const closeModal = () => {
-        addModal.style.display = 'none';
-        resetAddModal();
-    };
+    // Emoji padrão para qualquer gênero não listado acima
+    'default': '📚' 
+  };
 
-    closeBtn.addEventListener('click', closeModal);
-    detailsCloseBtn.addEventListener('click', () => detailsModal.style.display = 'none');
-    window.addEventListener('click', (event) => {
-        if (event.target === addModal) closeModal();
-        if (event.target === detailsModal) detailsModal.style.display = 'none';
-    });
-    itemTypeSelect.addEventListener('change', () => {
-        const selectedType = itemTypeSelect.value;
-        seriesAnimeFields.style.display = (selectedType === 'series' || selectedType === 'animes') ? 'flex' : 'none';
-    });
-    modalForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (editingItemId) {
-            updateItem();
-        } else {
-            addItem();
-        }
-        addModal.style.display = 'none';
-    });
-    tabsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('tab-link')) {
-            currentFilter = e.target.getAttribute('data-filter');
-            
-            if (currentGenreFilter) {
-                currentGenreFilter = null;
-                const activeGenreTag = document.querySelector('.genre-tag.active');
-                if (activeGenreTag) activeGenreTag.classList.remove('active');
-            }
-
-            document.querySelector('.tab-link.active').classList.remove('active');
-            e.target.classList.add('active');
-            displayItems();
-        }
-    });
-
-    genresContainer.addEventListener('click', (e) => {
-        const targetTag = e.target.closest('.genre-tag');
-        if (!targetTag) return;
-
-        const genre = targetTag.dataset.genre;
-        
-        const activeTab = document.querySelector('.tab-link.active');
-        if (activeTab) activeTab.classList.remove('active');
-        
-        document.querySelectorAll('.genre-tag.active').forEach(t => t.classList.remove('active'));
-
-        if (currentGenreFilter === genre) {
-            currentGenreFilter = null;
-            document.querySelector('.tab-link[data-filter="movies"]').classList.add('active');
-            currentFilter = 'movies';
-        } else {
-            currentGenreFilter = genre;
-            targetTag.classList.add('active');
-            currentFilter = 'all'; 
-        }
-        displayItems();
-    });
-
-    searchBar.addEventListener('input', displayItems);
-
-    // --- Funções de CRUD ---
-    function addItem() {
-        const category = document.getElementById('item-type').value;
-        const title = document.getElementById('item-title').value.trim();
-        if (!category || !title) {
-            alert("Por favor, selecione um tipo e preencha o título.");
-            return;
-        }
-        const item = {
-            id: Date.now(),
-            category: category,
-            title: title,
-            author: document.getElementById('item-author').value.trim(),
-            status: document.getElementById('item-status').value,
-            genre: document.getElementById('item-genre').value.trim(),
-            rating: document.getElementById('item-rating').value ? parseFloat(document.getElementById('item-rating').value).toFixed(1) : 'N/A',
-            isFavorite: document.getElementById('item-favorite').checked,
-            posterUrl: document.getElementById('item-poster').value.trim(),
-            summary: document.getElementById('item-summary').value.trim(),
-            actors: document.getElementById('item-actors').value.trim(),
-            seasons: document.getElementById('item-seasons').value,
-            episodes: document.getElementById('item-episodes').value,
-            franchise: document.getElementById('item-franchise').value.trim(),
-            startDate: document.getElementById('item-start-date').value,
-            endDate: document.getElementById('item-end-date').value,
-            review: document.getElementById('item-review').value.trim()
-        };
-        const items = getItemsFromStorage(category);
-        items.push(item);
-        saveItemsToStorage(category, items);
-        displayItems();
-    }
-
-    function updateItem() {
-        if (!editingItemId) return;
-        const newCategory = document.getElementById('item-type').value;
-
-        const updatedItem = {
-            id: editingItemId,
-            category: newCategory,
-            title: document.getElementById('item-title').value.trim(),
-            author: document.getElementById('item-author').value.trim(),
-            status: document.getElementById('item-status').value,
-            genre: document.getElementById('item-genre').value.trim(),
-            rating: document.getElementById('item-rating').value ? parseFloat(document.getElementById('item-rating').value).toFixed(1) : 'N/A',
-            isFavorite: document.getElementById('item-favorite').checked,
-            posterUrl: document.getElementById('item-poster').value.trim(),
-            summary: document.getElementById('item-summary').value.trim(),
-            actors: document.getElementById('item-actors').value.trim(),
-            seasons: document.getElementById('item-seasons').value,
-            episodes: document.getElementById('item-episodes').value,
-            franchise: document.getElementById('item-franchise').value.trim(),
-            startDate: document.getElementById('item-start-date').value,
-            endDate: document.getElementById('item-end-date').value,
-            review: document.getElementById('item-review').value.trim()
-        };
-
-        let originalCategory = '';
-        for (const cat of ['movies', 'series', 'animes']) {
-            const items = getItemsFromStorage(cat);
-            if (items.some(i => i.id === editingItemId)) {
-                originalCategory = cat;
-                break;
-            }
-        }
-
-        if (originalCategory !== newCategory) {
-            let oldItems = getItemsFromStorage(originalCategory);
-            oldItems = oldItems.filter(i => i.id !== editingItemId);
-            saveItemsToStorage(originalCategory, oldItems);
-            
-            let newItems = getItemsFromStorage(newCategory);
-            newItems.push(updatedItem);
-            saveItemsToStorage(newCategory, newItems);
-        } else {
-            let items = getItemsFromStorage(newCategory);
-            const itemIndex = items.findIndex(i => i.id === editingItemId);
-            items[itemIndex] = updatedItem;
-            saveItemsToStorage(newCategory, items);
-        }
-
-        displayItems();
-        resetAddModal();
-    }
-
-    window.deleteItem = function(category, id) {
-        if (!confirm('Tem certeza que deseja excluir este item?')) return;
-        let items = getItemsFromStorage(category);
-        items = items.filter(item => item.id !== id);
-        saveItemsToStorage(category, items);
-        displayItems();
+  // NOVO: Função para calcular duração da sessão em dias
+  const calcularDuracaoSessão = (filme) => {
+    if (!filme.dataInicio) return 0;
+    
+    const dataInicio = new Date(filme.dataInicio);
+    let dataFim;
+    
+    if (filme.assistido && filme.dataConclusao) {
+      dataFim = new Date(filme.dataConclusao);
+    } else {
+      dataFim = new Date(); // Data atual se ainda está lendo
     }
     
-    window.toggleFavorite = function(category, id) {
-        let items = getItemsFromStorage(category);
-        const itemIndex = items.findIndex(item => item.id === id);
-        if (itemIndex > -1) {
-            items[itemIndex].isFavorite = !items[itemIndex].isFavorite;
-            saveItemsToStorage(category, items);
-            displayItems();
-        }
-    }
+    const diffTime = Math.abs(dataFim - dataInicio);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
-    // --- Funções de Renderização ---
-    function renderCard(item) {
-        const container = document.getElementById('items-card-container');
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.setAttribute('data-id', item.id);
-        
-        const statusClassMap = { 'Assistido': 'status-assistido', 'Assistindo': 'status-assistindo', 'Planejo Assistir': 'status-planejo-assistir' };
-        const statusClass = statusClassMap[item.status] || '';
-        const favoriteIconClass = item.isFavorite ? 'fas fa-star' : 'far fa-star';
-        const favoriteBtnClass = item.isFavorite ? 'favorite' : '';
-
-        const posterContent = item.posterUrl
-            ? `<img src="${item.posterUrl}" alt="Pôster de ${item.title}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'card-poster-placeholder\\'><span>${item.title}</span></div>';">`
-            : `<div class="card-poster-placeholder"><span>${item.title}</span></div>`;
-
-        card.innerHTML = `
-            <div class="card-clickable-area" onclick="showDetails('${item.category}', ${item.id})">
-                <div class="card-poster">
-                    ${posterContent}
-                </div>
-                <div class="card-info">
-                    <h3>${item.title}</h3>
-                    <div class="card-footer">
-                        <span class="status ${statusClass}">${item.status}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-buttons">
-                <button class="favorite-btn ${favoriteBtnClass}" onclick="event.stopPropagation(); toggleFavorite('${item.category}', ${item.id})">
-                    <i class="${favoriteIconClass}"></i>
-                </button>
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteItem('${item.category}', ${item.id})">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        `;
-        container.appendChild(card);
-    }
+  // NOVO: Função para ordenar filmes baseado no filtro ativo
+  const ordenarFilmes = (filmesArray) => {
+    const filmesCopia = [...filmesArray];
     
-    function openEditModal(category, id) {
-        const items = getItemsFromStorage(category);
-        const item = items.find(i => i.id === id);
-        if (!item) return;
-
-        editingItemId = id;
-
-        document.querySelector('#add-item-modal h2').textContent = 'Editar Item';
-        document.querySelector('#modal-form button[type="submit"]').textContent = 'Salvar Alterações';
-
-        document.getElementById('item-type').value = item.category;
-        document.getElementById('item-title').value = item.title;
-        document.getElementById('item-author').value = item.author || '';
-        document.getElementById('item-poster').value = item.posterUrl || '';
-        document.getElementById('item-summary').value = item.summary || '';
-        document.getElementById('item-status').value = item.status;
-        document.getElementById('item-genre').value = item.genre || '';
-        document.getElementById('item-actors').value = item.actors || '';
-        document.getElementById('item-seasons').value = item.seasons || '';
-        document.getElementById('item-episodes').value = item.episodes || '';
-        document.getElementById('item-franchise').value = item.franchise || '';
-        document.getElementById('item-start-date').value = item.startDate || '';
-        document.getElementById('item-end-date').value = item.endDate || '';
-        document.getElementById('item-rating').value = item.rating === 'N/A' ? '' : item.rating;
-        document.getElementById('item-review').value = item.review || '';
-        document.getElementById('item-favorite').checked = item.isFavorite;
-
-        itemTypeSelect.dispatchEvent(new Event('change'));
-        
-        detailsModal.style.display = 'none';
-        addModal.style.display = 'block';
-    }
-
-    window.showDetails = function(category, id) {
-        const items = getItemsFromStorage(category);
-        const item = items.find(i => i.id === id);
-        if (!item) return;
-
-        const displayInfo = (elementId, value, prefix = '', suffix = '') => {
-            const element = document.getElementById(elementId);
-            const parentSection = element.closest('.details-section');
-            const valueExists = value && String(value).trim() !== '' && String(value).trim() !== 'N/A';
-            
-            if (valueExists) {
-                element.textContent = `${prefix}${value}${suffix}`;
-                element.classList.remove('placeholder-text');
-                if (parentSection) parentSection.style.display = 'block';
-            } else {
-                element.textContent = 'Não informado';
-                element.classList.add('placeholder-text');
-                if (elementId === 'details-summary' || elementId === 'details-review') {
-                    if (parentSection) parentSection.style.display = 'none';
-                }
-            }
-        };
-
-        document.getElementById('details-poster-img').src = item.posterUrl || 'img/placeholder.png';
-        displayInfo('details-title', item.title);
-        displayInfo('details-author', item.author, 'por ');
-
-        const statusElement = document.getElementById('details-status');
-        const statusClassMap = { 'Assistido': 'status-assistido', 'Assistindo': 'status-assistindo', 'Planejo Assistir': 'status-planejo-assistir' };
-        statusElement.textContent = item.status;
-        statusElement.className = `status ${statusClassMap[item.status] || ''}`;
-        document.getElementById('details-rating').innerHTML = `<i class="fas fa-star"></i> ${item.rating || 'N/A'}`;
-
-        displayInfo('details-summary', item.summary);
-        displayInfo('details-review', item.review);
-        displayInfo('details-genre', item.genre);
-        displayInfo('details-actors', item.actors);
-        displayInfo('details-franchise', item.franchise);
-
-        let dateText = '';
-        if (item.startDate) {
-            try {
-                const startDate = new Date(item.startDate + 'T00:00:00');
-                dateText = `Iniciado em ${startDate.toLocaleDateString()}`;
-                if (item.endDate) {
-                    const endDate = new Date(item.endDate + 'T00:00:00');
-                    dateText = `De ${startDate.toLocaleDateString()} a ${endDate.toLocaleDateString()}`;
-                }
-            } catch (e) { dateText = 'Data inválida'; }
-        }
-        displayInfo('details-dates', dateText);
-
-        const seriesInfo = document.getElementById('details-series-info');
-        if ((item.category === 'series' || item.category === 'animes') && (item.seasons || item.episodes)) {
-            displayInfo('details-seasons', item.seasons || 'N/A');
-            displayInfo('details-episodes', item.episodes || 'N/A');
-            seriesInfo.style.display = 'block';
-        } else {
-            seriesInfo.style.display = 'none';
-        }
-
-        document.getElementById('edit-item-btn').onclick = () => openEditModal(category, id);
-        detailsModal.style.display = 'block';
-    }
-
-    function displayItems() {
-        const container = document.getElementById('items-card-container');
-        container.innerHTML = '';
-        const allItems = getAllItems();
-        let filteredItems = [];
-
-        if (currentGenreFilter) {
-            filteredItems = allItems.filter(item =>
-                item.genre && item.genre.toLowerCase().split(',').map(g => g.trim()).includes(currentGenreFilter.toLowerCase())
-            );
-        } else {
-            switch(currentFilter) {
-                case 'movies': case 'series': case 'animes':
-                    filteredItems = allItems.filter(item => item.category === currentFilter);
-                    break;
-                case 'favorites':
-                    filteredItems = allItems.filter(item => item.isFavorite);
-                    break;
-                case 'Assistido': case 'Assistindo': case 'Planejo Assistir':
-                    filteredItems = allItems.filter(item => item.status === currentFilter);
-                    break;
-                default:
-                    filteredItems = allItems;
-            }
-        }
-        
-        const searchTerm = searchBar.value.toLowerCase().trim();
-        if (searchTerm) {
-            filteredItems = filteredItems.filter(item => 
-                item.title.toLowerCase().includes(searchTerm)
-            );
-        }
-
-        if (filteredItems.length === 0) {
-            container.innerHTML = '<p class="no-results-message">Nenhum item encontrado.</p>';
-        } else {
-            filteredItems.sort((a, b) => a.title.localeCompare(b.title)).forEach(item => renderCard(item));
-        }
-        renderGenresSummary();
-        renderStatistics(); // ATUALIZA AS ESTATÍSTICAS
-    }
-
-    function renderGenresSummary() {
-        genresContainer.innerHTML = '';
-        const allItems = getAllItems();
-        const GENRE_EMOJI_MAP = { 'ação': '💥', 'aventura': '🗺️', 'comédia': '😂', 'drama': '🎭', 'ficção científica': '🚀', 'sci-fi': '🚀', 'fantasia': '🧙', 'terror': '👻', 'suspense': '🔪', 'romance': '❤️', 'animação': '🎨', 'documentário': '📹', 'crime': '🕵️', 'mistério': '❓', 'musical': '🎶', 'guerra': '🎖️', 'história': '📜', 'família': '👨‍👩‍👧‍👦', 'esporte': '⚽', 'faroeste': '🤠', 'biografia': '👤' };
-        const DEFAULT_EMOJI = '🎬';
-        const genreCounts = {};
-        allItems.forEach(item => {
-            if (item.genre) {
-                const genres = item.genre.split(',').map(g => g.trim());
-                genres.forEach(genre => {
-                    if (genre) genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-                });
-            }
+    switch (activeSortFilter) {
+      case 'title-asc':
+        return filmesCopia.sort((a, b) => a.titulo.localeCompare(b.titulo));
+      
+      case 'title-desc':
+        return filmesCopia.sort((a, b) => b.titulo.localeCompare(a.titulo));
+      
+      case 'author-asc':
+        return filmesCopia.sort((a, b) => a.diretor.localeCompare(b.diretor));
+      
+      case 'pages-asc':
+        return filmesCopia.sort((a, b) => a.totalPaginas - b.totalPaginas);
+      
+      case 'pages-desc':
+        return filmesCopia.sort((a, b) => b.totalPaginas - a.totalPaginas);
+      
+      case 'progress-desc':
+        return filmesCopia.sort((a, b) => {
+          const progressoA = a.totalPaginas > 0 ? (a.paginaAtual / a.totalPaginas) : 0;
+          const progressoB = b.totalPaginas > 0 ? (b.paginaAtual / b.totalPaginas) : 0;
+          return progressoB - progressoA;
         });
-        Object.keys(genreCounts).sort().forEach(genre => {
-            const emoji = GENRE_EMOJI_MAP[genre.toLowerCase()] || DEFAULT_EMOJI;
-            const tag = document.createElement('div');
-            tag.classList.add('genre-tag');
-            tag.dataset.genre = genre;
-            tag.innerHTML = `${emoji} ${genre} <span class="genre-count">(${genreCounts[genre]})</span>`;
-            genresContainer.appendChild(tag);
+      
+      case 'start-date-desc':
+        return filmesCopia.sort((a, b) => {
+          if (!a.dataInicio && !b.dataInicio) return 0;
+          if (!a.dataInicio) return 1;
+          if (!b.dataInicio) return -1;
+          return new Date(b.dataInicio) - new Date(a.dataInicio);
         });
+      
+      case 'start-date-asc':
+        return filmesCopia.sort((a, b) => {
+          if (!a.dataInicio && !b.dataInicio) return 0;
+          if (!a.dataInicio) return 1;
+          if (!b.dataInicio) return -1;
+          return new Date(a.dataInicio) - new Date(b.dataInicio);
+        });
+      
+      case 'end-date-desc':
+        return filmesCopia.sort((a, b) => {
+          if (!a.dataConclusao && !b.dataConclusao) return 0;
+          if (!a.dataConclusao) return 1;
+          if (!b.dataConclusao) return -1;
+          return new Date(b.dataConclusao) - new Date(a.dataConclusao);
+        });
+      
+      case 'rating-desc':
+        return filmesCopia.sort((a, b) => (b.nota || 0) - (a.nota || 0));
+      
+      case 'reading-time':
+        return filmesCopia.sort((a, b) => {
+          const duracaoA = calcularDuracaoSessão(a);
+          const duracaoB = calcularDuracaoSessão(b);
+          return duracaoB - duracaoA;
+        });
+      
+      case 'default':
+      default:
+        return filmesCopia.sort((a, b) => b.id - a.id); // Mais recentes primeiro
+    }
+  };
+
+  // NOVO: Função para paginar filmes
+  const paginarFilmes = (filmesArray, pagina) => {
+    const inicio = (pagina - 1) * LIVROS_POR_PAGINA;
+    const fim = inicio + LIVROS_POR_PAGINA;
+    return filmesArray.slice(inicio, fim);
+  };
+
+  // NOVO: Função para calcular total de minutos
+  const calcularTotalPaginas = (totalFilmes) => {
+    return Math.ceil(totalFilmes / LIVROS_POR_PAGINA);
+  };
+
+  // NOVO: Função para renderizar controles de paginação
+  const renderizarPaginacao = (containerId, totalFilmes, paginaAtual) => {
+    const container = document.getElementById(`pagination-${containerId}`);
+    if (!container) return;
+
+    const totalPaginas = calcularTotalPaginas(totalFilmes);
+    
+    if (totalPaginas <= 1) {
+      container.innerHTML = '';
+      return;
     }
 
-    // --- NOVA FUNÇÃO DE ESTATÍSTICAS ---
-    function renderStatistics() {
-        const countersContainer = document.getElementById('stats-counters-container');
-        const genresChartContainer = document.getElementById('genres-chart');
-        if (!countersContainer || !genresChartContainer) return;
+    let paginationHtml = '';
 
-        const allItems = getAllItems();
-        const watchedItems = allItems.filter(item => item.status === 'Assistido');
+    // Botão Anterior
+    paginationHtml += `
+      <button class="pagination-btn prev ${paginaAtual === 1 ? 'disabled' : ''}" 
+              data-page="${paginaAtual - 1}" data-tab="${containerId}">
+        <i class="fas fa-chevron-left"></i> Anterior
+      </button>
+    `;
 
-        // 1. Calcular Stats
-        const moviesWatched = watchedItems.filter(item => item.category === 'movies').length;
-        const seriesWatched = watchedItems.filter(item => item.category === 'series').length;
-        const animesWatched = watchedItems.filter(item => item.category === 'animes').length;
-        
-        const ratedItems = watchedItems.filter(item => item.rating && item.rating !== 'N/A');
-        const averageRating = ratedItems.length > 0
-            ? (ratedItems.reduce((acc, item) => acc + parseFloat(item.rating), 0) / ratedItems.length).toFixed(1)
-            : 'N/A';
-        
-        const genreCounts = {};
-        watchedItems.forEach(item => {
-            if (item.genre) {
-                const genres = item.genre.toLowerCase().split(',').map(g => g.trim());
-                genres.forEach(genre => {
-                    // Capitaliza a primeira letra para agrupar (ex: "ação" e "Ação")
-                    const capitalizedGenre = genre.charAt(0).toUpperCase() + genre.slice(1);
-                    if (capitalizedGenre) genreCounts[capitalizedGenre] = (genreCounts[capitalizedGenre] || 0) + 1;
-                });
-            }
-        });
-        const sortedGenres = Object.entries(genreCounts).sort(([, a], [, b]) => b - a);
-        const maxGenreCount = sortedGenres.length > 0 ? sortedGenres[0][1] : 0;
+    // Números das minutos
+    paginationHtml += '<div class="pagination-numbers">';
+    
+    let startPage = Math.max(1, paginaAtual - 2);
+    let endPage = Math.min(totalPaginas, paginaAtual + 2);
 
-        // 2. Renderizar Contadores
-        countersContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-value">${moviesWatched}</div>
-                <div class="stat-label">Filmes Assistidos</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${seriesWatched}</div>
-                <div class="stat-label">Séries Concluídas</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${animesWatched}</div>
-                <div class="stat-label">Animes Concluídos</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${averageRating}</div>
-                <div class="stat-label">Nota Média</div>
-            </div>
-        `;
+    // Ajustar para sempre mostrar 5 minutos quando possível
+    if (endPage - startPage < 4) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPaginas, startPage + 4);
+      } else if (endPage === totalPaginas) {
+        startPage = Math.max(1, endPage - 4);
+      }
+    }
 
-        // 3. Renderizar Gráfico de Gêneros
-        if (sortedGenres.length > 0) {
-            genresChartContainer.innerHTML = sortedGenres.map(([genre, count]) => {
-                const barWidth = maxGenreCount > 0 ? (count / maxGenreCount) * 100 : 0;
-                return `
-                    <div class="chart-bar-row">
-                        <div class="chart-label" title="${genre}">${genre}</div>
-                        <div class="chart-bar-bg">
-                            <div class="chart-bar" style="width: ${barWidth}%;">${count}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            genresChartContainer.innerHTML = '<p class="placeholder-text" style="text-align: center;">Nenhum item com status "Assistido" para exibir estatísticas.</p>';
-        }
+    // Primeira página se não estiver no range
+    if (startPage > 1) {
+      paginationHtml += `
+        <button class="pagination-btn" data-page="1" data-tab="${containerId}">1</button>
+      `;
+      if (startPage > 2) {
+        paginationHtml += '<span class="pagination-ellipsis">...</span>';
+      }
+    }
+
+    // Páginas no range
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHtml += `
+        <button class="pagination-btn ${i === paginaAtual ? 'active' : ''}" 
+                data-page="${i}" data-tab="${containerId}">${i}</button>
+      `;
+    }
+
+    // Última página se não estiver no range
+    if (endPage < totalPaginas) {
+      if (endPage < totalPaginas - 1) {
+        paginationHtml += '<span class="pagination-ellipsis">...</span>';
+      }
+      paginationHtml += `
+        <button class="pagination-btn" data-page="${totalPaginas}" data-tab="${containerId}">${totalPaginas}</button>
+      `;
+    }
+
+    paginationHtml += '</div>';
+
+    // Botão Próximo
+    paginationHtml += `
+      <button class="pagination-btn next ${paginaAtual === totalPaginas ? 'disabled' : ''}" 
+              data-page="${paginaAtual + 1}" data-tab="${containerId}">
+        Próximo <i class="fas fa-chevron-right"></i>
+      </button>
+    `;
+
+    // Info da paginação
+    const inicio = (paginaAtual - 1) * LIVROS_POR_PAGINA + 1;
+    const fim = Math.min(paginaAtual * LIVROS_POR_PAGINA, totalFilmes);
+    paginationHtml += `
+      <div class="pagination-info">
+        Mostrando ${inicio}-${fim} de ${totalFilmes} filmes
+      </div>
+    `;
+
+    container.innerHTML = paginationHtml;
+  };
+
+  // NOVO: Função para atualizar o histórico de sessão
+  const atualizarHistoricoDeSessão = (filme, minutosLidasAntes) => {
+    const minutosLidasAgora = filme.paginaAtual;
+    const minutosNovas = minutosLidasAgora - minutosLidasAntes;
+
+    if (minutosNovas <= 0) return; // Nenhuma página nova lida
+
+    const hoje = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const historico = JSON.parse(localStorage.getItem('historicoAssistidos') || '{}');
+
+    if (!historico[hoje]) {
+      historico[hoje] = { pagesRead: 0 };
+    }
+
+    historico[hoje].pagesRead += minutosNovas;
+    localStorage.setItem('historicoAssistidos', JSON.stringify(historico));
+  };
+
+  const salvarFilmes = () => {
+    localStorage.setItem('filmesTracker', JSON.stringify(filmes));
+    const filmesAssistidos = filmes.filter(filme => filme.assistido);
+    localStorage.setItem('filmesAssistidos', JSON.stringify(filmesAssistidos));
+    if (window.readingStats) {
+      window.readingStats.refresh();
+    }
+    updateBookCounts();
+    renderizarFilmes();
+    renderizarGenreStats(); // NOVO: Atualiza as estatísticas de gênero
+  };
+
+  const getRatingStars = (rating = 0) => {
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+          starsHtml += `<i class="${i <= rating ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
+      }
+      return starsHtml;
+  };
+
+  const updateBookCounts = () => {
+    const lendo = filmes.filter(filme => !filme.assistido && filme.paginaAtual > 0).length;
+    const assistido = filmes.filter(filme => filme.assistido).length;
+    const queroLer = filmes.filter(filme => !filme.assistido && filme.paginaAtual === 0).length;
+
+    if (countALer) countALer.textContent = lendo;
+    if (countAssistido) countAssistido.textContent = assistido;
+    if (countQueroLer) countQueroLer.textContent = queroLer;
+  };
+
+  const renderizarListaFilmes = (listaElement, filmesParaRenderizar, tabId) => {
+    listaElement.innerHTML = '';
+    
+    if (filmesParaRenderizar.length === 0) {
+      listaElement.innerHTML = '<p class="no-books-message">Nenhum filme encontrado.</p>';
+      // Renderizar paginação vazia
+      renderizarPaginacao(tabId, 0, 1);
+      return;
     }
     
-    // --- Funções Auxiliares ---
-    function getAllItems() {
-        return [ ...getItemsFromStorage('movies'), ...getItemsFromStorage('series'), ...getItemsFromStorage('animes') ];
-    }
-    function getItemsFromStorage(category) { return JSON.parse(localStorage.getItem(`cinema_${category}`)) || []; }
-    function saveItemsToStorage(category, items) { localStorage.setItem(`cinema_${category}`, JSON.stringify(items)); }
+    // MODIFICADO: Aplicar ordenação antes de paginar
+    const filmesOrdenados = ordenarFilmes(filmesParaRenderizar);
+    
+    // NOVO: Aplicar paginação
+    const paginaAtual = currentPages[tabId] || 1;
+    const filmesPaginados = paginarFilmes(filmesOrdenados, paginaAtual);
+    
+    filmesPaginados.forEach(filme => {
+      const li = document.createElement('li');
+      li.className = 'book-item';
+      li.dataset.id = filme.id;
+      const percentual = filme.totalPaginas > 0 ? ((filme.paginaAtual / filme.totalPaginas) * 100).toFixed(0) : 0;
+      let generosArray = [];
+      if (Array.isArray(filme.generos)) {
+        generosArray = filme.generos;
+      } else if (typeof filme.generos === 'string' && filme.generos) {
+        generosArray = filme.generos.split(',').map(g => g.trim());
+      }
+      const generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      li.innerHTML = `<div class="book-item-cover" style="background-image: url('${filme.capaUrl || 'img/default_cover.png'}');">
+          ${filme.isFavorite ? '<i class="fas fa-star favorite-icon"></i>' : ''}
+          <div class="progress-bar-overlay"><div class="progress-overlay" style="width: ${percentual}%;">${percentual > 10 ? percentual + '%' : ''}</div></div>
+        </div>
+        <div class="book-item-info">
+          <h4>${filme.titulo}</h4>
+          <p class="diretor">por ${filme.diretor}</p>
+          <div class="card-rating">${getRatingStars(filme.nota)}</div>
+          <div class="genre-tags">${generosHtml}</div>
+        </div>`;
+      listaElement.appendChild(li);
+    });
 
-    // --- Inicialização ---
-    displayItems();
+    // NOVO: Renderizar controles de paginação
+    renderizarPaginacao(tabId, filmesOrdenados.length, paginaAtual);
+  };
+
+  const renderizarFilmes = () => {
+    const listaTodos = document.getElementById('lista-filmes-todos');
+    const listaFavoritos = document.getElementById('lista-filmes-favoritos');
+    const listaALer = document.getElementById('lista-filmes-para-assistir');
+    const listaQueroLer = document.getElementById('lista-filmes-quero-assistir');
+    const listaAssistido = document.getElementById('lista-filmes-assistido');
+    const listaGeneros = document.getElementById('lista-filmes-generos');
+
+    [listaTodos, listaFavoritos, listaALer, listaQueroLer, listaAssistido, listaGeneros].forEach(list => {
+      if (list) list.innerHTML = '';
+    });
+    
+    // NOVO: Aplica o filtro de pesquisa
+    const searchTerm = searchInput.value.toLowerCase();
+    const filmesBase = searchTerm
+      ? filmes.filter(filme => 
+          filme.titulo.toLowerCase().includes(searchTerm) || 
+          filme.diretor.toLowerCase().includes(searchTerm)
+        )
+      : filmes;
+
+    let filmesFiltrados = [];
+
+    switch (activeTab) {
+      case 'todos':
+        filmesFiltrados = filmesBase;
+        break;
+      case 'favoritos':
+        filmesFiltrados = filmesBase.filter(filme => filme.isFavorite);
+        break;
+      case 'para-assistir':
+        filmesFiltrados = filmesBase.filter(filme => !filme.assistido && filme.paginaAtual > 0);
+        break;
+      case 'quero-assistir':
+        filmesFiltrados = filmesBase.filter(filme => !filme.assistido && filme.paginaAtual === 0);
+        break;
+      case 'assistido':
+        filmesFiltrados = filmesBase.filter(filme => filme.assistido);
+        break;
+      case 'generos':
+        if (activeGenreFilter === 'todos') {
+          filmesFiltrados = filmesBase;
+        } else {
+          filmesFiltrados = filmesBase.filter(filme => 
+            Array.isArray(filme.generos) && filme.generos.includes(activeGenreFilter)
+          );
+        }
+        break;
+      default:
+        filmesFiltrados = filmesBase;
+    }
+
+    const currentListElement = document.getElementById(`lista-filmes-${activeTab}`);
+    if (currentListElement) {
+      renderizarListaFilmes(currentListElement, filmesFiltrados, activeTab);
+    }
+
+    updateGenreFilters();
+  };
+
+  const switchTab = (tabId) => {
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
+    activeTab = tabId;
+    renderizarFilmes();
+  };
+
+  // NOVO: Função para alternar filtro de organização
+  const switchSortFilter = (sortId) => {
+    document.querySelectorAll('.sort-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.sort-filter-btn[data-sort="${sortId}"]`).classList.add('active');
+    activeSortFilter = sortId;
+    
+    // Reset minutos quando mudar filtro
+    Object.keys(currentPages).forEach(key => {
+      currentPages[key] = 1;
+    });
+    
+    renderizarFilmes();
+  };
+
+  // NOVO: Função para mudar página
+  const mudarPagina = (tabId, novaPagina) => {
+    currentPages[tabId] = novaPagina;
+    renderizarFilmes();
+  };
+
+  const getAllUniqueGenres = () => {
+    const uniqueGenres = new Set();
+    filmes.forEach(filme => {
+      if (Array.isArray(filme.generos)) {
+        filme.generos.forEach(genre => uniqueGenres.add(genre));
+      }
+    });
+    return Array.from(uniqueGenres).sort();
+  };
+
+  // NOVO: Função para renderizar as estatísticas de gênero
+  const renderizarGenreStats = () => {
+    if (!genreStatsContainer) return;
+    genreStatsContainer.innerHTML = '';
+    const genreCounts = {};
+
+    filmes.forEach(filme => {
+      if (Array.isArray(filme.generos)) {
+        filme.generos.forEach(genre => {
+          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+        });
+      }
+    });
+
+    // Ordena os gêneros pela quantidade de filmes (do maior para o menor)
+    const sortedGenres = Object.entries(genreCounts).sort(([,a],[,b]) => b-a);
+    
+    if (sortedGenres.length === 0) {
+      genreStatsContainer.innerHTML = '<p class="no-books-message">Adicione filmes com gêneros para ver as estatísticas.</p>';
+      return;
+    }
+    
+    sortedGenres.forEach(([genre, count]) => {
+      const emoji = genreEmojis[genre] || genreEmojis.default;
+      const statItem = document.createElement('div');
+      statItem.className = 'genre-stat-item';
+      statItem.innerHTML = `
+        <div class="genre-stat-emoji">${emoji}</div>
+        <div class="genre-stat-info">
+          <span class="genre-stat-name">${genre}</span>
+          <span class="genre-stat-count">${count} ${count > 1 ? 'filmes' : 'filme'}</span>
+        </div>
+      `;
+      genreStatsContainer.appendChild(statItem);
+    });
+  };
+
+  const updateGenreFilters = () => {
+    if (!generosFilterContainer) return;
+    generosFilterContainer.innerHTML = '';
+    const allGenres = getAllUniqueGenres();
+
+    const allButton = document.createElement('span');
+    allButton.className = `genre-tag ${activeGenreFilter === 'todos' ? 'active' : ''}`;
+    allButton.textContent = 'Todos';
+    allButton.addEventListener('click', () => {
+      activeGenreFilter = 'todos';
+      currentPages['generos'] = 1; // Reset página
+      updateGenreFilters();
+      renderizarFilmes();
+    });
+    generosFilterContainer.appendChild(allButton);
+
+    allGenres.forEach(genre => {
+      const genreButton = document.createElement('span');
+      genreButton.className = `genre-tag ${activeGenreFilter === genre ? 'active' : ''}`;
+      genreButton.textContent = genre;
+      genreButton.addEventListener('click', () => {
+        activeGenreFilter = genre;
+        currentPages['generos'] = 1; // Reset página
+        updateGenreFilters();
+        renderizarFilmes();
+      });
+      generosFilterContainer.appendChild(genreButton);
+    });
+  };
+
+  const adicionarFilme = (e) => {
+    e.preventDefault();
+    const titulo = document.getElementById('titulo').value.trim();
+    const diretor = document.getElementById('diretor').value.trim();
+    const totalPaginas = parseInt(document.getElementById('total-minutos').value);
+    const capaUrl = document.getElementById('capa-url').value.trim();
+    const generosInput = document.getElementById('generos').value.trim();
+    const sumario = document.getElementById('sumario').value.trim();
+    const resenha = document.getElementById('resenha').value.trim();
+    const dataInicio = document.getElementById('data-inicio').value;
+    const dataConclusao = document.getElementById('data-conclusao').value;
+    const sagaNome = document.getElementById('saga-nome').value.trim();
+    const sagaVolume = document.getElementById('saga-volume').value.trim();
+
+    if (titulo && diretor && totalPaginas > 0) {
+      const novoFilme = {
+        id: Date.now(),
+        titulo, diretor, totalPaginas,
+        paginaAtual: 0, assistido: false, isFavorite: false, nota: 0,
+        capaUrl: capaUrl || 'img/default_cover.png',
+        generos: generosInput ? generosInput.split(',').map(g => g.trim()) : [],
+        sumario, resenha, dataInicio, dataConclusao,
+        saga: { nome: sagaNome, volume: sagaVolume },
+      };
+      filmes.push(novoFilme);
+      salvarFilmes();
+      addBookForm.reset();
+      fecharTodosModais();
+    } else {
+      alert('Por favor, preencha pelo menos Título, Diretor e Total de Páginas.');
+    }
+  };
+
+  const excluirFilme = (id) => {
+    filmes = filmes.filter(l => l.id !== id);
+    salvarFilmes();
+  };
+
+  const abrirModal = (modal) => modal.classList.add('show');
+  const fecharTodosModais = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+
+  const abrirModalExclusao = (id) => {
+    filmeIdParaExcluir = id;
+    fecharTodosModais();
+    abrirModal(confirmDeleteModal);
+  };
+
+  const popularEAbrirModalDetalhes = (id) => {
+    const filme = filmes.find(l => l.id === id);
+    if (!filme) return;
+    bookDetailsModal.dataset.currentBookId = filme.id;
+    document.getElementById('details-capa-img').src = filme.capaUrl || 'img/default_cover.png';
+    document.getElementById('details-titulo').value = filme.titulo;
+    document.getElementById('details-diretor').value = filme.diretor;
+    document.getElementById('details-pagina-atual').value = filme.paginaAtual;
+    document.getElementById('details-total-minutos').value = filme.totalPaginas;
+    document.getElementById('details-sumario').value = filme.sumario || '';
+    document.getElementById('details-resenha').value = filme.resenha || '';
+    document.getElementById('details-data-inicio').value = filme.dataInicio || '';
+    document.getElementById('details-data-conclusao').value = filme.dataConclusao || '';
+    
+    document.getElementById('details-saga-nome').value = filme.saga?.nome || '';
+    document.getElementById('details-saga-volume').value = filme.saga?.volume || '';
+
+    let generosString = Array.isArray(filme.generos) ? filme.generos.join(', ') : (typeof filme.generos === 'string' ? filme.generos : '');
+    document.getElementById('details-generos').value = generosString;
+    updateStarRating(filme.nota || 0);
+    toggleFavoriteBtn.classList.toggle('active', filme.isFavorite);
+
+    const outrosFilmesContainer = document.getElementById('other-books-by-author');
+    const outrosFilmes = filmes.filter(l => l.diretor === filme.diretor && l.id !== filme.id);
+    
+    if (outrosFilmes.length > 0) {
+      outrosFilmesContainer.innerHTML = outrosFilmes.map(l => `
+        <div class="mini-book-card" data-book-id="${l.id}">
+          <div class="mini-book-cover" style="background-image: url('${l.capaUrl || 'img/default_cover.png'}');"></div>
+          <div class="mini-book-title">${l.titulo}</div>
+          <div class="mini-book-author">por ${l.diretor}</div>
+        </div>
+      `).join('');
+    } else {
+      outrosFilmesContainer.innerHTML = '<p style="color: rgba(255, 255, 255, 0.7); font-style: italic;">Nenhum outro filme deste diretor cadastrado.</p>';
+    }
+        
+    const sagaSectionContainer = document.getElementById('saga-section-container');
+    const sagaContainer = document.getElementById('books-in-saga');
+    if (filme.saga?.nome) {
+      const outrosDaSaga = filmes
+        .filter(l => l.saga?.nome === filme.saga.nome && l.id !== filme.id)
+        .sort((a, b) => parseFloat(a.saga.volume) - parseFloat(b.saga.volume));
+      
+      if (outrosDaSaga.length > 0) {
+        sagaContainer.innerHTML = outrosDaSaga.map(l => `
+          <div class="mini-book-card" data-book-id="${l.id}">
+            <div class="mini-book-cover" style="background-image: url('${l.capaUrl || 'img/default_cover.png'}');"></div>
+            <div class="mini-book-title">Vol. ${l.saga.volume}: ${l.titulo}</div>
+            <div class="mini-book-author">por ${l.diretor}</div>
+          </div>
+        `).join('');
+        sagaSectionContainer.style.display = 'block';
+      } else {
+        sagaSectionContainer.style.display = 'none';
+      }
+    } else {
+      sagaSectionContainer.style.display = 'none';
+    }
+
+    abrirModal(bookDetailsModal);
+  };
+
+  const updateStarRating = (rating) => {
+    detailsNotaStars.dataset.rating = rating;
+    detailsNotaStars.querySelectorAll('i').forEach(star => {
+        star.classList.toggle('filled', parseInt(star.dataset.value) <= rating);
+    });
+  };
+
+  // Event Listeners
+  openAddBookModalBtn.addEventListener('click', () => abrirModal(addBookModal));
+  addBookForm.addEventListener('submit', adicionarFilme);
+  
+  closeButtons.forEach(btn => btn.addEventListener('click', fecharTodosModais));
+  
+  window.addEventListener('click', (e) => { 
+    if (e.target.classList.contains('modal')) fecharTodosModais(); 
+  });
+  
+  cancelDeleteBtn.addEventListener('click', fecharTodosModais);
+  
+  confirmDeleteBtn.addEventListener('click', () => {
+    if (filmeIdParaExcluir) {
+      excluirFilme(filmeIdParaExcluir);
+      filmeIdParaExcluir = null;
+      fecharTodosModais();
+    }
+  });
+
+  saveChangesBtn.addEventListener('click', () => {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    const filme = filmes.find(l => l.id === id);
+    if(filme) {
+      const minutosAntesDeSalvar = filme.paginaAtual;
+
+      filme.titulo = document.getElementById('details-titulo').value.trim();
+      filme.diretor = document.getElementById('details-diretor').value.trim();
+      filme.paginaAtual = parseInt(document.getElementById('details-pagina-atual').value) || 0;
+      filme.totalPaginas = parseInt(document.getElementById('details-total-minutos').value) || 1;
+      const generosInput = document.getElementById('details-generos').value.trim();
+      filme.generos = generosInput ? generosInput.split(',').map(g => g.trim()) : [];
+      filme.sumario = document.getElementById('details-sumario').value.trim();
+      filme.resenha = document.getElementById('details-resenha').value.trim();
+      filme.dataInicio = document.getElementById('details-data-inicio').value;
+      filme.dataConclusao = document.getElementById('details-data-conclusao').value;
+      filme.nota = parseInt(detailsNotaStars.dataset.rating) || 0;
+      
+      filme.saga = {
+          nome: document.getElementById('details-saga-nome').value.trim(),
+          volume: document.getElementById('details-saga-volume').value.trim()
+      };
+
+      filme.assistido = filme.paginaAtual >= filme.totalPaginas;
+      atualizarHistoricoDeSessão(filme, minutosAntesDeSalvar);
+      salvarFilmes();
+      fecharTodosModais();
+    }
+  });
+
+  toggleFavoriteBtn.addEventListener('click', function() {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    const filme = filmes.find(l => l.id === id);
+    if (filme) {
+      filme.isFavorite = !filme.isFavorite;
+      this.classList.toggle('active', filme.isFavorite);
+      salvarFilmes();
+    }
+  });
+
+  deleteFromDetailsBtn.addEventListener('click', () => {
+    const id = parseInt(bookDetailsModal.dataset.currentBookId);
+    if(id) abrirModalExclusao(id);
+  });
+
+  document.querySelector('main').addEventListener('click', (e) => {
+    const card = e.target.closest('.book-item');
+    if (card?.dataset.id) {
+      if (e.target.closest('button, input')) return;
+      popularEAbrirModalDetalhes(parseInt(card.dataset.id));
+    }
+
+    // NOVO: Event listener para botões de paginação
+    const paginationBtn = e.target.closest('.pagination-btn');
+    if (paginationBtn && !paginationBtn.classList.contains('disabled')) {
+      const page = parseInt(paginationBtn.dataset.page);
+      const tab = paginationBtn.dataset.tab;
+      if (page && tab) {
+        mudarPagina(tab, page);
+      }
+    }
+  });
+
+  detailsNotaStars.addEventListener('click', (e) => {
+    const star = e.target.closest('i[data-value]');
+    if(star) updateStarRating(parseInt(star.dataset.value));
+  });
+
+  bookDetailsModal.addEventListener('click', (e) => {
+    const miniCard = e.target.closest('.mini-book-card');
+    if (miniCard && miniCard.dataset.bookId) {
+      const bookId = parseInt(miniCard.dataset.bookId);
+      popularEAbrirModalDetalhes(bookId);
+    }
+  });
+
+  if (tabsNav) {
+    tabsNav.addEventListener('click', (e) => {
+      const button = e.target.closest('.tab-button');
+      if (button) {
+        switchTab(button.dataset.tab);
+      }
+    });
+  }
+  
+  // NOVO: Event listener para filtros de organização
+  if (sortFiltersContainer) {
+    sortFiltersContainer.addEventListener('click', (e) => {
+      const button = e.target.closest('.sort-filter-btn');
+      if (button) {
+        switchSortFilter(button.dataset.sort);
+      }
+    });
+  }
+  
+  // NOVO: Event listener para a barra de pesquisa
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      // Reset minutos quando pesquisar
+      Object.keys(currentPages).forEach(key => {
+        currentPages[key] = 1;
+      });
+      renderizarFilmes();
+    });
+  }
+
+  // Inicialização
+  updateBookCounts();
+  renderizarFilmes();
+  renderizarGenreStats(); // NOVO: Renderiza as estatísticas de gênero
+  
+  setTimeout(() => {
+    if (window.readingStats) {
+      window.readingStats.refresh();
+    }
+  }, 100);
 });
