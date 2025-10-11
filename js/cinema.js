@@ -382,33 +382,26 @@ document.addEventListener("DOMContentLoaded", () => {
         generosArray = midia.generos.split(',').map(g => g.trim());
       }
       
-const generoPrincipal = generosArray.length > 0 ? generosArray[0] : "";
-const generoTexto = generosArray.length > 1 ? `${generoPrincipal}...` : generoPrincipal;
-const generosHtml = `<span class="genre-tag">${generoTexto}</span>`;
-
+      // *** INÍCIO DA MODIFICAÇÃO PARA GÊNEROS ***
+      let generosHtml = '';
+      if (generosArray.length > 0) {
+        const generosParaMostrar = generosArray.slice(0, 2);
+        generosHtml = generosParaMostrar.map(g => `<span class="genre-tag">${g}</span>`).join('');
+        if (generosArray.length > 2) {
+          generosHtml += `<span class="genre-tag-more">...</span>`;
+        }
+      }
+      // *** FIM DA MODIFICAÇÃO PARA GÊNEROS ***
       
       // Determinar emoji e informações específicas do tipo de mídia
       let tipoEmoji = '🎬';
-      let progressoInfo = '';
       
       if (midia.tipoMidia === 'filme') {
         tipoEmoji = '🎬';
-        progressoInfo = `${midia.minutosAssistidos || midia.paginaAtual || 0}/${midia.duracaoMinutos || midia.totalPaginas || 0} min`;
       } else if (midia.tipoMidia === 'serie') {
         tipoEmoji = '📺';
-        const temporadaAtual = midia.temporadaAtual || 1;
-        const episodioAtual = midia.episodioAtual || midia.paginaAtual || 0;
-        const totalEpisodios = midia.totalEpisodios || midia.totalPaginas || 0;
-        progressoInfo = `T${temporadaAtual} E${episodioAtual}/${totalEpisodios}`;
       } else if (midia.tipoMidia === 'anime') {
         tipoEmoji = '🎌';
-        const temporadaAtual = midia.temporadaAtual || 1;
-        const episodioAtual = midia.episodioAtual || midia.paginaAtual || 0;
-        const totalEpisodios = midia.totalEpisodios || midia.totalPaginas || 0;
-        progressoInfo = `T${temporadaAtual} E${episodioAtual}/${totalEpisodios}`;
-      } else {
-        // Para compatibilidade com mídias antigas sem tipo definido
-        progressoInfo = `${midia.paginaAtual || 0}/${midia.totalPaginas || 0}`;
       }
       
       li.innerHTML = `<div class="book-item-cover" style="background-image: url('${midia.capaUrl || 'img/default_cover.png'}');">
@@ -419,7 +412,6 @@ const generosHtml = `<span class="genre-tag">${generoTexto}</span>`;
         <div class="book-item-info">
           <h4>${midia.titulo}</h4>
           <p class="autor">por ${midia.autor}</p>
-          <p class="progress-info">${progressoInfo}</p>
           <div class="card-rating">${getRatingStars(midia.nota)}</div>
           <div class="genre-tags">${generosHtml}</div>
         </div>`;

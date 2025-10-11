@@ -452,8 +452,17 @@ const salvarLivros = () => {
       } else if (typeof livro.generos === 'string' && livro.generos) {
         generosArray = livro.generos.split(',').map(g => g.trim());
       }
-      const generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      
+      // *** INÍCIO DA MODIFICAÇÃO: Lógica para exibir gêneros ***
+      const generosParaMostrar = generosArray.slice(0, 2);
+      let generosHtml = generosParaMostrar.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      if (generosArray.length > 2) {
+        generosHtml += `<span class="genre-tag-ellipsis">...</span>`;
+      }
+      // *** FIM DA MODIFICAÇÃO ***
+
       const statusBadge = (livro.tipo === 'manga' && livro.statusManga) ? `<div class="manga-status">${livro.statusManga === 'concluido' ? 'Concluído' : 'Em andamento'}</div>` : '';
+      
       li.innerHTML = `<div class="book-item-cover" style="background-image: url('${livro.capaUrl || 'img/default_cover.png'}');">
           ${livro.isFavorite ? '<i class="fas fa-star favorite-icon"></i>' : ''}
           <div class="progress-bar-overlay"><div class="progress-overlay" style="width: ${percentual}%;">${percentual > 10 ? percentual + '%' : ''}</div></div>
