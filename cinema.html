@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cinema - Sol de Sóter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css"> 
-  <link rel="stylesheet" href="css/cinema.css"> 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="css/financas.css">
-  <link rel="stylesheet" href="css/notificacoes.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cinema - Tracker de Mídia</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/financas.css" />
+    <link rel="stylesheet" href="css/style_viagens.css" />
+    <link rel="stylesheet" href="css/cinema.css" />
+    <link rel="stylesheet" href="css/notificacoes.css">
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
 
-  
-</head>
-<body>
-  <header>
-  <div class="logo-container">
-    <a href="index.html" class="logo-link">
-      <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-      <h1>Sol de Sóter</h1>
-    </a>
-  </div>
+  </head>
+  <body>
+    <header>
+      <div class="logo-container">
+        <a href="index.html" class="logo-link">
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <h1>Sol de Sóter</h1>
+        </a>
+      </div>
 
-  <div class="menu-profile">
-    <nav class="navbar">
-      <ul class="nav-menu">
+      <div class="menu-profile">
+        <nav class="navbar">
+          <ul class="nav-menu">
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Biblioteca</a>
@@ -34,7 +38,7 @@
               </div>
               <ul class="dropdown-menu">
                 <li><a href="livraria.html">Livraria</a></li>
-                <li><a href="cinema.html">Cinema</a></li>
+                <li><a href="cinema_new.html">Cinema</a></li>
                 <li><a href="mangas.html">Mangas</a></li>
               </ul>
             </li>
@@ -55,189 +59,550 @@
             </li>
 
             <li>
-            <li class="dropdown">
               <div class="dropdown-header">
-                <a href="#">Livro</a>
-                <a href="#">Diario</a>
-                <button class="dropdown-toggle">▼</button>
+                <a href="#">Mídia</a>
               </div>
-              <ul class="dropdown-menu">
-                <li><a href="diario.html">Diário</a></li>
-              </ul>
             </li>
           </ul>
-    </nav>
+        </nav>
 
-    <div class="notification-center">
-      <button id="notification-bell" class="notification-bell">
-        <i class="fas fa-bell"></i>
-        <span id="notification-count" class="notification-count" style="display: none;">0</span>
-      </button>
-      <div id="notification-panel" class="notification-panel">
-        <div class="notification-panel-header">
-          <h3>Notificações</h3>
-        </div>
-        <ul id="notification-list" class="notification-list">
-          <li class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <p>Nenhuma notificação nova</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="dropdown profile-dropdown">
-      <div class="profile">
-        <span>Marcos</span>
-        <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
-      </div>
-      <ul class="dropdown-menu profile-menu">
-        <li class="saldo-menu-item">
-          <div id="saldo-header">
-            <span class="saldo-header-label">Saldo Atual</span>
-            <div id="saldo-do-dia">R$ 0,00</div>
+        <div class="notification-center">
+          <button id="notification-bell" class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span
+              id="notification-count"
+              class="notification-count"
+              style="display: none"
+              >0</span
+            >
+          </button>
+          <div id="notification-panel" class="notification-panel">
+            <div class="notification-panel-header">
+              <h3>Notificações</h3>
+            </div>
+            <ul id="notification-list" class="notification-list">
+              <li class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Nenhuma notificação nova</p>
+              </li>
+            </ul>
           </div>
-        </li>
-        <li>
-          <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        </li>
-        <li>
-          <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</header>
-
-  <main>
-    <div class="tracker-container">
-      <div class="search-container">
-        <i class="fas fa-search"></i>
-        <input type="search" id="search-bar" placeholder="Pesquisar por título...">
-      </div>
-      <div id="tabs-container" class="tabs-container">
-        <button class="tab-link active" data-filter="movies">Filmes</button>
-        <button class="tab-link" data-filter="series">Séries</button>
-        <button class="tab-link" data-filter="animes">Animes</button>
-        <button class="tab-link" data-filter="favorites"><i class="fas fa-star"></i> Favoritos</button>
-        <button class="tab-link" data-filter="Assistido">Assistido</button>
-        <button class="tab-link" data-filter="Assistindo">Assistindo</button>
-        <button class="tab-link" data-filter="Planejo Assistir">Planejo Assistir</button>
-      </div>
-
-      <section id="stats-section">
-        <h2>Estatísticas</h2>
-        <div id="stats-counters-container" class="stats-counters">
+        </div>
+        <div class="dropdown profile-dropdown">
+          <div class="profile">
+            <span>Marcos</span>
+            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
           </div>
-        <div id="stats-genres-chart-container" class="stats-chart">
-          <h3>Gêneros Mais Assistidos</h3>
-          <div id="genres-chart">
-            </div>
+          <ul class="dropdown-menu profile-menu">
+            <li class="saldo-menu-item">
+              <div id="saldo-header">
+                <span class="saldo-header-label">Saldo Atual</span>
+                <div id="saldo-do-dia">R$ 0,00</div>
+              </div>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </li>
+          </ul>
         </div>
-      </section>
-      <div id="items-card-container" class="card-container"></div>
-      <div id="genres-summary-section">
-          <h2>Gêneros</h2>
-          <div id="genres-summary-container"></div>
+      </div>
+    </header>
+
+    <main>
+      <div class="quote-section">
+        <div id="quote-display" class="quote-display"></div>
+        <div id="media-goal-card" class="reading-goal-card">
+          <h3>Meta de Mídia 2025</h3>
+          <div class="goal-progress">
+            <div class="goal-number">
+              <span id="media-watched-count">0</span>
+              <span class="goal-separator">/</span>
+              <span id="media-goal-target">24</span>
+            </div>
+            <div class="goal-label">mídias assistidas</div>
+          </div>
+          <div class="progress-bar">
+            <div id="media-goal-progress-fill" class="progress-fill"></div>
+          </div>
+          <div class="goal-percentage">
+            <span id="media-goal-percentage-text">0%</span> concluído
+          </div>
+        </div>
+      </div>
+
+      <div class="tracker-container">
+        <div class="tracker-header">
+          <h2>Meu Tracker de Mídia</h2>
+          <div class="book-counts">
+            <div class="book-count-item">
+              <span id="count-a-ler" class="count-number">0</span>
+              <span class="count-label">A assistir</span>
+            </div>
+            <div class="book-count-item">
+              <span id="count-lido" class="count-number">0</span>
+              <span class="count-label">Assistido</span>
+            </div>
+            <div class="book-count-item">
+              <span id="count-quero-ler" class="count-number">0</span>
+              <span class="count-label">Quero assistir</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-bar-container">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Pesquisar por título ou diretor/criador..."
+          />
+        </div>
+
+        <!-- Nova seção de filtros de organização -->
+        <div class="sort-filters-container">
+          <div class="sort-filters-header">
+            <i class="fas fa-sort"></i>
+            <span>Organizar por:</span>
+          </div>
+          <div class="sort-filters-options">
+            <button class="sort-filter-btn active" data-sort="default">
+              <i class="fas fa-clock"></i>
+              Mais recentes
+            </button>
+            <button class="sort-filter-btn" data-sort="title-asc">
+              <i class="fas fa-sort-alpha-down"></i>
+              Título (A-Z)
+            </button>
+            <button class="sort-filter-btn" data-sort="title-desc">
+              <i class="fas fa-sort-alpha-up"></i>
+              Título (Z-A)
+            </button>
+            <button class="sort-filter-btn" data-sort="author-asc">
+              <i class="fas fa-user"></i>
+              Diretor/Criador (A-Z)
+            </button>
+            <button class="sort-filter-btn" data-sort="pages-asc">
+              <i class="fas fa-film"></i>
+              Menor duração
+            </button>
+            <button class="sort-filter-btn" data-sort="pages-desc">
+              <i class="fas fa-video"></i>
+              Maior duração
+            </button>
+            <button class="sort-filter-btn" data-sort="progress-desc">
+              <i class="fas fa-chart-line"></i>
+              Maior progresso
+            </button>
+            <button class="sort-filter-btn" data-sort="start-date-desc">
+              <i class="fas fa-calendar-plus"></i>
+              Data início (recente)
+            </button>
+            <button class="sort-filter-btn" data-sort="start-date-asc">
+              <i class="fas fa-calendar-minus"></i>
+              Data início (antiga)
+            </button>
+            <button class="sort-filter-btn" data-sort="end-date-desc">
+              <i class="fas fa-calendar-check"></i>
+              Data término (recente)
+            </button>
+            <button class="sort-filter-btn" data-sort="rating-desc">
+              <i class="fas fa-star"></i>
+              Melhor avaliação
+            </button>
+            <button class="sort-filter-btn" data-sort="reading-time">
+              <i class="fas fa-stopwatch"></i>
+              Tempo assistido
+            </button>
+          </div>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tabs-nav">
+            <button class="tab-button active" data-tab="todos">Todos</button>
+            <button class="tab-button" data-tab="favoritos">Favoritos</button>
+            <button class="tab-button" data-tab="a-ler">A assistir</button>
+            <button class="tab-button" data-tab="quero-ler">Quero assistir</button>
+            <button class="tab-button" data-tab="lido">Assistido</button>
+            <button class="tab-button" data-tab="generos">Gêneros</button>
+          </div>
+          <div class="tabs-content">
+            <div id="tab-todos" class="tab-pane active">
+              <ul id="lista-Mídias-todos" class="book-list"></ul>
+              <div id="pagination-todos" class="pagination-container"></div>
+            </div>
+            <div id="tab-favoritos" class="tab-pane">
+              <ul id="lista-Mídias-favoritos" class="book-list"></ul>
+              <div id="pagination-favoritos" class="pagination-container"></div>
+            </div>
+            <div id="tab-a-ler" class="tab-pane">
+              <ul id="lista-Mídias-a-ler" class="book-list"></ul>
+              <div id="pagination-a-ler" class="pagination-container"></div>
+            </div>
+            <div id="tab-quero-ler" class="tab-pane">
+              <ul id="lista-Mídias-quero-ler" class="book-list"></ul>
+              <div id="pagination-quero-ler" class="pagination-container"></div>
+            </div>
+            <div id="tab-lido" class="tab-pane">
+              <ul id="lista-Mídias-lido" class="book-list"></ul>
+              <div id="pagination-lido" class="pagination-container"></div>
+            </div>
+            <div id="tab-generos" class="tab-pane">
+              <div
+                id="generos-filter-container"
+                class="generos-filter-container"
+              ></div>
+              <ul id="lista-Mídias-generos" class="book-list"></ul>
+              <div id="pagination-generos" class="pagination-container"></div>
+            </div>
+          </div>
+        </div>
+        <div class="genre-stats-section">
+          <h3>Gêneros na Coleção</h3>
+          <div id="genre-stats-container" class="genre-stats-container"></div>
+        </div>
+      </div>
+    </main>
+
+    <button id="open-add-book-modal-btn" class="fab">
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="add-book-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Adicionar Nova Mídia</h3>
+        <form id="add-book-form" class="add-book-form">
+          <!-- Seletor de Tipo de Mídia -->
+          <div class="media-type-selector">
+            <label for="tipo-midia">Tipo de Mídia:</label>
+            <select id="tipo-midia" required>
+              <option value="">Selecione o tipo</option>
+              <option value="filme">🎬 Filme</option>
+              <option value="serie">📺 Série</option>
+              <option value="anime">🎌 Anime</option>
+            </select>
+          </div>
+
+          <input
+            type="text"
+            id="titulo"
+            placeholder="Título da Mídia"
+            required
+          />
+          <input type="text" id="autor" placeholder="Diretor/Criador" required />
+
+          <!-- Campos condicionais para duração -->
+          <div id="duracao-filme" class="conditional-field" style="display: none;">
+            <input
+              type="number"
+              id="duracao-minutos"
+              placeholder="Duração em minutos"
+              min="1"
+            />
+          </div>
+
+          <div id="duracao-serie" class="conditional-field" style="display: none;">
+            <div class="episode-fields">
+              <input
+                type="number"
+                id="total-temporadas"
+                placeholder="Total de temporadas"
+                min="1"
+              />
+              <input
+                type="number"
+                id="total-episodios"
+                placeholder="Total de episódios"
+                min="1"
+              />
+              <input
+                type="number"
+                id="duracao-episodio"
+                placeholder="Duração média por episódio (min)"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <input type="url" id="capa-url" placeholder="URL da Imagem da Capa" />
+
+          <div class="saga-fields">
+            <input
+              type="text"
+              id="saga-nome"
+              placeholder="Nome da Série/Franquia"
+            />
+            <input type="text" id="saga-volume" placeholder="Temporada/Volume" />
+          </div>
+
+          <!-- Campos de progresso condicionais -->
+          <div id="progresso-filme" class="conditional-field" style="display: none;">
+            <label>Progresso:</label>
+            <div class="progress-fields">
+              <input
+                type="number"
+                id="minutos-assistidos"
+                placeholder="Minutos assistidos"
+                min="0"
+              />
+              <span> / </span>
+              <span id="total-minutos-display">0</span>
+              <span> minutos</span>
+            </div>
+          </div>
+
+          <div id="progresso-serie" class="conditional-field" style="display: none;">
+            <label>Progresso:</label>
+            <div class="progress-fields">
+              <input
+                type="number"
+                id="temporada-atual"
+                placeholder="Temporada atual"
+                min="0"
+              />
+              <input
+                type="number"
+                id="episodio-atual"
+                placeholder="Episódio atual"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div class="date-fields">
+            <label for="data-inicio">Data de Início:</label>
+            <input type="date" id="data-inicio" />
+            <label for="data-conclusao">Data de Conclusão:</label>
+            <input type="date" id="data-conclusao" />
+          </div>
+
+          <input
+            type="text"
+            id="generos"
+            placeholder="Gêneros (separados por vírgula)"
+            class="full-width"
+          />
+          <textarea
+            id="sumario"
+            placeholder="Sinopse da mídia..."
+            rows="4"
+            class="full-width"
+          ></textarea>
+          <textarea
+            id="resenha"
+            placeholder="Sua resenha ou notas pessoais..."
+            rows="4"
+            class="full-width"
+          ></textarea>
+
+          <button type="submit" id="add-Mídia-btn">Adicionar Mídia</button>
+        </form>
       </div>
     </div>
-  </main>
 
-  <button id="fab-add-item" class="fab"><i class="fas fa-plus"></i></button>
-
-  <div id="add-item-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-button">&times;</span>
-      <h2>Adicionar Novo Item</h2>
-      <form id="modal-form">
-        <select id="item-type" required>
-          <option value="" disabled selected>Selecione o Tipo</option>
-          <option value="movies">Filme</option>
-          <option value="series">Série</option>
-          <option value="animes">Anime</option>
-        </select>
-        <input type="text" id="item-title" placeholder="Título" required>
-        <input type="text" id="item-author" placeholder="Diretor / Criador">
-        <input type="text" id="item-poster" placeholder="URL da Imagem de Capa (Pôster)">
-        <textarea id="item-summary" placeholder="Sumário / Sinopse..." rows="3"></textarea>
-        <select id="item-status">
-            <option value="Assistido">Assistido</option>
-            <option value="Assistindo">Assistindo</option>
-            <option value="Planejo Assistir">Planejo Assistir</option>
-        </select>
-        <input type="text" id="item-genre" placeholder="Gênero (ex: Ação, Comédia)">
-        <input type="text" id="item-actors" placeholder="Atores Principais (separados por vírgula)">
-        <div class="form-group-inline" id="series-anime-fields" style="display: none;">
-            <input type="number" id="item-seasons" placeholder="Nº de Temporadas">
-            <input type="number" id="item-episodes" placeholder="Nº de Episódios">
+    <div id="confirm-delete-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h4>Confirmar Exclusão</h4>
+        <p>Você tem certeza de que deseja excluir esta mídia?</p>
+        <div class="modal-actions">
+          <button id="cancel-delete-btn" class="btn-secondary">Cancelar</button>
+          <button id="confirm-delete-btn" class="btn-danger">Excluir</button>
         </div>
-        <input type="text" id="item-franchise" placeholder="Franquia (ex: Senhor dos Anéis)">
-        <div class="form-group-inline">
-            <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="item-start-date" placeholder="Data de Início">
-            <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="item-end-date" placeholder="Data de Término">
-        </div>
-        <input type="number" id="item-rating" placeholder="Minha Nota (0-10)" min="0" max="10" step="0.1">
-        <textarea id="item-review" placeholder="Meu Review..." rows="3"></textarea>
-        <div class="favorite-checkbox-container">
-          <input type="checkbox" id="item-favorite">
-          <label for="item-favorite">Marcar como favorito</label>
-        </div>
-        <button type="submit">Salvar Item</button>
-      </form>
+      </div>
     </div>
-  </div>
 
-  <div id="details-modal" class="modal">
-    <div class="modal-content-details">
-        <span class="close-button details-close">&times;</span>
-        <div class="details-header">
-            <div class="details-thumb">
-                <img id="details-poster-img" src="" alt="Pôster">
+    <div id="media-stats-modal" class="modal">
+      <div class="modal-content stats-modal">
+        <span class="close-btn">&times;</span>
+        <h3>Estatísticas de Mídia 2025</h3>
+
+        <div class="stats-grid">
+          <div class="stats-card">
+            <h4>Meta Anual</h4>
+            <div class="stats-number">
+              <span id="stats-media-watched-count">0</span>/<span id="stats-media-goal"
+                >24</span
+              >
             </div>
-            <div class="details-header-info">
-                <div class="details-title-container">
-                  <h2 id="details-title">Título</h2>
-                  <button id="edit-item-btn" class="details-edit-btn" title="Editar Item"><i class="fas fa-edit"></i></button>
-                </div>
-                <p id="details-author" class="details-author">por Diretor/Criador</p>
-                <div class="details-meta">
-                    <span id="details-status" class="status"></span>
-                    <span id="details-rating"><i class="fas fa-star"></i> N/A</span>
-                </div>
-            </div>
+            <div class="stats-label">mídias assistidas</div>
+          </div>
+
+          <div class="stats-card">
+            <h4>Duração Total</h4>
+            <div class="stats-number" id="stats-total-progress">0</div>
+            <div class="stats-label">minutos/episódios totais</div>
+          </div>
+
+          <div class="stats-card">
+            <h4>Tempo Assistido</h4>
+            <div class="stats-number" id="stats-reading-days">0</div>
+            <div class="stats-label">dias assistindo</div>
+          </div>
+
+          <div class="stats-card">
+            <h4>Média por Mês</h4>
+            <div class="stats-number" id="stats-monthly-average">0</div>
+            <div class="stats-label">mídias/mês</div>
+          </div>
         </div>
-        <div class="details-body">
-            <div class="details-section" id="details-summary-section">
-                <h4>Sumário</h4>
-                <p id="details-summary"></p>
-            </div>
-            <div class="details-section" id="details-series-info">
-                <h4>Temporadas e Episódios</h4>
-                <p><span id="details-seasons"></span> Temporadas / <span id="details-episodes"></span> Episódios</p>
-            </div>
-            <div class="details-section">
-                <h4>Informações</h4>
-                <ul class="details-info-list">
-                    <li><strong>Gênero:</strong> <span id="details-genre"></span></li>
-                    <li><strong>Atores:</strong> <span id="details-actors"></span></li>
-                    <li><strong>Franquia:</strong> <span id="details-franchise"></span></li>
-                    <li><strong>Período Assistido:</strong> <span id="details-dates"></span></li>
-                </ul>
-            </div>
-            <div class="details-section" id="details-review-section">
-                <h4>Meu Review</h4>
-                <p id="details-review"></p>
-            </div>
+
+        <div class="charts-section">
+          <div class="chart-container">
+            <h4>Atividade de Mídia (estilo GitHub)</h4>
+            <div id="github-chart" class="github-chart"></div>
+          </div>
+
+          <div class="chart-container">
+            <h4>Gêneros Mais Assistidos</h4>
+            <div id="genres-chart" class="genres-chart"></div>
+          </div>
+
+          <div class="chart-container">
+            <h4>Diretores/Criadores Favoritos</h4>
+            <div id="authors-chart" class="authors-chart"></div>
+          </div>
         </div>
+      </div>
     </div>
-  </div>
 
-  <footer>
-    <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
-  </footer>
-  <script src="js/script.js"></script>
-  <script src="js/cinema.js"></script>
-  <script src="js/saldo-global.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/notificacoes.js"></script>
-</body>
+    <div id="book-details-modal" class="modal">
+      <div class="modal-content large">
+        <span class="close-btn">&times;</span>
+        <div class="details-grid">
+          <div class="details-cover">
+            <img id="details-capa-img" src="" alt="Capa da mídia" />
+            <div class="details-rating">
+              <label>Nota:</label>
+              <div id="details-nota-stars" class="star-rating" data-rating="0">
+                <i class="fa-solid fa-star" data-value="1"></i
+                ><i class="fa-solid fa-star" data-value="2"></i
+                ><i class="fa-solid fa-star" data-value="3"></i
+                ><i class="fa-solid fa-star" data-value="4"></i
+                ><i class="fa-solid fa-star" data-value="5"></i>
+              </div>
+            </div>
+            <!-- Campos condicionais para progresso no modal de detalhes -->
+            <div id="details-progresso-filme" class="details-progress conditional-field" style="display: none;">
+              <label>Progresso:</label>
+              <div class="progress-inputs">
+                <input type="number" id="details-minutos-assistidos" min="0" placeholder="Minutos assistidos" />
+                <span> / </span>
+                <input type="number" id="details-duracao-minutos" min="1" placeholder="Duração total" />
+                <span> minutos</span>
+              </div>
+            </div>
+
+            <div id="details-progresso-serie" class="details-progress conditional-field" style="display: none;">
+              <label>Progresso:</label>
+              <div class="progress-inputs episode-progress">
+                <div class="episode-row">
+                  <label>Temporada:</label>
+                  <input type="number" id="details-temporada-atual" min="1" placeholder="Atual" />
+                  <span> / </span>
+                  <input type="number" id="details-total-temporadas" min="1" placeholder="Total" />
+                </div>
+                <div class="episode-row">
+                  <label>Episódio:</label>
+                  <input type="number" id="details-episodio-atual" min="0" placeholder="Atual" />
+                  <span> / </span>
+                  <input type="number" id="details-total-episodios" min="1" placeholder="Total" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Campo para tipo de mídia no modal de detalhes -->
+            <div class="details-field">
+              <label>Tipo de Mídia:</label>
+              <select id="details-tipo-midia">
+                <option value="filme">🎬 Filme</option>
+                <option value="serie">📺 Série</option>
+                <option value="anime">🎌 Anime</option>
+              </select>
+            </div>
+          </div>
+          <div class="details-info">
+            <input
+              type="text"
+              id="details-titulo"
+              class="details-title-input"
+            />
+            <input
+              type="text"
+              id="details-autor"
+              class="details-author-input"
+            />
+            <div class="details-field">
+              <label>Série / Franquia:</label>
+              <div class="saga-fields">
+                <input
+                  type="text"
+                  id="details-saga-nome"
+                  placeholder="Nome da Série/Franquia"
+                />
+                <input
+                  type="text"
+                  id="details-saga-volume"
+                  placeholder="Temporada/Volume"
+                />
+              </div>
+            </div>
+            <div class="details-field">
+              <label>Gêneros:</label>
+              <input type="text" id="details-generos" />
+            </div>
+            <div class="details-field">
+              <label>Sinopse:</label>
+              <textarea id="details-sumario" rows="4"></textarea>
+            </div>
+            <div class="details-field">
+              <label>Resenha/Notas:</label>
+              <textarea id="details-resenha" rows="4"></textarea>
+            </div>
+            <div class="details-field">
+              <label>Data de Início:</label>
+              <input type="date" id="details-data-inicio" />
+            </div>
+            <div class="details-field">
+              <label>Data de Conclusão:</label>
+              <input type="date" id="details-data-conclusao" />
+            </div>
+            <div class="details-actions">
+              <button id="toggle-favorite-btn" class="btn-action">
+                <i class="fas fa-star"></i> Favoritar
+              </button>
+              <button id="save-changes-btn" class="btn-action btn-primary">
+                <i class="fas fa-save"></i> Salvar Alterações
+              </button>
+              <button id="delete-from-details-btn" class="btn-action btn-danger">
+                <i class="fas fa-trash"></i> Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="related-section">
+          <h4>Outras mídias do mesmo Diretor/Criador</h4>
+          <div id="other-books-by-author" class="related-books-grid"></div>
+        </div>
+        <div class="related-section" id="saga-section-container">
+          <h4>Outras mídias da mesma Série/Franquia</h4>
+          <div id="books-in-saga" class="related-books-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+    </footer>
+    <script src="js/saldo-global.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/script_viagens.js"></script>
+    <script src="js/cinema.js"></script>
+    <script src="js/media-stats.js"></script>
+    <script src="js/quotes.js"></script>
+  </body>
 </html>
+

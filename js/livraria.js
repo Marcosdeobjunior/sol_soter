@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeButtons = document.querySelectorAll('.close-btn');
   const detailsNotaStars = document.getElementById('details-nota-stars');
 
+  // NOVOS CAMPOS: tipo e status para mangá
+  const tipoSelect = document.getElementById('tipo');
+  const statusMangaContainer = document.getElementById('status-manga-container');
+  const statusMangaSelect = document.getElementById('status-manga');
+
+
   // Novos elementos do DOM para contadores e abas
   const countALer = document.getElementById('count-a-ler');
   const countLido = document.getElementById('count-lido');
@@ -28,10 +34,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortFiltersContainer = document.querySelector('.sort-filters-options');
 
   let livros = JSON.parse(localStorage.getItem('livrosTracker')) || [];
+
+  // MIGRAÇÃO AUTOMÁTICA: garantir que entradas antigas tenham 'tipo' (default 'livro')
+  try {
+    let __changedTipo = false;
+    livros = (livros || []).map(l => {
+      if (!Object.prototype.hasOwnProperty.call(l, 'tipo') || !l.tipo) { l.tipo = 'livro'; __changedTipo = true; }
+      return l;
+    });
+    if (__changedTipo) localStorage.setItem('livrosTracker', JSON.stringify(livros));
+  } catch (err) {
+    console.warn('Erro durante migração de tipo:', err);
+  }
+
+
+  // Mostrar/ocultar campo status do mangá quando tipo mudar
+  if (tipoSelect) {
+    tipoSelect.addEventListener('change', () => {
+      if (tipoSelect.value === 'manga') {
+        statusMangaContainer.style.display = 'block';
+      } else {
+        statusMangaContainer.style.display = 'none';
+      }
+    });
+    // Inicializar visibilidade
+    if (tipoSelect.value === 'manga') statusMangaContainer.style.display = 'block';
+  }
+
   let livroIdParaExcluir = null;
   let activeTab = 'todos'; // Aba ativa padrão
   let activeGenreFilter = 'todos'; // Filtro de gênero ativo padrão
-  let activeSortFilter = 'default'; // Filtro de organização ativo padrão
+      let activeSortFilter = 'title-asc'; // Filtro de organização ativo padrão
 
   // NOVO: Variáveis para paginação
   const LIVROS_POR_PAGINA = 30; // 6 colunas x 5 linhas
@@ -120,6 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return diffDays;
   };
 
+  // NOVO: Função para filtrar livros por tipo (manga, livro)
+  const filtrarPorTipo = (livrosArray) => {
+    if (activeSortFilter === 'mangas') {
+      return livrosArray.filter(livro => livro.tipo === 'manga');
+    }
+    return livrosArray;
+  };
+
   // NOVO: Função para ordenar livros baseado no filtro ativo
   const ordenarLivros = (livrosArray) => {
     const livrosCopia = [...livrosArray];
@@ -181,9 +222,17 @@ document.addEventListener('DOMContentLoaded', () => {
           return duracaoB - duracaoA;
         });
       
+
+
+      case 'mangas':
+        return livrosCopia.sort((a, b) => a.titulo.localeCompare(b.titulo));
       case 'default':
-      default:
         return livrosCopia.sort((a, b) => b.id - a.id); // Mais recentes primeiro
+      case 'title-asc':
+        return livrosCopia.sort((a, b) => a.titulo.localeCompare(b.titulo));
+
+
+
     }
   };
 
@@ -304,7 +353,45 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('historicoProgresso', JSON.stringify(historico));
   };
 
-  const salvarLivros = () => {
+  
+
+  // Função para criar objeto livro a partir do formulário (inclui tipo e statusManga)
+  const criarLivroDoFormulario = () => {
+    const titulo = document.getElementById('titulo') ? document.getElementById('titulo').value.trim() : '' ;
+    const autor = document.getElementById('autor') ? document.getElementById('autor').value.trim() : '';
+    const totalPaginas = parseInt(document.getElementById('total-paginas') ? document.getElementById('total-paginas').value : 0) || 0;
+    const capaUrl = document.getElementById('capa-url') ? document.getElementById('capa-url').value.trim() : '';
+    const sagaNome = document.getElementById('saga-nome') ? document.getElementById('saga-nome').value.trim() : '';
+    const sagaVolume = document.getElementById('saga-volume') ? document.getElementById('saga-volume').value.trim() : '';
+    const dataInicio = document.getElementById('data-inicio') ? document.getElementById('data-inicio').value : '';
+    const dataConclusao = document.getElementById('data-conclusao') ? document.getElementById('data-conclusao').value : '';
+    const generoInput = document.getElementById('genero-input') ? document.getElementById('genero-input').value.trim() : '';
+    const generos = generoInput ? generoInput.split(',').map(g => g.trim()) : [];
+    // Tipo e status do mangá (novos)
+    const tipo = document.getElementById('tipo') ? document.getElementById('tipo').value : 'livro';
+    const statusManga = (tipo === 'manga' && document.getElementById('status-manga')) ? document.getElementById('status-manga').value : '';
+
+    const novoLivro = {
+      id: Date.now(),
+      titulo,
+      autor,
+      totalPaginas,
+      paginaAtual: 0,
+      capaUrl,
+      saga: sagaNome || '',
+      volume: sagaVolume || '',
+      dataInicio: dataInicio || '',
+      dataConclusao: dataConclusao || '',
+      generos,
+      isFavorite: false,
+      nota: 0,
+      lido: false,
+      tipo,
+      statusManga
+    };
+    return novoLivro;
+  };
+const salvarLivros = () => {
     localStorage.setItem('livrosTracker', JSON.stringify(livros));
     const livrosLidos = livros.filter(livro => livro.lido);
     localStorage.setItem('livrosLidos', JSON.stringify(livrosLidos));
@@ -344,8 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
+    // NOVO: Aplicar filtragem por tipo antes da ordenação
+    const livrosFiltradosPorTipo = filtrarPorTipo(livrosParaRenderizar);
+
     // MODIFICADO: Aplicar ordenação antes de paginar
-    const livrosOrdenados = ordenarLivros(livrosParaRenderizar);
+    const livrosOrdenados = ordenarLivros(livrosFiltradosPorTipo);
     
     // NOVO: Aplicar paginação
     const paginaAtual = currentPages[tabId] || 1;
@@ -353,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     livrosPaginados.forEach(livro => {
       const li = document.createElement('li');
-      li.className = 'book-item';
+      li.className = 'book-item' + (livro.tipo === 'manga' ? ' manga' : '');
       li.dataset.id = livro.id;
       const percentual = livro.totalPaginas > 0 ? ((livro.paginaAtual / livro.totalPaginas) * 100).toFixed(0) : 0;
       let generosArray = [];
@@ -363,9 +453,11 @@ document.addEventListener('DOMContentLoaded', () => {
         generosArray = livro.generos.split(',').map(g => g.trim());
       }
       const generosHtml = generosArray.map(g => `<span class="genre-tag">${g}</span>`).join('');
+      const statusBadge = (livro.tipo === 'manga' && livro.statusManga) ? `<div class="manga-status">${livro.statusManga === 'concluido' ? 'Concluído' : 'Em andamento'}</div>` : '';
       li.innerHTML = `<div class="book-item-cover" style="background-image: url('${livro.capaUrl || 'img/default_cover.png'}');">
           ${livro.isFavorite ? '<i class="fas fa-star favorite-icon"></i>' : ''}
           <div class="progress-bar-overlay"><div class="progress-overlay" style="width: ${percentual}%;">${percentual > 10 ? percentual + '%' : ''}</div></div>
+          ${statusBadge}
         </div>
         <div class="book-item-info">
           <h4>${livro.titulo}</h4>
@@ -401,35 +493,37 @@ document.addEventListener('DOMContentLoaded', () => {
         )
       : livros;
 
-    let livrosFiltrados = [];
+    const livrosBaseFiltradoPorTipo = filtrarPorTipo(livrosBase);
 
+
+    let livrosFiltrados = [];
     switch (activeTab) {
       case 'todos':
-        livrosFiltrados = livrosBase;
+        livrosFiltrados = livrosBaseFiltradoPorTipo;
         break;
       case 'favoritos':
-        livrosFiltrados = livrosBase.filter(livro => livro.isFavorite);
+        livrosFiltrados = livrosBaseFiltradoPorTipo.filter(livro => livro.isFavorite);
         break;
       case 'a-ler':
-        livrosFiltrados = livrosBase.filter(livro => !livro.lido && livro.paginaAtual > 0);
+        livrosFiltrados = livrosBaseFiltradoPorTipo.filter(livro => !livro.lido && livro.paginaAtual > 0);
         break;
       case 'quero-ler':
-        livrosFiltrados = livrosBase.filter(livro => !livro.lido && livro.paginaAtual === 0);
+        livrosFiltrados = livrosBaseFiltradoPorTipo.filter(livro => !livro.lido && livro.paginaAtual === 0);
         break;
       case 'lido':
-        livrosFiltrados = livrosBase.filter(livro => livro.lido);
+        livrosFiltrados = livrosBaseFiltradoPorTipo.filter(livro => livro.lido);
         break;
       case 'generos':
         if (activeGenreFilter === 'todos') {
-          livrosFiltrados = livrosBase;
+          livrosFiltrados = livrosBaseFiltradoPorTipo;
         } else {
-          livrosFiltrados = livrosBase.filter(livro => 
+          livrosFiltrados = livrosBaseFiltradoPorTipo.filter(livro => 
             Array.isArray(livro.generos) && livro.generos.includes(activeGenreFilter)
           );
         }
         break;
       default:
-        livrosFiltrados = livrosBase;
+        livrosFiltrados = livrosBaseFiltradoPorTipo;
     }
 
     const currentListElement = document.getElementById(`lista-livros-${activeTab}`);
@@ -453,7 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // NOVO: Função para alternar filtro de organização
   const switchSortFilter = (sortId) => {
     document.querySelectorAll('.sort-filter-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.sort-filter-btn[data-sort="${sortId}"]`).classList.add('active');
+    const __sortBtn = document.querySelector(`.sort-filter-btn[data-sort="${sortId}"]`);
+    if (__sortBtn) __sortBtn.classList.add('active');
     activeSortFilter = sortId;
     
     // Reset páginas quando mudar filtro
@@ -794,6 +889,13 @@ document.addEventListener('DOMContentLoaded', () => {
   updateBookCounts();
   renderizarLivros();
   renderizarGenreStats(); // NOVO: Renderiza as estatísticas de gênero
+
+  // Garantir que o botão de organização atual apareça ativo na UI (se existir)
+  try {
+    const __initialSortBtn = document.querySelector(`.sort-filter-btn[data-sort="${activeSortFilter}"]`);
+    if (__initialSortBtn) __initialSortBtn.classList.add('active');
+  } catch (e) { console.warn('erro ao setar botão inicial ativo', e); }
+
   
   setTimeout(() => {
     if (window.readingStats) {
@@ -801,3 +903,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 100);
 });
+if (addBookForm) {
+  addBookForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const novoLivro = criarLivroDoFormulario();
+    livros.unshift(novoLivro);
+    salvarLivros();
+    addBookForm.reset();
+    if (addBookModal) addBookModal.classList.remove('show');
+    if (statusMangaContainer) statusMangaContainer.style.display = 'none';
+  });
+}

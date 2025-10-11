@@ -168,11 +168,11 @@
             <span>Organizar por:</span>
           </div>
           <div class="sort-filters-options">
-            <button class="sort-filter-btn active" data-sort="default">
+            <button class="sort-filter-btn" data-sort="default">
               <i class="fas fa-clock"></i>
               Mais recentes
             </button>
-            <button class="sort-filter-btn" data-sort="title-asc">
+            <button class="sort-filter-btn active" data-sort="title-asc">
               <i class="fas fa-sort-alpha-down"></i>
               Título (A-Z)
             </button>
@@ -215,6 +215,10 @@
             <button class="sort-filter-btn" data-sort="reading-time">
               <i class="fas fa-stopwatch"></i>
               Duração da leitura
+            </button>
+            <button class="sort-filter-btn" data-sort="mangas">
+              <i class="fas fa-book"></i>
+              Mangás
             </button>
           </div>
         </div>
@@ -275,6 +279,18 @@
         <span class="close-btn">&times;</span>
         <h3>Adicionar Novo Livro</h3>
         <form id="add-book-form" class="add-book-form">
+          <select id="tipo" class="full-width" required>
+            <option value="livro">Livro</option>
+            <option value="manga">Mangá</option>
+          </select>
+
+          <div id="status-manga-container" class="full-width" style="display:none;">
+            <label for="status-manga" style="color:#fff; font-weight:600;">Status (Mangá)</label>
+            <select id="status-manga">
+              <option value=\"em-andamento\">Em andamento</option>
+              <option value=\"concluido\">Concluído</option>
+            </select>
+          </div>
           <input
             type="text"
             id="titulo"

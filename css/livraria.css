@@ -1662,3 +1662,28 @@ h2, h3 {
     min-height: 2400px;
   }
 }
+
+
+
+/* Destaque visual para mangás */
+.book-item.manga {
+  border-left: 6px solid #1e90ff;
+}
+#status-manga-container label { display:block; margin-bottom:0.4rem; }
+#tipo, #status-manga { padding:0.7rem; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; }
+
+
+.manga-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(30,144,255,0.95);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  z-index: 5;
+}
+.book-item .book-item-cover { position: relative; }
