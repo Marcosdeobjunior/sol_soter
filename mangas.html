@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mangás - Tracker de Leitura</title>
+    <title>Biblioteca de Mangas</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
       rel="stylesheet"
@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="css/style_viagens.css" />
     <link rel="stylesheet" href="css/mangas.css" />
     <link rel="stylesheet" href="css/notificacoes.css">
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
+
   </head>
   <body>
     <header>
@@ -35,7 +37,7 @@
                 <button class="dropdown-toggle">▼</button>
               </div>
               <ul class="dropdown-menu">
-                <li><a href="livraria.html">Livraria</a></li>
+                <li><a href="livraria.html">Biblioteca de Mangas</a></li>
                 <li><a href="cinema.html">Cinema</a></li>
                 <li><a href="mangas.html">Mangas</a></li>
               </ul>
@@ -56,14 +58,10 @@
               </ul>
             </li>
 
-            <li class="dropdown">
+            <li>
               <div class="dropdown-header">
-                <a href="#">Diario</a>
-                <button class="dropdown-toggle">▼</button>
+                <a href="#">Livro</a>
               </div>
-              <ul class="dropdown-menu">
-                <li><a href="diario.html">Diario</a></li>
-              </ul>
             </li>
           </ul>
         </nav>
@@ -124,7 +122,7 @@
               <span class="goal-separator">/</span>
               <span id="books-goal-target">24</span>
             </div>
-            <div class="goal-label">volumes lidos</div>
+            <div class="goal-label">livros lidos</div>
           </div>
           <div class="progress-bar">
             <div id="goal-progress-fill" class="progress-fill"></div>
@@ -163,6 +161,68 @@
           />
         </div>
 
+        <!-- Nova seção de filtros de organização -->
+        <div class="sort-filters-container">
+          <div class="sort-filters-header">
+            <i class="fas fa-sort"></i>
+            <span>Organizar por:</span>
+          </div>
+          <div class="sort-filters-options">
+            <button class="sort-filter-btn" data-sort="default">
+              <i class="fas fa-clock"></i>
+              Mais recentes
+            </button>
+            <button class="sort-filter-btn active" data-sort="title-asc">
+              <i class="fas fa-sort-alpha-down"></i>
+              Título (A-Z)
+            </button>
+            <button class="sort-filter-btn" data-sort="title-desc">
+              <i class="fas fa-sort-alpha-up"></i>
+              Título (Z-A)
+            </button>
+            <button class="sort-filter-btn" data-sort="author-asc">
+              <i class="fas fa-user"></i>
+              Autor (A-Z)
+            </button>
+            <button class="sort-filter-btn" data-sort="pages-asc">
+              <i class="fas fa-book-open"></i>
+              Menos páginas
+            </button>
+            <button class="sort-filter-btn" data-sort="pages-desc">
+              <i class="fas fa-book"></i>
+              Mais páginas
+            </button>
+            <button class="sort-filter-btn" data-sort="progress-desc">
+              <i class="fas fa-chart-line"></i>
+              Maior progresso
+            </button>
+            <button class="sort-filter-btn" data-sort="start-date-desc">
+              <i class="fas fa-calendar-plus"></i>
+              Data início (recente)
+            </button>
+            <button class="sort-filter-btn" data-sort="start-date-asc">
+              <i class="fas fa-calendar-minus"></i>
+              Data início (antiga)
+            </button>
+            <button class="sort-filter-btn" data-sort="end-date-desc">
+              <i class="fas fa-calendar-check"></i>
+              Data término (recente)
+            </button>
+            <button class="sort-filter-btn" data-sort="rating-desc">
+              <i class="fas fa-star"></i>
+              Melhor avaliação
+            </button>
+            <button class="sort-filter-btn" data-sort="reading-time">
+              <i class="fas fa-stopwatch"></i>
+              Duração da leitura
+            </button>
+            <button class="sort-filter-btn" data-sort="mangas">
+              <i class="fas fa-book"></i>
+              Mangás
+            </button>
+          </div>
+        </div>
+
         <div class="tabs-container">
           <div class="tabs-nav">
             <button class="tab-button active" data-tab="todos">Todos</button>
@@ -174,26 +234,32 @@
           </div>
           <div class="tabs-content">
             <div id="tab-todos" class="tab-pane active">
-              <ul id="lista-mangas-todos" class="book-list"></ul>
+              <ul id="lista-livros-todos" class="book-list"></ul>
+              <div id="pagination-todos" class="pagination-container"></div>
             </div>
             <div id="tab-favoritos" class="tab-pane">
-              <ul id="lista-mangas-favoritos" class="book-list"></ul>
+              <ul id="lista-livros-favoritos" class="book-list"></ul>
+              <div id="pagination-favoritos" class="pagination-container"></div>
             </div>
             <div id="tab-a-ler" class="tab-pane">
-              <ul id="lista-mangas-a-ler" class="book-list"></ul>
+              <ul id="lista-livros-a-ler" class="book-list"></ul>
+              <div id="pagination-a-ler" class="pagination-container"></div>
             </div>
             <div id="tab-quero-ler" class="tab-pane">
-              <ul id="lista-mangas-quero-ler" class="book-list"></ul>
+              <ul id="lista-livros-quero-ler" class="book-list"></ul>
+              <div id="pagination-quero-ler" class="pagination-container"></div>
             </div>
             <div id="tab-lido" class="tab-pane">
-              <ul id="lista-mangas-lido" class="book-list"></ul>
+              <ul id="lista-livros-lido" class="book-list"></ul>
+              <div id="pagination-lido" class="pagination-container"></div>
             </div>
             <div id="tab-generos" class="tab-pane">
               <div
                 id="generos-filter-container"
                 class="generos-filter-container"
               ></div>
-              <ul id="lista-mangas-generos" class="book-list"></ul>
+              <ul id="lista-livros-generos" class="book-list"></ul>
+              <div id="pagination-generos" class="pagination-container"></div>
             </div>
           </div>
         </div>
@@ -204,19 +270,31 @@
       </div>
     </main>
 
-    <button id="open-add-manga-modal-btn" class="fab">
+    <button id="open-add-book-modal-btn" class="fab">
       <i class="fas fa-plus"></i>
     </button>
 
-    <div id="add-manga-modal" class="modal">
+    <div id="add-book-modal" class="modal">
       <div class="modal-content">
         <span class="close-btn">&times;</span>
-        <h3>Adicionar Novo Mangá</h3>
-        <form id="add-manga-form" class="add-book-form">
+        <h3>Adicionar Novo Livro</h3>
+        <form id="add-book-form" class="add-book-form">
+          <select id="tipo" class="full-width" required>
+            <option value="livro">Livro</option>
+            <option value="manga">Mangá</option>
+          </select>
+
+          <div id="status-manga-container" class="full-width" style="display:none;">
+            <label for="status-manga" style="color:#fff; font-weight:600;">Status (Mangá)</label>
+            <select id="status-manga">
+              <option value=\"em-andamento\">Em andamento</option>
+              <option value=\"concluido\">Concluído</option>
+            </select>
+          </div>
           <input
             type="text"
             id="titulo"
-            placeholder="Título do Mangá"
+            placeholder="Título do Livro"
             required
           />
           <input type="text" id="autor" placeholder="Autor" required />
@@ -231,7 +309,11 @@
           <input type="url" id="capa-url" placeholder="URL da Imagem da Capa" />
 
           <div class="saga-fields">
-            <input type="text" id="saga-nome" placeholder="Nome da Série" />
+            <input
+              type="text"
+              id="saga-nome"
+              placeholder="Nome da Saga/Série"
+            />
             <input type="text" id="saga-volume" placeholder="Volume" />
           </div>
 
@@ -250,7 +332,7 @@
           />
           <textarea
             id="sumario"
-            placeholder="Sumário / Sinopse do mangá..."
+            placeholder="Sumário / Sinopse do livro..."
             rows="4"
             class="full-width"
           ></textarea>
@@ -261,7 +343,7 @@
             class="full-width"
           ></textarea>
 
-          <button type="submit" id="add-manga-btn">Adicionar Mangá</button>
+          <button type="submit" id="add-livro-btn">Adicionar Livro</button>
         </form>
       </div>
     </div>
@@ -270,7 +352,7 @@
       <div class="modal-content">
         <span class="close-btn">&times;</span>
         <h4>Confirmar Exclusão</h4>
-        <p>Você tem certeza de que deseja excluir este mangá?</p>
+        <p>Você tem certeza de que deseja excluir este livro?</p>
         <div class="modal-actions">
           <button id="cancel-delete-btn" class="btn-secondary">Cancelar</button>
           <button id="confirm-delete-btn" class="btn-danger">Excluir</button>
@@ -291,7 +373,7 @@
                 >24</span
               >
             </div>
-            <div class="stats-label">volumes lidos</div>
+            <div class="stats-label">livros lidos</div>
             <div class="stats-progress-bar">
               <div id="stats-progress-fill" class="stats-progress-fill"></div>
             </div>
@@ -312,7 +394,7 @@
           <div class="stats-card">
             <h4>Média por Mês</h4>
             <div class="stats-number" id="stats-monthly-average">0</div>
-            <div class="stats-label">volumes/mês</div>
+            <div class="stats-label">livros/mês</div>
           </div>
         </div>
 
@@ -335,12 +417,12 @@
       </div>
     </div>
 
-    <div id="manga-details-modal" class="modal">
+    <div id="book-details-modal" class="modal">
       <div class="modal-content large">
         <span class="close-btn">&times;</span>
         <div class="details-grid">
           <div class="details-cover">
-            <img id="details-capa-img" src="" alt="Capa do mangá" />
+            <img id="details-capa-img" src="" alt="Capa do livro" />
             <div class="details-rating">
               <label>Nota:</label>
               <div id="details-nota-stars" class="star-rating" data-rating="0">
@@ -373,12 +455,12 @@
               class="details-author-input"
             />
             <div class="details-field">
-              <label>Série:</label>
+              <label>Saga / Série:</label>
               <div class="saga-fields">
                 <input
                   type="text"
                   id="details-saga-nome"
-                  placeholder="Nome da Série"
+                  placeholder="Nome da Saga"
                 />
                 <input
                   type="text"
@@ -428,11 +510,11 @@
           class="saga-section"
           style="display: none"
         >
-          <h4>Volumes na mesma série:</h4>
+          <h4>Livros na mesma saga:</h4>
           <div id="books-in-saga" class="related-books-grid"></div>
         </div>
         <div class="other-books-section">
-          <h4>Outros mangás do autor:</h4>
+          <h4>Outros livros do autor:</h4>
           <div id="other-books-by-author" class="related-books-grid"></div>
         </div>
       </div>
@@ -447,6 +529,5 @@
     <script src="js/quotes.js"></script>
     <script src="js/manga-stats.js"></script>
     <script src="js/mangas.js"></script>
-    <script src="js/notificacoes.js"></script>
   </body>
 </html>

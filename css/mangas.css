@@ -75,7 +75,10 @@ h2, h3 {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(6, 1fr); /* Exatamente 6 colunas */
+  grid-template-rows: repeat(5, 1fr); /* Exatamente 5 linhas */
   gap: 1.5rem;
+  min-height: 1800px; /* Altura fixa para manter consistência */
 }
 
 .book-item {
@@ -136,75 +139,43 @@ h2, h3 {
   transition: width 0.5s ease;
 }
 
-/* Em mangas.css - SUBSTITUA AS REGRAS ANTIGAS POR ESTAS */
-
-.book-item {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  overflow: hidden;
-  border: 1px solid #e9ecef;
-  /* A altura fixa garante que todos os cards tenham o mesmo tamanho */
-  height: 350px; 
-}
-
 .book-item-info {
   padding: 1rem;
-  /* Habilita o layout flexível na vertical */
   display: flex;
-  flex-direction: column; 
-  /* Faz esta área ocupar todo o espaço restante no card */
-  flex-grow: 1; 
-  /* Garante que a altura fixa seja respeitada, escondendo qualquer excesso raro */
-  overflow: hidden; 
+  flex-direction: column;
+  flex-grow: 1;
+  /* height: 150px; */ /* Altura aumentada para melhor visualização */
+  /* overflow: hidden; */
 }
 
 .book-item-info h4 {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.8rem 0; /* Espaço aumentado entre título e autor */
   color: #2c3e50;
   font-size: 1rem;
   font-weight: 600;
-  line-height: 1.3;
-
-  /* --- INÍCIO DA CORREÇÃO --- */
-  /* Garante que o elemento se comporte como um bloco e ocupe a largura disponível */
-  display: block; 
-  width: 100%;
-  
-  /* Força o texto a ficar em uma única linha */
-  white-space: nowrap; 
-
-  /* Esconde o texto que transborda o espaço do elemento */
-  overflow: hidden; 
-
-  /* Adiciona "..." no final do texto que foi escondido */
-  text-overflow: ellipsis; 
-  /* --- FIM DA CORREÇÃO --- */
+  line-height: 1.2;
+  display: -webkit-box;
+  /* -webkit-line-clamp: 2; */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-item-info .autor {
   color: #7f8c8d;
   font-style: italic;
   font-size: 0.85rem;
-  margin-bottom: 0.5rem; /* Margem inferior reduzida */
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limita em 2 linhas */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 0.8rem; /* Espaço aumentado abaixo do autor */
+  /* white-space: nowrap; */
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
 }
 
 .card-rating {
-  margin-bottom: 0.5rem; /* Margem inferior ajustada */
+  margin-bottom: 0.5rem;
   color: #ffd700;
   font-size: 0.9rem;
 }
-
 .card-rating .fa-regular {
   color: #ced4da;
 }
@@ -213,11 +184,7 @@ h2, h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  
-  /* === A MÁGICA ACONTECE AQUI === */
-  /* Esta propriedade empurra as tags para o final do container, */
-  /* criando um espaço flexível que se ajusta ao conteúdo acima. */
-  margin-top: auto; 
+  margin-top: auto;
 }
 
 .genre-tag {
@@ -353,18 +320,16 @@ h2, h3 {
 }
 
 /* =============================================
-   MODAL DE ADICIONAR LIVRO/MANGÁ - LAYOUT EM DUAS COLUNAS
+   MODAL DE ADICIONAR LIVRO - LAYOUT EM DUAS COLUNAS
    ============================================= */
-#add-book-modal .modal-content,
-#add-manga-modal .modal-content {
+#add-book-modal .modal-content {
   width: 90%;
   max-width: 800px; /* Aumentado para acomodar duas colunas */
   max-height: 80vh; /* Diminuindo a altura máxima */
   overflow-y: auto; /* Adiciona scroll se o conteúdo for maior */
 }
 
-#add-book-modal h3,
-#add-manga-modal h3 {
+#add-book-modal h3 {
   color: #fff;
   text-align: center;
   margin-bottom: 2rem;
@@ -436,10 +401,9 @@ h2, h3 {
 }
 
 /* =============================================
-   MODAL DE DETALHES DO LIVRO/MANGÁ
+   MODAL DE DETALHES DO LIVRO
    ============================================= */
-#book-details-modal .modal-content,
-#manga-details-modal .modal-content {
+#book-details-modal .modal-content {
     background-color: #3a3c4f; /* Cor mais escura para o modal de detalhes */
     width: 95%;
     max-width: 1000px;
@@ -615,7 +579,7 @@ h2, h3 {
   color: #fff;
   line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -626,9 +590,9 @@ h2, h3 {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* white-space: nowrap; */
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
 }
 
 .other-books-section, .saga-section {
@@ -656,15 +620,15 @@ h2, h3 {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .details-cover {
     order: -1;
   }
-  
+
   .add-book-form {
     grid-template-columns: 1fr;
   }
-  
+
   .book-list {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
@@ -674,16 +638,16 @@ h2, h3 {
   .tracker-container {
     padding: 1rem;
   }
-  
+
   .book-list {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
   }
-  
+
   .book-item {
     height: 300px;
   }
-  
+
   .book-item-info {
     height: 120px;
     padding: 0.8rem;
@@ -842,12 +806,12 @@ h2, h3 {
   .quote-author {
     font-size: 0.9rem;
   }
-  
+
   .quote-section {
     margin: 1rem auto 0 auto;
     gap: 1.5rem;
   }
-  
+
   .quote-display {
     padding: 1.5rem;
   }
@@ -1046,11 +1010,11 @@ h2, h3 {
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
-  
+
   .github-chart {
     grid-template-columns: repeat(26, 1fr);
   }
-  
+
   .github-day {
     width: 10px;
     height: 10px;
@@ -1286,11 +1250,11 @@ h2, h3 {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .quote-actions {
     align-self: flex-end;
   }
-  
+
   #edit-quotes-modal .modal-content {
     width: 95%;
     margin: 0.5rem;
@@ -1456,3 +1420,270 @@ h2, h3 {
     flex-direction: column;
   }
 }
+
+/* =============================================
+   FILTROS DE ORGANIZAÇÃO
+   ============================================= */
+.sort-filters-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.sort-filters-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.sort-filters-header i {
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+.sort-filters-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sort-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+}
+
+.sort-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sort-filter-btn.active {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.sort-filter-btn.active:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.sort-filter-btn i {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.sort-filter-btn.active i {
+  opacity: 1;
+}
+
+/* Responsividade para filtros */
+@media (max-width: 768px) {
+  .sort-filters-options {
+    justify-content: center;
+  }
+
+  .sort-filter-btn {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sort-filters-container {
+    padding: 1rem;
+  }
+
+  .sort-filters-options {
+    gap: 0.5rem;
+  }
+
+  .sort-filter-btn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 15px;
+  }
+
+  .sort-filters-header {
+    font-size: 1rem;
+  }
+}
+
+/* =============================================
+   CONTROLES DE PAGINAÇÃO
+   ============================================= */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  text-decoration: none;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-btn.prev,
+.pagination-btn.next {
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+}
+
+.pagination-btn.prev i,
+.pagination-btn.next i {
+  font-size: 0.8rem;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Responsividade para paginação */
+@media (max-width: 768px) {
+  .pagination-container {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .pagination-btn {
+    min-width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
+  }
+  
+  .pagination-info {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .book-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas em mobile */
+    grid-template-rows: repeat(15, 1fr); /* 15 linhas para manter 30 livros */
+    min-height: 4500px;
+  }
+  
+  .pagination-btn {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .book-list {
+    grid-template-columns: repeat(3, 1fr); /* 3 colunas em tablet */
+    grid-template-rows: repeat(10, 1fr); /* 10 linhas para manter 30 livros */
+    min-height: 3000px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .book-list {
+    grid-template-columns: repeat(4, 1fr); /* 4 colunas em tablet grande */
+    grid-template-rows: repeat(8, 1fr); /* 8 linhas para aproximar 30 livros */
+    min-height: 2400px;
+  }
+}
+
+
+
+/* Destaque visual para mangás */
+.book-item.manga {
+  border-left: 6px solid #1e90ff;
+}
+#status-manga-container label { display:block; margin-bottom:0.4rem; }
+#tipo, #status-manga { padding:0.7rem; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #fff; }
+
+
+.manga-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(30,144,255,0.95);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  z-index: 5;
+}
+.book-item .book-item-cover { position: relative; }

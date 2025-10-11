@@ -1,95 +1,110 @@
-class MediaStats {
+class ReadingStats {
   constructor() {
-    this.goalTarget = 50; // Meta anual padrão para mídias
+    this.goalTarget = 24; // Meta anual padrão
     this.initializeEventListeners();
   }
 
   initializeEventListeners() {
-    const goalCard = document.getElementById("media-goal-card");
+    const goalCard = document.getElementById('reading-goal-card');
     if (goalCard) {
-      goalCard.addEventListener("click", () => {
-        const mediaWatched = this.getMediaWatchedCount();
-        if (mediaWatched >= this.goalTarget) return;
+      goalCard.addEventListener('click', () => {
+        const booksRead = this.getBooksReadCount();
+        if (booksRead >= this.goalTarget) return;
         this.openStatsModal();
       });
     }
 
-    const statsModal = document.getElementById("media-stats-modal");
+    const statsModal = document.getElementById('reading-stats-modal');
     if (statsModal) {
-      const closeBtn = statsModal.querySelector(".close-btn");
-      if (closeBtn) closeBtn.addEventListener("click", () => this.closeStatsModal());
-      statsModal.addEventListener("click", (e) => {
+      const closeBtn = statsModal.querySelector('.close-btn');
+      if (closeBtn) closeBtn.addEventListener('click', () => this.closeStatsModal());
+      statsModal.addEventListener('click', (e) => {
         if (e.target === statsModal) this.closeStatsModal();
       });
     }
   }
 
-  getWatchingHistory() {
-    return JSON.parse(localStorage.getItem("historicoProgressoMidia") || "{}");
+  // NOVO: Obtém o histórico de progresso do localStorage
+  getReadingHistory() {
+    return JSON.parse(localStorage.getItem('historicoProgressoMangas') || '{}');
   }
 
-  getWatchingDays() {
-    const history = this.getWatchingHistory();
+  // CORRIGIDO: Calcula os dias de leitura com base no histórico real
+  getReadingDays() {
+    const history = this.getReadingHistory();
+    // Conta o número de dias únicos que têm registro de leitura
     return Object.keys(history).length;
   }
 
-  getTotalProgress() {
-    const history = this.getWatchingHistory();
-    return Object.values(history).reduce((total, dailyData) => total + dailyData.progress, 0);
+  // CORRIGIDO: Calcula o total de páginas lidas com base no histórico
+  getTotalPagesRead() {
+    const history = this.getReadingHistory();
+    return Object.values(history).reduce((total, dailyData) => total + dailyData.pagesRead, 0);
   }
 
-  getProgressByDate() {
-    const history = this.getWatchingHistory();
-    const progressPerDay = {};
+  // CORRIGIDO: Usa o histórico diretamente para o gráfico GitHub
+  getPagesReadByDate() {
+    const history = this.getReadingHistory();
+    const pagesPerDay = {};
     for (const date in history) {
-      progressPerDay[date] = history[date].progress;
+      pagesPerDay[date] = history[date].pagesRead;
     }
-    return progressPerDay;
+    return pagesPerDay;
   }
 
+  // As funções abaixo permanecem, mas agora usam dados mais precisos
   updateGoalProgress() {
-    const mediaWatched = this.getMediaWatchedCount();
-    const percentage = Math.round((mediaWatched / this.goalTarget) * 100);
+    const booksRead = this.getBooksReadCount();
+    const percentage = Math.round((booksRead / this.goalTarget) * 100);
 
-    const mediaWatchedElement = document.getElementById("media-watched-count");
-    const goalTargetElement = document.getElementById("media-goal-target");
-    const progressFill = document.getElementById("media-goal-progress-fill");
-    const percentageText = document.getElementById("media-goal-percentage-text");
-    const goalCard = document.getElementById("media-goal-card");
+    const booksReadElement = document.getElementById('books-read-count');
+    const goalTargetElement = document.getElementById('books-goal-target');
+    const progressFill = document.getElementById('goal-progress-fill');
+    const percentageText = document.getElementById('goal-percentage-text');
+    const goalCard = document.getElementById('reading-goal-card');
 
-    if (mediaWatchedElement) mediaWatchedElement.textContent = mediaWatched;
+    if (booksReadElement) booksReadElement.textContent = booksRead;
     if (goalTargetElement) goalTargetElement.textContent = this.goalTarget;
     if (progressFill) progressFill.style.width = `${Math.min(percentage, 100)}%`;
     if (percentageText) percentageText.textContent = `${percentage}`;
 
     if (goalCard) {
-      if (mediaWatched >= this.goalTarget) {
-        goalCard.style.cursor = "default";
-        goalCard.title = "Meta de mídias assistidas completada!";
+      if (booksRead >= this.goalTarget) {
+        goalCard.style.cursor = 'default';
+        goalCard.title = 'Meta de leitura completada!';
       } else {
-        goalCard.style.cursor = "pointer";
-        goalCard.title = "Clique para ver estatísticas detalhadas";
+        goalCard.style.cursor = 'pointer';
+        goalCard.title = 'Clique para ver estatísticas detalhadas';
       }
     }
   }
 
-  getMediaWatchedCount() {
-    const midiasAssistidas = (JSON.parse(localStorage.getItem("midiasTracker")||"[]")).filter(m=>m.lido);
-    return midiasAssistidas.length;
+  
+getBooksReadCount() {
+    const mangasLidos = JSON.parse(localStorage.getItem('mangasLidos') || '[]');
+    if (mangasLidos && mangasLidos.length) return mangasLidos.length;
+    // Fallback: contar a partir do 'mangasTracker' caso 'mangasLidos' não exista ou esteja vazio
+    try {
+      const mangasTracker = JSON.parse(localStorage.getItem('mangasTracker') || '[]');
+      return mangasTracker.filter(m => m.lido).length;
+    } catch (e) {
+      return 0;
+    }
   }
 
+
   getMonthlyAverage() {
-    const mediaWatched = this.getMediaWatchedCount();
+    const booksRead = this.getBooksReadCount();
     const currentMonth = new Date().getMonth() + 1;
-    return mediaWatched > 0 ? (mediaWatched / currentMonth).toFixed(1) : 0;
+    return booksRead > 0 ? (booksRead / currentMonth).toFixed(1) : 0;
   }
 
   getGenreStats() {
-    const midiasAssistidas = (JSON.parse(localStorage.getItem("midiasTracker")||"[]")).filter(m=>m.lido);
+    const mangasLidos = JSON.parse(localStorage.getItem('mangasLidos') || '[]');
     const genreCount = {};
-    midiasAssistidas.forEach(midia => {
-      if (midia.generos) {
-        const genres = Array.isArray(midia.generos) ? midia.generos : midia.generos.split(",").map(g => g.trim());
+    mangasLidos.forEach(livro => {
+      if (livro.generos) {
+        const genres = Array.isArray(livro.generos) ? livro.generos : livro.generos.split(',').map(g => g.trim());
         genres.forEach(genre => {
           if (genre) genreCount[genre] = (genreCount[genre] || 0) + 1;
         });
@@ -99,59 +114,85 @@ class MediaStats {
   }
 
   getAuthorStats() {
-    const midiasAssistidas = (JSON.parse(localStorage.getItem("midiasTracker")||"[]")).filter(m=>m.lido);
+    const mangasLidos = JSON.parse(localStorage.getItem('mangasLidos') || '[]');
     const authorCount = {};
-    midiasAssistidas.forEach(midia => {
-      if (midia.autor) authorCount[midia.autor] = (authorCount[midia.autor] || 0) + 1;
+    mangasLidos.forEach(livro => {
+      if (livro.autor) authorCount[livro.autor] = (authorCount[livro.autor] || 0) + 1;
     });
     return Object.entries(authorCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }
 
   generateGitHubChart() {
-    const chartContainer = document.getElementById("github-chart");
+    const chartContainer = document.getElementById('github-chart');
     if (!chartContainer) return;
-    chartContainer.innerHTML = "";
+    chartContainer.innerHTML = '';
     
-    const progressPerDay = this.getProgressByDate();
-    const maxProgress = Math.max(...Object.values(progressPerDay), 1);
+    const pagesPerDay = this.getPagesReadByDate();
+    const maxPages = Math.max(...Object.values(pagesPerDay), 1);
     const today = new Date();
     const startDate = new Date(today.getFullYear(), 0, 1);
 
     for (let i = 0; i < 365; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
-      const dateString = currentDate.toISOString().split("T")[0];
-      const progressOnDate = progressPerDay[dateString] || 0;
+      const dateString = currentDate.toISOString().split('T')[0];
+      const pagesOnDate = pagesPerDay[dateString] || 0;
       
-      const dayElement = document.createElement("div");
-      dayElement.className = "github-day";
+      const dayElement = document.createElement('div');
+      dayElement.className = 'github-day';
       
-      if (progressOnDate > 0) {
-        const intensity = Math.ceil((progressOnDate / maxProgress) * 4);
+      if (pagesOnDate > 0) {
+        const intensity = Math.ceil((pagesOnDate / maxPages) * 4);
         dayElement.classList.add(`level-${Math.min(intensity, 4)}`);
       }
       
-      const dateFormatted = currentDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-      dayElement.title = `${dateFormatted}: ${progressOnDate} de progresso`;
+      const dateFormatted = currentDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      dayElement.title = `${dateFormatted}: ${pagesOnDate} páginas lidas`;
       
       chartContainer.appendChild(dayElement);
     }
   }
 
+  showTooltip(event, date, pages) {
+    // Remover tooltip existente
+    this.hideTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'github-tooltip';
+    tooltip.innerHTML = `
+      <strong>${date}</strong><br>
+      ${pages} páginas lidas
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // Posicionar tooltip
+    const rect = event.target.getBoundingClientRect();
+    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+  }
+
+  hideTooltip() {
+    const existingTooltip = document.querySelector('.github-tooltip');
+    if (existingTooltip) {
+      existingTooltip.remove();
+    }
+  }
+
   renderGenresChart() {
-    const chartContainer = document.getElementById("genres-chart");
+    const chartContainer = document.getElementById('genres-chart');
     if (!chartContainer) return;
 
     const genreStats = this.getGenreStats();
     const maxCount = genreStats.length > 0 ? genreStats[0][1] : 1;
 
-    chartContainer.innerHTML = "";
+    chartContainer.innerHTML = '';
 
     genreStats.forEach(([genre, count]) => {
       const percentage = (count / maxCount) * 100;
       
-      const itemElement = document.createElement("div");
-      itemElement.className = "chart-item";
+      const itemElement = document.createElement('div');
+      itemElement.className = 'chart-item';
       
       itemElement.innerHTML = `
         <div class="chart-label">${genre}</div>
@@ -170,19 +211,19 @@ class MediaStats {
   }
 
   renderAuthorsChart() {
-    const chartContainer = document.getElementById("authors-chart");
+    const chartContainer = document.getElementById('authors-chart');
     if (!chartContainer) return;
 
     const authorStats = this.getAuthorStats();
     const maxCount = authorStats.length > 0 ? authorStats[0][1] : 1;
 
-    chartContainer.innerHTML = "";
+    chartContainer.innerHTML = '';
 
     authorStats.forEach(([author, count]) => {
       const percentage = (count / maxCount) * 100;
       
-      const itemElement = document.createElement("div");
-      itemElement.className = "chart-item";
+      const itemElement = document.createElement('div');
+      itemElement.className = 'chart-item';
       
       itemElement.innerHTML = `
         <div class="chart-label">${author}</div>
@@ -196,45 +237,50 @@ class MediaStats {
     });
 
     if (authorStats.length === 0) {
-      chartContainer.innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center;">Nenhum diretor/criador registrado ainda</p>';
+      chartContainer.innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center;">Nenhum autor registrado ainda</p>';
     }
   }
 
   openStatsModal() {
-    const modal = document.getElementById("media-stats-modal");
+    const modal = document.getElementById('reading-stats-modal');
     if (!modal) return;
 
+    // Atualizar estatísticas no modal
     this.updateModalStats();
     
+    // Gerar gráficos
     this.generateGitHubChart();
     this.renderGenresChart();
     this.renderAuthorsChart();
 
-    modal.classList.add("show");
-    modal.style.display = "flex";
+    modal.classList.add('show');
+    modal.style.display = 'flex';
   }
 
   closeStatsModal() {
-    const modal = document.getElementById("media-stats-modal");
+    const modal = document.getElementById('reading-stats-modal');
     if (modal) {
-      modal.classList.remove("show");
-      modal.style.display = "none";
+      modal.classList.remove('show');
+      modal.style.display = 'none';
     }
+    // Limpar tooltips
+    this.hideTooltip();
   }
 
   updateModalStats() {
-    const mediaWatched = this.getMediaWatchedCount();
-    const totalProgress = this.getTotalProgress();
-    const watchingDays = this.getWatchingDays();
+    const booksRead = this.getBooksReadCount();
+    const totalPages = this.getTotalPagesRead();
+    const readingDays = this.getReadingDays();
     const monthlyAverage = this.getMonthlyAverage();
-    const percentage = Math.round((mediaWatched / this.goalTarget) * 100);
+    const percentage = Math.round((booksRead / this.goalTarget) * 100);
 
+    // Atualizar elementos do modal
     const elements = {
-      "stats-media-watched-count": mediaWatched,
-      "stats-media-goal": this.goalTarget,
-      "stats-total-progress": totalProgress.toLocaleString(),
-      "stats-reading-days": watchingDays,
-      "stats-monthly-average": monthlyAverage
+      'stats-books-read': booksRead,
+      'stats-books-goal': this.goalTarget,
+      'stats-pages-read': totalPages.toLocaleString(),
+      'stats-reading-days': readingDays,
+      'stats-monthly-average': monthlyAverage
     };
 
     Object.entries(elements).forEach(([id, value]) => {
@@ -242,16 +288,19 @@ class MediaStats {
       if (element) element.textContent = value;
     });
 
-    const progressFill = document.getElementById("stats-progress-fill");
+    // Atualizar barra de progresso do modal
+    const progressFill = document.getElementById('stats-progress-fill');
     if (progressFill) {
       progressFill.style.width = `${Math.min(percentage, 100)}%`;
     }
   }
 
+  // Método para ser chamado quando um livro é adicionado/removido
   refresh() {
     this.updateGoalProgress();
-    const statsModal = document.getElementById("media-stats-modal");
-    if (statsModal && statsModal.classList.contains("show")) {
+    // Também atualizar o modal se estiver aberto
+    const statsModal = document.getElementById('reading-stats-modal');
+    if (statsModal && statsModal.classList.contains('show')) {
       this.updateModalStats();
       this.generateGitHubChart();
       this.renderGenresChart();
@@ -260,8 +309,9 @@ class MediaStats {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  window.mediaStats = new MediaStats();
-  window.mediaStats.refresh();
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', () => {
+  window.readingStats = new ReadingStats();
+  window.readingStats.refresh(); // Chamar refresh para garantir que tudo seja atualizado na carga inicial
 });
 
