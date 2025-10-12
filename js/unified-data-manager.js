@@ -11,7 +11,7 @@ class UnifiedDataManager {
             sonhos: 'sonhos-objetivos',
             viagens: 'viagens-dados',
             wishlist: 'wishlist-items',
-            cinema: 'cinema-tracker',
+            cinema: 'midiasTracker',
             planejamento: 'planejamento-dados'
         };
         
