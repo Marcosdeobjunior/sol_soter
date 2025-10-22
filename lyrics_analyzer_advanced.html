@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrics Analyzer Pro - Analisador Avançado de Letras</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/financas.css" />
+    <link rel="stylesheet" href="css/notificacoes.css" />
+    <link rel="stylesheet" href="css/musica.css" />
+</head>
+<body>
+   <header>
+      <div class="logo-container">
+        <a href="index.html" class="logo-link">
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <h1>Sol de Sóter</h1>
+        </a>
+      </div>
+
+      <div class="menu-profile">
+        <nav class="navbar">
+          <ul class="nav-menu">
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Biblioteca</a>
+                <button class="dropdown-toggle">▼</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="livraria.html">Livraria</a></li>
+                <li><a href="cinema.html">Cinema</a></li>
+                <li><a href="mangas.html">Mangas</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Pessoal</a>
+                <button class="dropdown-toggle">▼</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="sonhos.html">Sonhos</a></li>
+                <li><a href="viagens.html">Viagens</a></li>
+                <li><a href="wishlist.html">Carrinho</a></li>
+                <li><a href="financas.html">Finanças</a></li>
+                <li><a href="planejamento.html">Planejamento</a></li>
+                <li><a href="#">Academia</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Diario</a>
+                <button class="dropdown-toggle">▼</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="diario.html">Diario</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="notification-center">
+          <button id="notification-bell" class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span
+              id="notification-count"
+              class="notification-count"
+              style="display: none"
+              >0</span
+            >
+          </button>
+          <div id="notification-panel" class="notification-panel">
+            <div class="notification-panel-header">
+              <h3>Notificações</h3>
+            </div>
+            <ul id="notification-list" class="notification-list">
+              <li class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Nenhuma notificação nova</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dropdown profile-dropdown">
+          <div class="profile">
+            <span>Marcos</span>
+            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+          </div>
+          <ul class="dropdown-menu profile-menu">
+            <li class="saldo-menu-item">
+              <div id="saldo-header">
+                <span class="saldo-header-label">Saldo Atual</span>
+                <div id="saldo-do-dia">R$ 0,00</div>
+              </div>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header> 
+    <div class="container">
+        <header>
+            <h1>🎵 Lyrics Analyzer Pro</h1>
+            <p>Análise avançada: sentimento, palavras-chave, refrão, conteúdo explícito e mais</p>
+        </header>
+
+        <div class="search-section">
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="artistInput">Nome do Artista</label>
+                    <input type="text" id="artistInput" placeholder="Ex: Linkin Park" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="songInput">Nome da Música</label>
+                    <input type="text" id="songInput" placeholder="Ex: Numb" autocomplete="off">
+                </div>
+                <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i> Analisar</button>
+            </div>
+            <div id="messageContainer"></div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+             <div style="text-align: right; margin-bottom: 20px;">
+                <button class="search-btn" id="downloadBtn">
+                    <i class="fas fa-download"></i> Baixar Análise
+                </button>
+            </div>
+            <div id="resultsContent">
+                </div>
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-headphones-alt"></i>
+            <p>Nenhuma música foi buscada ainda.</p>
+            <p>Preencha os campos acima e clique em "Analisar" para começar!</p>
+        </div>
+    </div>
+
+    <div class="download-modal-overlay" id="downloadModal">
+        <div class="download-modal">
+            <div class="download-modal-header">
+                <h3><i class="fas fa-file-export"></i> Baixar Análise da Letra</h3>
+                <button class="modal-close" onclick="document.getElementById('downloadModal').classList.remove('show')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="download-modal-body">
+                <p>Escolha o formato para baixar a análise completa:</p>
+                <div class="download-options">
+                    <button class="download-option" id="downloadTxtBtn">
+                        <i class="fas fa-file-alt"></i>
+                        <div>
+                            <strong>Texto (.txt)</strong>
+                            <small>Formato simples e legível</small>
+                        </div>
+                    </button>
+                    <button class="download-option" id="downloadMdBtn">
+                        <i class="fab fa-markdown"></i>
+                        <div>
+                            <strong>Markdown (.md)</strong>
+                            <small>Formato com marcações básicas</small>
+                        </div>
+                    </button>
+                     <button class="download-option" id="downloadJsonBtn">
+                         <i class="fas fa-code"></i>
+                        <div>
+                            <strong>JSON (.json)</strong>
+                            <small>Formato estruturado (dados brutos)</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/saldo-global.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/musica.js"></script>
+
+</body>
+</html>
