@@ -3,203 +3,660 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lyrics Analyzer Pro - Analisador Avançado de Letras</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <title>Lyrics Analyzer - Analisador de Letras de Músicas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/financas.css" />
-    <link rel="stylesheet" href="css/notificacoes.css" />
-    <link rel="stylesheet" href="css/musica.css" />
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            align-self: flex-end;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3c3;
+        }
+
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .song-info {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .song-info h2 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .song-info p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .analysis-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .analysis-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .analysis-card.warning {
+            border-left-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .analysis-card.danger {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .analysis-card.success {
+            border-left-color: #4caf50;
+            background: #f1f8f6;
+        }
+
+        .profanity-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .profanity-badge.high {
+            background: #f44336;
+            color: white;
+        }
+
+        .profanity-badge.medium {
+            background: #ff9800;
+            color: white;
+        }
+
+        .profanity-badge.low {
+            background: #4caf50;
+            color: white;
+        }
+
+        .lyrics-section {
+            margin-top: 30px;
+        }
+
+        .lyrics-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .lyrics-original,
+        .lyrics-translated {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .lyrics-translated {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .no-results p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .search-btn {
+                align-self: stretch;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .language-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
+        .translation-note {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            color: #1976d2;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-   <header>
-      <div class="logo-container">
-        <a href="index.html" class="logo-link">
-          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-          <h1>Sol de Sóter</h1>
-        </a>
-      </div>
-
-      <div class="menu-profile">
-        <nav class="navbar">
-          <ul class="nav-menu">
-            <li class="dropdown">
-              <div class="dropdown-header">
-                <a href="#">Biblioteca</a>
-                <button class="dropdown-toggle">▼</button>
-              </div>
-              <ul class="dropdown-menu">
-                <li><a href="livraria.html">Livraria</a></li>
-                <li><a href="cinema.html">Cinema</a></li>
-                <li><a href="mangas.html">Mangas</a></li>
-              </ul>
-            </li>
-
-            <li class="dropdown">
-              <div class="dropdown-header">
-                <a href="#">Pessoal</a>
-                <button class="dropdown-toggle">▼</button>
-              </div>
-              <ul class="dropdown-menu">
-                <li><a href="sonhos.html">Sonhos</a></li>
-                <li><a href="viagens.html">Viagens</a></li>
-                <li><a href="wishlist.html">Carrinho</a></li>
-                <li><a href="financas.html">Finanças</a></li>
-                <li><a href="planejamento.html">Planejamento</a></li>
-                <li><a href="#">Academia</a></li>
-              </ul>
-            </li>
-
-            <li class="dropdown">
-              <div class="dropdown-header">
-                <a href="#">Diario</a>
-                <button class="dropdown-toggle">▼</button>
-              </div>
-              <ul class="dropdown-menu">
-                <li><a href="diario.html">Diario</a></li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
-
-        <div class="notification-center">
-          <button id="notification-bell" class="notification-bell">
-            <i class="fas fa-bell"></i>
-            <span
-              id="notification-count"
-              class="notification-count"
-              style="display: none"
-              >0</span
-            >
-          </button>
-          <div id="notification-panel" class="notification-panel">
-            <div class="notification-panel-header">
-              <h3>Notificações</h3>
-            </div>
-            <ul id="notification-list" class="notification-list">
-              <li class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>Nenhuma notificação nova</p>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="dropdown profile-dropdown">
-          <div class="profile">
-            <span>Marcos</span>
-            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
-          </div>
-          <ul class="dropdown-menu profile-menu">
-            <li class="saldo-menu-item">
-              <div id="saldo-header">
-                <span class="saldo-header-label">Saldo Atual</span>
-                <div id="saldo-do-dia">R$ 0,00</div>
-              </div>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </header> 
     <div class="container">
         <header>
-            <h1>🎵 Lyrics Analyzer Pro</h1>
-            <p>Análise avançada: sentimento, palavras-chave, refrão, conteúdo explícito e mais</p>
+            <h1>🎵 Lyrics Analyzer</h1>
+            <p>Busque letras de músicas, traduza para português e analise conteúdo explícito</p>
         </header>
 
         <div class="search-section">
             <div class="search-form">
                 <div class="form-group">
                     <label for="artistInput">Nome do Artista</label>
-                    <input type="text" id="artistInput" placeholder="Ex: Linkin Park" autocomplete="off">
+                    <input type="text" id="artistInput" placeholder="Ex: Ed Sheeran" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="songInput">Nome da Música</label>
-                    <input type="text" id="songInput" placeholder="Ex: Numb" autocomplete="off">
+                    <input type="text" id="songInput" placeholder="Ex: Shape of You" autocomplete="off">
                 </div>
-                <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i> Analisar</button>
+                <button class="search-btn" id="searchBtn">Buscar</button>
             </div>
             <div id="messageContainer"></div>
         </div>
 
         <div class="results-section" id="resultsSection" style="display: none;">
-             <div style="text-align: right; margin-bottom: 20px;">
-                <button class="search-btn" id="downloadBtn">
-                    <i class="fas fa-download"></i> Baixar Análise
-                </button>
-            </div>
-            <div id="resultsContent">
-                </div>
+            <div id="resultsContent"></div>
         </div>
 
         <div class="no-results" id="noResults" style="display: none;">
-            <i class="fas fa-headphones-alt"></i>
-            <p>Nenhuma música foi buscada ainda.</p>
-            <p>Preencha os campos acima e clique em "Analisar" para começar!</p>
+            <p>👀 Nenhuma música foi buscada ainda.</p>
+            <p>Preencha os campos acima e clique em "Buscar"</p>
         </div>
     </div>
 
-    <div class="download-modal-overlay" id="downloadModal">
-        <div class="download-modal">
-            <div class="download-modal-header">
-                <h3><i class="fas fa-file-export"></i> Baixar Análise da Letra</h3>
-                <button class="modal-close" onclick="document.getElementById('downloadModal').classList.remove('show')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="download-modal-body">
-                <p>Escolha o formato para baixar a análise completa:</p>
-                <div class="download-options">
-                    <button class="download-option" id="downloadTxtBtn">
-                        <i class="fas fa-file-alt"></i>
-                        <div>
-                            <strong>Texto (.txt)</strong>
-                            <small>Formato simples e legível</small>
-                        </div>
-                    </button>
-                    <button class="download-option" id="downloadMdBtn">
-                        <i class="fab fa-markdown"></i>
-                        <div>
-                            <strong>Markdown (.md)</strong>
-                            <small>Formato com marcações básicas</small>
-                        </div>
-                    </button>
-                     <button class="download-option" id="downloadJsonBtn">
-                         <i class="fas fa-code"></i>
-                        <div>
-                            <strong>JSON (.json)</strong>
-                            <small>Formato estruturado (dados brutos)</small>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/notificacoes.js"></script>
-    <script src="js/musica.js"></script>
+    <script>
+        // Lista de palavrões em português e inglês
+        const profanityList = [
+            'damn', 'hell', 'shit', 'fuck', 'ass', 'bitch', 'bastard', 'crap',
+            'porra', 'caralho', 'merda', 'puta', 'filho da puta', 'desgraça',
+            'droga', 'maldito', 'inferno', 'diabos', 'raios', 'caramba'
+        ];
 
+        // Detectar idioma usando palavras-chave
+        function detectLanguage(text) {
+            const englishWords = ['the', 'and', 'is', 'you', 'to', 'that', 'it', 'for', 'of', 'a', 'in', 'with', 'be', 'on', 'at'];
+            const portugueseWords = ['o', 'a', 'e', 'de', 'que', 'é', 'para', 'com', 'um', 'uma', 'em', 'do', 'da', 'os', 'as'];
+            
+            const lowerText = text.toLowerCase();
+            let englishCount = 0;
+            let portugueseCount = 0;
+
+            englishWords.forEach(word => {
+                const regex = new RegExp('\\b' + word + '\\b', 'g');
+                englishCount += (lowerText.match(regex) || []).length;
+            });
+
+            portugueseWords.forEach(word => {
+                const regex = new RegExp('\\b' + word + '\\b', 'g');
+                portugueseCount += (lowerText.match(regex) || []).length;
+            });
+
+            return englishCount > portugueseCount ? 'en' : 'pt';
+        }
+
+        // Analisar palavrões
+        function analyzeProfanity(text) {
+            const lowerText = text.toLowerCase();
+            const foundWords = [];
+            let count = 0;
+
+            profanityList.forEach(word => {
+                const regex = new RegExp('\\b' + word + '\\b', 'gi');
+                const matches = lowerText.match(regex);
+                if (matches) {
+                    count += matches.length;
+                    foundWords.push(word);
+                }
+            });
+
+            let level = 'low';
+            if (count > 10) level = 'high';
+            else if (count > 3) level = 'medium';
+
+            return {
+                hasProfanity: count > 0,
+                count: count,
+                level: level,
+                words: foundWords
+            };
+        }
+
+        // ========== FUNÇÕES PRINCIPAIS IMPLEMENTADAS ==========
+
+        // Buscar letras usando lyrics.ovh API
+        async function searchLyrics(artist, song) {
+            try {
+                // Tentar com a API lyrics.ovh diretamente
+                const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(song)}`;
+                
+                const response = await fetch(apiUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.lyrics || null;
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Erro ao buscar letras:', error);
+                return null;
+            }
+        }
+
+        // Traduzir para português usando MyMemory API
+        async function translateToPT(text) {
+            try {
+                // Dividir o texto em chunks menores para melhor performance
+                const maxChunkSize = 300;
+                const chunks = [];
+                
+                // Dividir por parágrafos ou linhas
+                const lines = text.split('\n');
+                let currentChunk = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if ((currentChunk + lines[i]).length > maxChunkSize) {
+                        if (currentChunk) chunks.push(currentChunk);
+                        currentChunk = lines[i];
+                    } else {
+                        currentChunk += (currentChunk ? '\n' : '') + lines[i];
+                    }
+                }
+                if (currentChunk) chunks.push(currentChunk);
+                
+                let translatedText = '';
+                
+                for (const chunk of chunks) {
+                    try {
+                        // Usar MyMemory API que não tem problemas de CORS
+                        const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|pt`;
+                        
+                        const response = await fetch(apiUrl);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.responseData && data.responseData.translatedText) {
+                                translatedText += data.responseData.translatedText + '\n';
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Erro ao traduzir chunk:', e);
+                        continue;
+                    }
+                }
+                
+                return translatedText.trim() || null;
+            } catch (error) {
+                console.error('Erro ao traduzir:', error);
+                return null;
+            }
+        }
+
+        // ========== FIM DAS FUNÇÕES PRINCIPAIS ==========
+
+        // Exibir resultados
+        function displayResults(artist, song, lyrics) {
+            const language = detectLanguage(lyrics);
+            const profanityAnalysis = analyzeProfanity(lyrics);
+
+            let html = '<div class="song-info">' +
+                '<h2>' + song + '</h2>' +
+                '<p>Artista: <strong>' + artist + '</strong></p>' +
+                '<p>Idioma: <strong>' + (language === 'en' ? 'Inglês' : 'Português') + '</strong>' +
+                '<span class="language-badge">' + language.toUpperCase() + '</span></p>' +
+                '</div>' +
+                '<div class="analysis-grid">' +
+                '<div class="analysis-card ' + (profanityAnalysis.hasProfanity ? (profanityAnalysis.level === 'high' ? 'danger' : 'warning') : 'success') + '">' +
+                '<h3>📊 Análise de Conteúdo Explícito</h3>' +
+                '<p><strong>Status:</strong> ' + (profanityAnalysis.hasProfanity ? '⚠️ Contém palavrões' : '✅ Sem palavrões detectados') + '</p>' +
+                '<p><strong>Quantidade:</strong> ' + profanityAnalysis.count + ' palavrões encontrados</p>' +
+                '<p><strong>Nível:</strong> ' +
+                '<span class="profanity-badge ' + profanityAnalysis.level + '">' +
+                (profanityAnalysis.level === 'high' ? 'Alto' : profanityAnalysis.level === 'medium' ? 'Médio' : 'Baixo') +
+                '</span></p>';
+
+            if (profanityAnalysis.words.length > 0) {
+                html += '<p><strong>Palavrões encontrados:</strong></p><div>';
+                profanityAnalysis.words.forEach(w => {
+                    html += '<span class="profanity-badge ' + profanityAnalysis.level + '">' + w + '</span>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div>' +
+                '<div class="analysis-card">' +
+                '<h3>📈 Estatísticas da Letra</h3>' +
+                '<p><strong>Total de palavras:</strong> ' + lyrics.split(/\s+/).length + '</p>' +
+                '<p><strong>Total de linhas:</strong> ' + lyrics.split('\n').length + '</p>' +
+                '<p><strong>Caracteres:</strong> ' + lyrics.length + '</p>' +
+                '</div>' +
+                '</div>' +
+                '<div class="lyrics-section">' +
+                '<h3>🎼 Letra da Música</h3>';
+
+            if (language === 'en') {
+                html += '<div class="translation-note">ℹ️ A letra está em inglês. Clique na aba "Tradução" para ver a tradução para português.</div>';
+            }
+
+            html += '<div class="tab-buttons">' +
+                '<button class="tab-btn active" data-tab="original">Letra Original</button>';
+            
+            if (language === 'en') {
+                html += '<button class="tab-btn" data-tab="translated">Tradução (PT)</button>';
+            }
+
+            html += '</div>' +
+                '<div id="original-tab" class="tab-content">' +
+                '<div class="lyrics-original">' + lyrics.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+                '</div>';
+
+            if (language === 'en') {
+                html += '<div id="translated-tab" class="tab-content" style="display: none;">' +
+                    '<div class="lyrics-translated" id="translatedLyrics">' +
+                    '<div class="loading">' +
+                    '<span class="spinner"></span>' +
+                    'Traduzindo para português...' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            html += '</div>';
+
+            document.getElementById('resultsContent').innerHTML = html;
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+
+            // Adicionar eventos aos tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab + '-tab').style.display = 'block';
+
+                    // Traduzir quando clicar na aba de tradução
+                    if (this.dataset.tab === 'translated' && document.getElementById('translatedLyrics').innerHTML.includes('Traduzindo')) {
+                        translateLyrics(lyrics);
+                    }
+                });
+            });
+
+            // Scroll para resultados
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Traduzir letras
+        async function translateLyrics(lyrics) {
+            try {
+                const translated = await translateToPT(lyrics);
+                if (translated) {
+                    document.getElementById('translatedLyrics').innerHTML = '<div class="lyrics-translated">' + translated.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                } else {
+                    document.getElementById('translatedLyrics').innerHTML = '<p style="color: #c33;">Erro ao traduzir. Tente novamente.</p>';
+                }
+            } catch (error) {
+                document.getElementById('translatedLyrics').innerHTML = '<p style="color: #c33;">Erro ao traduzir. Tente novamente.</p>';
+            }
+        }
+
+        // Mostrar mensagem
+        function showMessage(message, type) {
+            if (!type) type = 'error';
+            const container = document.getElementById('messageContainer');
+            const className = type === 'error' ? 'error-message' : 'success-message';
+            container.innerHTML = '<div class="' + className + '">' + message + '</div>';
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Buscar música
+        document.getElementById('searchBtn').addEventListener('click', async function() {
+            const artist = document.getElementById('artistInput').value.trim();
+            const song = document.getElementById('songInput').value.trim();
+
+            if (!artist || !song) {
+                showMessage('Por favor, preencha o nome do artista e da música.', 'error');
+                return;
+            }
+
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.innerHTML = '<span class="spinner"></span>Buscando...';
+
+            try {
+                const lyrics = await searchLyrics(artist, song);
+                
+                if (lyrics) {
+                    displayResults(artist, song, lyrics);
+                    showMessage('Letra de "' + song + '" encontrada com sucesso!', 'success');
+                } else {
+                    showMessage('Desculpe, não conseguimos encontrar a letra de "' + song + '" por "' + artist + '". Tente outro nome ou verifique a ortografia.', 'error');
+                    document.getElementById('noResults').style.display = 'block';
+                    document.getElementById('resultsSection').style.display = 'none';
+                }
+            } catch (error) {
+                showMessage('Erro ao buscar a letra. Tente novamente.', 'error');
+            } finally {
+                this.disabled = false;
+                this.textContent = originalText;
+            }
+        });
+
+        // Permitir busca ao pressionar Enter
+        document.getElementById('songInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        document.getElementById('artistInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        // Exibir mensagem inicial
+        document.getElementById('noResults').style.display = 'block';
+    </script>
 </body>
 </html>
+
