@@ -219,9 +219,42 @@
         </div>
 
         <div class="tab-content active" id="tab-sonhos">
-          <div class="sonhos-grid" id="sonhos-grid">
-            <!-- Sonhos serão inseridos aqui dinamicamente -->
+          <div class="sonhos-filtros">
+            <div class="filtro-item">
+              <label for="filtro-categoria">Categoria</label>
+              <select id="filtro-categoria">
+                <option value="todas">Todas</option>
+                <option value="pessoal">Pessoal</option>
+                <option value="profissional">Profissional</option>
+                <option value="financeiro">Financeiro</option>
+                <option value="saude">Saúde</option>
+                <option value="relacionamento">Relacionamento</option>
+                <option value="educacao">Educação</option>
+                <option value="viagem">Viagem</option>
+                <option value="hobby">Hobby</option>
+              </select>
+            </div>
+            <div class="filtro-item">
+              <label for="filtro-prioridade">Prioridade</label>
+              <select id="filtro-prioridade">
+                <option value="todas">Todas</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </div>
+            <div class="filtro-item">
+              <label for="ordenacao-sonhos">Ordenar por</label>
+              <select id="ordenacao-sonhos">
+                <option value="recente">Mais Recente</option>
+                <option value="prazo">Prazo</option>
+                <option value="prioridade">Prioridade</option>
+                <option value="progresso">Progresso</option>
+              </select>
+            </div>
           </div>
+          <div class="sonhos-grid" id="sonhos-grid">
+            </div>
           <div class="empty-state" id="empty-sonhos" style="display: none;">
             <div class="empty-icon">
               <i class="fas fa-star"></i>
@@ -245,8 +278,7 @@
               </button>
             </div>
             <div class="metas-list" id="metas-list">
-              <!-- Metas serão inseridas aqui dinamicamente -->
-            </div>
+              </div>
             <div class="empty-state" id="empty-metas" style="display: none;">
               <div class="empty-icon">
                 <i class="fas fa-bullseye"></i>
@@ -260,8 +292,7 @@
         <div class="tab-content" id="tab-conquistas">
           <div class="conquistas-container">
             <div class="conquistas-timeline" id="conquistas-timeline">
-              <!-- Conquistas serão inseridas aqui dinamicamente -->
-            </div>
+              </div>
             <div class="empty-state" id="empty-conquistas" style="display: none;">
               <div class="empty-icon">
                 <i class="fas fa-trophy"></i>
@@ -295,8 +326,7 @@
             <div class="badges-section">
               <h4>Distintivos Conquistados</h4>
               <div class="badges-grid" id="badges-grid">
-                <!-- Badges serão inseridos aqui -->
-              </div>
+                </div>
               <div class="empty-state" id="empty-badges" style="display: none;">
                 <div class="empty-icon">
                   <i class="fas fa-medal"></i>
@@ -366,7 +396,6 @@
     </div>
   </main>
 
-  <!-- Modal para Novo Sonho -->
   <div class="modal" id="modal-sonho">
     <div class="modal-content">
       <div class="modal-header">
@@ -434,7 +463,6 @@
     </div>
   </div>
 
-  <!-- Modal para Nova Meta -->
   <div class="modal" id="modal-meta">
     <div class="modal-content">
       <div class="modal-header">

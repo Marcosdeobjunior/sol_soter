@@ -8,7 +8,7 @@
 }
 
 .sonhos-container {
-  max-width: 1200px;
+  max-width: 1600px; /* ALTERADO DE 1200px para 1600px */
   margin: 0 auto;
 }
 
@@ -198,6 +198,47 @@
   display: block;
 }
 
+/* ===== INÍCIO DA MELHORIA: FILTROS DE SONHOS ===== */
+.sonhos-filtros {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  background: #45475a;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #585b70;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.filtro-item label {
+  font-size: 0.85rem;
+  color: #bac2de;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.filtro-item select {
+  width: 100%;
+  padding: 8px 10px;
+  background: #313244;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  color: #cdd6f4;
+  font-size: 0.9rem;
+}
+
+.filtro-item select:focus {
+  outline: none;
+  border-color: #89b4fa;
+  box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+}
+/* ===== FIM DA MELHORIA ===== */
+
 /* ===== GRID DE SONHOS ===== */
 .sonhos-grid {
   display: grid;
@@ -212,6 +253,8 @@
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
+  display: flex; /* ADICIONADO */
+  flex-direction: column; /* ADICIONADO */
 }
 
 .sonho-card:hover {
@@ -257,6 +300,9 @@
 
 .sonho-body {
   padding: 20px;
+  flex-grow: 1; /* ADICIONADO */
+  display: flex; /* ADICIONADO */
+  flex-direction: column; /* ADICIONADO */
 }
 
 .sonho-info {
@@ -265,6 +311,17 @@
   align-items: center;
   margin-bottom: 15px;
 }
+
+/* ===== NOVA CLASSE ADICIONADA ===== */
+.sonho-metas-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #a6adc8;
+  margin-bottom: 15px;
+}
+/* ===== FIM DA NOVA CLASSE ===== */
 
 .sonho-prazo {
   font-size: 0.85rem;
@@ -316,6 +373,8 @@
 .sonho-actions {
   display: flex;
   gap: 10px;
+  margin-top: auto; /* ADICIONADO */
+  padding-top: 15px; /* ADICIONADO */
 }
 
 .btn-icon {
@@ -674,6 +733,14 @@
     justify-content: flex-start;
     padding: 12px 20px;
   }
+
+  /* ===== MELHORIA: FILTROS RESPONSIVOS ===== */
+  .sonhos-filtros {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  /* ===== FIM DA MELHORIA ===== */
 
   .sonhos-grid {
     grid-template-columns: 1fr;
@@ -1157,3 +1224,85 @@
   max-height: 250px; /* Define uma altura máxima para os gráficos */
 }
 
+/* ===== ESTILOS DO ACCORDION DE METAS ===== */
+
+.metas-grupo {
+  background: #45475a;
+  border-radius: 8px;
+  border: 1px solid #585b70;
+  margin-bottom: 15px;
+  overflow: hidden; /* Importante para o efeito de transição */
+}
+
+.metas-grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 18px 20px;
+  background: #45475a;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.metas-grupo-header:hover {
+  background: #585b70;
+}
+
+.metas-grupo-header.active {
+  background: #585b70;
+}
+
+.metas-header-titulo {
+  font-size: 1.15rem;
+  color: #cdd6f4;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.metas-header-titulo i {
+  font-size: 0.9rem;
+  transition: transform 0.3s ease;
+}
+
+.metas-grupo-header.active .metas-header-titulo i {
+  transform: rotate(90deg);
+}
+
+.metas-header-summary {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #a6adc8;
+  background: #313244;
+  padding: 5px 12px;
+  border-radius: 15px;
+}
+
+.metas-grupo-content {
+  max-height: 0; /* Começa fechado */
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+  padding: 0 20px; /* Adiciona padding lateral */
+  background: #3e3f52; /* Um tom ligeiramente diferente para o conteúdo */
+}
+
+/* Adiciona padding no primeiro e último item dentro do accordion */
+.metas-grupo-content .meta-item:first-child {
+  margin-top: 20px;
+}
+
+.metas-grupo-content .meta-item:last-child {
+  margin-bottom: 20px;
+}
+
+/* Remove a cor de fundo do item, pois o grupo já tem */
+.meta-item {
+  background: #45475a; /* Mantém o fundo original do item */
+}
+
+.meta-item:hover {
+  background: #585b70; /* Mantém o hover */
+}

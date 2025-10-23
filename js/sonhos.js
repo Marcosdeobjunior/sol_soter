@@ -10,12 +10,22 @@ class SonhosManager {
         this.sonhoEditando = null;
         this.metaEditando = null;
         this.charts = {};
+
+        // ===== INÍCIO DA MELHORIA: ESTADOS DE FILTRO =====
+        this.filtroCategoria = 'todas';
+        this.filtroPrioridade = 'todas';
+        this.ordenacao = 'recente';
+        // ===== FIM DA MELHORIA =====
         
         this.inicializar();
     }
 
     inicializar() {
         this.configurarEventListeners();
+        // Atualizar progresso de todos os sonhos na inicialização
+        this.sonhos.forEach(sonho => this.atualizarProgressoAutomaticoSonho(sonho.id));
+        this.salvarSonhos(); // Salva os progressos atualizados
+        
         this.atualizarEstatisticas();
         this.renderizarSonhos();
         this.renderizarMetas();
@@ -94,12 +104,16 @@ class SonhosManager {
 
     // ===== EVENT LISTENERS =====
     configurarEventListeners() {
-        // Botões principais
-        document.getElementById('btn-novo-sonho').addEventListener('click', () => this.abrirModalSonho());
-        document.getElementById('btn-nova-meta').addEventListener('click', () => this.abrirModalMeta());
-        document.getElementById('btn-refresh-charts').addEventListener('click', () => this.atualizarCharts());
+// Botões principais
+	        document.getElementById('btn-novo-sonho').addEventListener('click', () => this.abrirModalSonho());
+	        document.getElementById('btn-nova-meta').addEventListener('click', () => this.abrirModalMeta());
+	        document.getElementById('btn-refresh-charts').addEventListener('click', () => this.atualizarCharts());
 
-        // Formulários
+	        // Delegação de eventos para os botões dos cards de sonhos e metas
+	        document.getElementById('sonhos-grid').addEventListener('click', (e) => this.handleSonhoCardAction(e));
+	        document.getElementById('metas-list').addEventListener('click', (e) => this.handleMetaCardAction(e));
+
+	        // Formulários
         document.getElementById('form-sonho').addEventListener('submit', (e) => this.salvarSonho(e));
         document.getElementById('form-meta').addEventListener('submit', (e) => this.salvarMeta(e));
 
@@ -108,22 +122,113 @@ class SonhosManager {
             btn.addEventListener('click', (e) => this.trocarAba(e.target.dataset.tab));
         });
 
-        // Fechar modais ao clicar fora
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.fecharModais();
-            }
+	        // Fechar modais ao clicar fora
+	        document.addEventListener('click', (e) => {
+	            if (e.target.classList.contains('modal')) {
+	                fecharModais();
+	            }
+	        });
+	
+	        // Tecla ESC para fechar modais
+	        document.addEventListener('keydown', (e) => {
+	            if (e.key === 'Escape') {
+	                fecharModais();
+	            }
+	        });
+
+        // O Accordion de Metas será tratado dentro de handleMetaCardAction para evitar conflito com os botões.
+	        // Se o clique não for um botão de ação, ele pode ser o header do accordion.
+	        // A função handleMetaCardAction será responsável por isso.
+
+        // ===== INÍCIO DA MELHORIA: LISTENERS DOS FILTROS =====
+        document.getElementById('filtro-categoria').addEventListener('change', (e) => {
+            this.filtroCategoria = e.target.value;
+            this.renderizarSonhos();
         });
 
-        // Tecla ESC para fechar modais
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.fecharModais();
-            }
+        document.getElementById('filtro-prioridade').addEventListener('change', (e) => {
+            this.filtroPrioridade = e.target.value;
+            this.renderizarSonhos();
         });
-    }
 
-    // ===== GERENCIAMENTO DE ABAS =====
+        document.getElementById('ordenacao-sonhos').addEventListener('change', (e) => {
+            this.ordenacao = e.target.value;
+            this.renderizarSonhos();
+        });
+        // ===== FIM DA MELHORIA =====
+	    }
+
+	    // ===== HANDLERS DE AÇÃO DE CARD (NOVO) =====
+	    handleSonhoCardAction(e) {
+	        const btn = e.target.closest('.btn-icon');
+	        if (!btn) return;
+
+	        const card = e.target.closest('.sonho-card');
+	        if (!card) return;
+	        
+	        // O ID agora está no atributo data-sonho-id do botão ou do card pai
+	        const sonhoId = btn.dataset.sonhoId || card.dataset.sonhoId;
+	        
+	        if (!sonhoId) {
+	            console.error('ID do Sonho não encontrado no card ou botão.');
+	            return;
+	        }
+
+	        if (btn.classList.contains('edit')) {
+	            const sonho = this.sonhos.find(s => s.id === sonhoId);
+	            if (sonho) this.abrirModalSonho(sonho);
+	        } else if (btn.classList.contains('complete')) {
+	            this.concluirSonho(sonhoId);
+	        } else if (btn.title === 'Ajustar Progresso Manual') {
+	            this.ajustarProgresso(sonhoId);
+	        } else if (btn.classList.contains('delete')) {
+	            this.excluirSonho(sonhoId);
+	        }
+	    }
+
+	    handleMetaCardAction(e) {
+	        const btn = e.target.closest('.btn-icon');
+	        const header = e.target.closest('.metas-grupo-header');
+
+	        // 1. Tratar o clique no header do accordion
+	        if (header && !btn) {
+	            this.toggleMetaAccordion(header);
+	            return;
+	        }
+	        
+	        if (!btn) return;
+
+	        const item = e.target.closest('.meta-item');
+	        if (!item) return;
+
+	        // O ID agora está no atributo data-meta-id do botão ou do item pai
+	        const metaId = btn.dataset.metaId || item.dataset.metaId;
+	        
+	        if (!metaId) {
+	            console.error('ID da Meta não encontrado no card ou botão.');
+	            return;
+	        }
+	        
+	        const meta = this.metas.find(m => m.id === metaId);
+	        if (!meta) return;
+
+
+	        if (btn.classList.contains('edit')) {
+	            this.abrirModalMeta(meta);
+	        } else if (btn.classList.contains('delete')) {
+	            this.excluirMeta(metaId);
+	        } else if (btn.title === 'Iniciar' || btn.title === 'Retomar') {
+	            this.alterarStatusMeta(metaId, 'progresso');
+	        } else if (btn.title === 'Concluir') {
+	            this.alterarStatusMeta(metaId, 'concluida');
+	        } else if (btn.title === 'Pausar') {
+	            this.alterarStatusMeta(metaId, 'pausada');
+	        }
+	    }
+	    // ===== FIM DOS HANDLERS DE AÇÃO DE CARD =====
+
+
+	    // ===== GERENCIAMENTO DE ABAS =====
     trocarAba(aba) {
         // Atualizar botões
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -134,7 +239,9 @@ class SonhosManager {
         document.getElementById(`tab-${aba}`).classList.add('active');
 
         // Renderizar conteúdo específico se necessário
-        if (aba === 'metas') {
+        if (aba === 'sonhos') {
+            this.renderizarSonhos();
+        } else if (aba === 'metas') {
             this.renderizarMetas();
         } else if (aba === 'conquistas') {
             this.renderizarConquistas();
@@ -149,10 +256,10 @@ class SonhosManager {
         const sonhosConcluidos = this.sonhos.filter(s => s.concluido).length;
         const metasAtivas = this.metas.filter(m => m.status !== 'concluida').length;
         
-        // Calcular progresso médio
-        const sonhosComProgresso = this.sonhos.filter(s => !s.concluido && s.progresso > 0);
-        const progressoMedio = sonhosComProgresso.length > 0 
-            ? Math.round(sonhosComProgresso.reduce((acc, s) => acc + s.progresso, 0) / sonhosComProgresso.length)
+        // Calcular progresso médio (agora baseado nos progressos automáticos e manuais)
+        const sonhosAtivosComProgresso = this.sonhos.filter(s => !s.concluido);
+        const progressoMedio = sonhosAtivosComProgresso.length > 0 
+            ? Math.round(sonhosAtivosComProgresso.reduce((acc, s) => acc + s.progresso, 0) / sonhosAtivosComProgresso.length)
             : 0;
 
         document.getElementById('total-sonhos').textContent = totalSonhos;
@@ -432,10 +539,10 @@ class SonhosManager {
         document.getElementById('sonho-titulo').focus();
     }
 
-    fecharModalSonho() {
-        document.getElementById('modal-sonho').classList.remove('active');
-        this.sonhoEditando = null;
-    }
+	    fecharModalSonho() {
+	        document.getElementById('modal-sonho').classList.remove('active');
+	        this.sonhoEditando = null;
+	    }
 
     preencherFormularioSonho(sonho) {
         document.getElementById('sonho-titulo').value = sonho.titulo;
@@ -456,7 +563,7 @@ class SonhosManager {
             prioridade: document.getElementById('sonho-prioridade').value,
             prazo: document.getElementById('sonho-prazo').value,
             custo: parseFloat(document.getElementById('sonho-custo').value) || 0,
-            progresso: 0,
+            progresso: 0, // Será 0 no início (ou recalculado se for edição)
             concluido: false,
             dataCriacao: new Date().toISOString(),
             dataAtualizacao: new Date().toISOString()
@@ -470,7 +577,11 @@ class SonhosManager {
         if (this.sonhoEditando) {
             // Editar sonho existente
             const index = this.sonhos.findIndex(s => s.id === this.sonhoEditando.id);
+            // Mantém o progresso existente se for edição, pois ele é controlado pelas metas
+            dados.progresso = this.sonhoEditando.progresso; 
             this.sonhos[index] = { ...this.sonhoEditando, ...dados, dataAtualizacao: new Date().toISOString() };
+            // Recalcula o progresso caso as metas já existam
+            this.atualizarProgressoAutomaticoSonho(this.sonhoEditando.id);
         } else {
             // Criar novo sonho
             dados.id = Date.now().toString();
@@ -502,9 +613,20 @@ class SonhosManager {
         }
     }
 
+    // Função para conclusão MANUAL (chamada pelo botão)
     concluirSonho(id) {
         const sonho = this.sonhos.find(s => s.id === id);
-        if (sonho && confirm(`Parabéns! Deseja marcar "${sonho.titulo}" como realizado?`)) {
+        if (!sonho) return;
+
+        // Verificação de segurança: este botão só deve funcionar para sonhos SEM metas
+        const metasDoSonho = this.metas.filter(m => m.sonhoId === id).length;
+        
+        if (metasDoSonho > 0) {
+            this.mostrarNotificacao('Este sonho é concluído automaticamente ao completar todas as metas.', 'aviso');
+            return;
+        }
+
+        if (confirm(`Parabéns! Deseja marcar "${sonho.titulo}" como realizado?`)) {
             sonho.concluido = true;
             sonho.progresso = 100;
             sonho.dataConclusao = new Date().toISOString();
@@ -534,6 +656,79 @@ class SonhosManager {
         }
     }
 
+    // ===== NOVA FUNÇÃO =====
+    // Função para conclusão AUTOMÁTICA (chamada pelo sistema)
+    marcarSonhoComoConcluidoAutomaticamente(id) {
+        const sonho = this.sonhos.find(s => s.id === id);
+        if (!sonho || sonho.concluido) return; // Não fazer nada se já estiver concluído
+
+        sonho.concluido = true;
+        sonho.progresso = 100;
+        sonho.dataConclusao = new Date().toISOString();
+
+        // Adicionar às conquistas
+        this.adicionarConquista({
+            tipo: 'sonho',
+            titulo: `Sonho Realizado: ${sonho.titulo}`,
+            descricao: `Concluído automaticamente ao completar todas as ${this.metas.filter(m => m.sonhoId === id).length} metas!`,
+            data: new Date().toISOString(),
+            icone: 'star'
+        });
+
+        // Sistema de gamificação
+        const pontosGanhos = this.calcularPontosSonho(sonho);
+        this.gamificacao.pontosSonhos += pontosGanhos;
+        this.adicionarXP(pontosGanhos, `Sonho realizado! +${pontosGanhos} pontos`);
+        this.verificarBadges();
+
+        this.salvarSonhos();
+        this.salvarGamificacao();
+        this.renderizarSonhos();
+        this.renderizarConquistas();
+        this.renderizarGamificacao();
+        
+        this.mostrarNotificacao(`🎉 Parabéns! Sonho "${sonho.titulo}" realizado automaticamente!`, 'sucesso');
+    }
+
+    // ===== LÓGICA DE PROGRESSO ATUALIZADA =====
+    atualizarProgressoAutomaticoSonho(sonhoId) {
+        const sonho = this.sonhos.find(s => s.id === sonhoId);
+        if (!sonho) return;
+
+        const metasDoSonho = this.metas.filter(m => m.sonhoId === sonhoId);
+        
+        if (metasDoSonho.length > 0) {
+            const metasConcluidas = metasDoSonho.filter(m => m.status === 'concluida').length;
+            const novoProgresso = Math.round((metasConcluidas / metasDoSonho.length) * 100);
+            
+            if (sonho.progresso !== novoProgresso) {
+                 const progressoAnterior = sonho.progresso;
+                 sonho.progresso = novoProgresso;
+                 sonho.dataAtualizacao = new Date().toISOString();
+                 
+                 // Adicionar XP por progresso
+                if (sonho.progresso > progressoAnterior) {
+                    const xpGanho = Math.floor((sonho.progresso - progressoAnterior) / 10);
+                    if (xpGanho > 0) {
+                        this.adicionarXP(xpGanho, `Progresso em "${sonho.titulo}"`);
+                    }
+                }
+                
+                this.salvarSonhos();
+                this.salvarGamificacao();
+            }
+
+            // ===== NOVA LÓGICA DE CONCLUSÃO AUTOMÁTICA =====
+            if (novoProgresso === 100 && !sonho.concluido) {
+                this.marcarSonhoComoConcluidoAutomaticamente(sonhoId);
+            }
+            // ===== FIM DA NOVA LÓGICA =====
+
+        }
+        // Se não houver metas, o progresso permanece manual (como definido em ajustarProgresso ou 0)
+    }
+
+    // Função SÓ para progresso MANUAL
     atualizarProgressoSonho(id, novoProgresso) {
         const sonho = this.sonhos.find(s => s.id === id);
         if (sonho) {
@@ -559,11 +754,60 @@ class SonhosManager {
         const container = document.getElementById('sonhos-grid');
         const emptyState = document.getElementById('empty-sonhos');
         
-        const sonhosAtivos = this.sonhos.filter(s => !s.concluido);
+        // ===== LÓGICA DE FILTRO E ORDENAÇÃO (Existente) =====
+        
+        let sonhosFiltrados = this.sonhos.filter(s => !s.concluido);
+
+        // 1. Aplicar Filtro de Categoria
+        if (this.filtroCategoria !== 'todas') {
+            sonhosFiltrados = sonhosFiltrados.filter(s => s.categoria === this.filtroCategoria);
+        }
+
+        // 2. Aplicar Filtro de Prioridade
+        if (this.filtroPrioridade !== 'todas') {
+            sonhosFiltrados = sonhosFiltrados.filter(s => s.prioridade === this.filtroPrioridade);
+        }
+
+        // 3. Aplicar Ordenação
+        const prioridadeValor = { 'alta': 3, 'media': 2, 'baixa': 1 };
+        
+        switch (this.ordenacao) {
+            case 'recente':
+                sonhosFiltrados.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+                break;
+            case 'prazo':
+                sonhosFiltrados.sort((a, b) => {
+                    if (!a.prazo) return 1;
+                    if (!b.prazo) return -1;
+                    return new Date(a.prazo) - new Date(b.prazo);
+                });
+                break;
+            case 'prioridade':
+                sonhosFiltrados.sort((a, b) => (prioridadeValor[b.prioridade] || 0) - (prioridadeValor[a.prioridade] || 0));
+                break;
+            case 'progresso':
+                sonhosFiltrados.sort((a, b) => b.progresso - a.progresso);
+                break;
+        }
+        
+        const sonhosAtivos = sonhosFiltrados; 
+        
+        // ===== FIM DA LÓGICA DE FILTRO =====
         
         if (sonhosAtivos.length === 0) {
+            container.innerHTML = ''; // Limpa o grid
             container.style.display = 'none';
             emptyState.style.display = 'block';
+            // Ajusta a mensagem do estado vazio se filtros estiverem ativos
+            if (this.sonhos.filter(s => !s.concluido).length > 0) {
+                emptyState.querySelector('h3').textContent = 'Nenhum sonho encontrado';
+                emptyState.querySelector('p').textContent = 'Tente ajustar seus filtros ou cadastre um novo sonho!';
+                emptyState.querySelector('button').style.display = 'none';
+            } else {
+                 emptyState.querySelector('h3').textContent = 'Nenhum sonho cadastrado';
+                 emptyState.querySelector('p').textContent = 'Comece criando seu primeiro sonho e transforme-o em realidade!';
+                 emptyState.querySelector('button').style.display = 'inline-flex';
+            }
             return;
         }
 
@@ -573,12 +817,41 @@ class SonhosManager {
         container.innerHTML = sonhosAtivos.map(sonho => this.criarCardSonho(sonho)).join('');
     }
 
+    // ===== FUNÇÃO DE RENDERIZAÇÃO DE CARD ATUALIZADA =====
     criarCardSonho(sonho) {
         const prazoFormatado = sonho.prazo ? new Date(sonho.prazo).toLocaleDateString('pt-BR') : 'Sem prazo';
         const custoFormatado = sonho.custo > 0 ? `R$ ${sonho.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '';
         
+        // ===== NOVAS VARIÁVEIS DE METAS =====
+        const metasDoSonho = this.metas.filter(m => m.sonhoId === sonho.id);
+        const totalMetas = metasDoSonho.length;
+        const metasConcluidas = metasDoSonho.filter(m => m.status === 'concluida').length;
+
+	        // Botão de progresso manual (só aparece se não houver metas)
+	        const botaoProgressoManual = `
+	            <button class="btn-icon" data-sonho-id="${sonho.id}" title="Ajustar Progresso Manual">
+	                <i class="fas fa-sliders-h"></i>
+	            </button>
+	        `;
+	
+	        // Botão de conclusão manual (só aparece se não houver metas)
+	        const botaoConcluirManual = `
+	            <button class="btn-icon complete" data-sonho-id="${sonho.id}" title="Marcar como Realizado">
+	                <i class="fas fa-check"></i>
+	            </button>
+	        `;
+        
+        // Novo elemento de contador de metas (só aparece se houver metas)
+        const infoMetas = `
+            <div class="sonho-metas-info">
+                <i class="fas fa-bullseye"></i>
+                <span>Metas: ${metasConcluidas} / ${totalMetas}</span>
+            </div>
+        `;
+        // ===== FIM DAS NOVAS VARIÁVEIS =====
+
         return `
-            <div class="sonho-card">
+	            <div class="sonho-card" data-sonho-id="${sonho.id}">
                 <div class="sonho-header">
                     <div class="sonho-categoria categoria-${sonho.categoria}">${this.getNomeCategoria(sonho.categoria)}</div>
                     <h3 class="sonho-titulo">${sonho.titulo}</h3>
@@ -590,9 +863,11 @@ class SonhosManager {
                         <span class="sonho-prioridade prioridade-${sonho.prioridade}">${this.getNomePrioridade(sonho.prioridade)}</span>
                     </div>
                     ${custoFormatado ? `<div class="sonho-custo">💰 ${custoFormatado}</div>` : ''}
-                    <div class="sonho-progresso">
+                    
+	                    ${totalMetas > 0 ? infoMetas : ''}
+	                    <div class="sonho-progresso">
                         <div class="progresso-label">
-                            <span>Progresso</span>
+                            <span>Progresso ${totalMetas > 0 ? '(Auto)' : ''}</span>
                             <span>${sonho.progresso}%</span>
                         </div>
                         <div class="progresso-bar">
@@ -600,32 +875,31 @@ class SonhosManager {
                         </div>
                     </div>
                     <div class="sonho-actions">
-                        <button class="btn-icon edit" onclick="sonhosManager.abrirModalSonho(${JSON.stringify(sonho).replace(/"/g, '&quot;')})" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon" onclick="sonhosManager.ajustarProgresso('${sonho.id}')" title="Ajustar Progresso">
-                            <i class="fas fa-chart-line"></i>
-                        </button>
-                        <button class="btn-icon complete" onclick="sonhosManager.concluirSonho('${sonho.id}')" title="Marcar como Realizado">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="btn-icon delete" onclick="sonhosManager.excluirSonho('${sonho.id}')" title="Excluir">
-                            <i class="fas fa-trash"></i>
-                        </button>
+	                        <button class="btn-icon edit" data-sonho-id="${sonho.id}" title="Editar">
+	                            <i class="fas fa-edit"></i>
+	                        </button>
+	                        
+	                        ${totalMetas === 0 ? botaoProgressoManual : ''}
+	                        ${totalMetas === 0 ? botaoConcluirManual : ''}
+	                        <button class="btn-icon delete" data-sonho-id="${sonho.id}" title="Excluir">
+	                            <i class="fas fa-trash"></i>
+	                        </button>
                     </div>
                 </div>
             </div>
         `;
     }
 
+
     ajustarProgresso(id) {
+        // Esta função agora só é chamada se não houver metas
         const sonho = this.sonhos.find(s => s.id === id);
         if (sonho) {
             const novoProgresso = prompt(`Qual o progresso atual de "${sonho.titulo}"? (0-100)`, sonho.progresso);
             if (novoProgresso !== null) {
                 const progresso = parseInt(novoProgresso);
                 if (!isNaN(progresso) && progresso >= 0 && progresso <= 100) {
-                    this.atualizarProgressoSonho(id, progresso);
+                    this.atualizarProgressoSonho(id, progresso); // Chama a função de progresso manual
                 } else {
                     this.mostrarNotificacao('Por favor, insira um valor entre 0 e 100.', 'erro');
                 }
@@ -696,19 +970,45 @@ class SonhosManager {
 
         this.salvarMetas();
         this.salvarGamificacao();
-        this.renderizarMetas();
+        
+        // ===== ATUALIZAR PROGRESSO E RENDERIZAR SONHOS =====
+        this.atualizarProgressoAutomaticoSonho(dados.sonhoId);
+        this.renderizarSonhos(); // Atualiza a grid de sonhos (progresso)
+        // ===== FIM DA ATUALIZAÇÃO =====
+
+        this.renderizarMetas(); // Atualiza a lista de metas
         this.fecharModalMeta();
         
         this.mostrarNotificacao(this.metaEditando ? 'Meta atualizada com sucesso!' : 'Meta criada com sucesso!', 'sucesso');
     }
 
+    toggleMetaAccordion(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.fas');
+
+        if (content.style.maxHeight) {
+            // Fechar
+            content.style.maxHeight = null;
+            header.classList.remove('active');
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+        } else {
+            // Abrir
+            content.style.maxHeight = content.scrollHeight + "px";
+            header.classList.add('active');
+            icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+        }
+    }
+
     alterarStatusMeta(id, novoStatus) {
         const meta = this.metas.find(m => m.id === id);
-        if (meta) {
-            meta.status = novoStatus;
-            meta.dataAtualizacao = new Date().toISOString();
-            
-            if (novoStatus === 'concluida') {
+	        if (meta) {
+	            // Se o status for 'progresso' e o novo status for 'progresso', não faz nada
+	            if (meta.status === 'progresso' && novoStatus === 'progresso') return;
+	            
+	            meta.status = novoStatus;
+	            meta.dataAtualizacao = new Date().toISOString();
+	            
+	            if (novoStatus === 'concluida') {
                 meta.dataConclusao = new Date().toISOString();
                 
                 // Adicionar às conquistas
@@ -730,6 +1030,12 @@ class SonhosManager {
             }
             
             this.salvarMetas();
+
+            // ===== ATUALIZAR PROGRESSO E RENDERIZAR SONHOS =====
+            this.atualizarProgressoAutomaticoSonho(meta.sonhoId);
+            this.renderizarSonhos(); // Atualiza a grid de sonhos (progresso)
+            // ===== FIM DA ATUALIZAÇÃO =====
+
             this.renderizarMetas();
             this.renderizarConquistas();
             this.renderizarGamificacao();
@@ -738,8 +1044,21 @@ class SonhosManager {
 
     excluirMeta(id) {
         if (confirm('Tem certeza que deseja excluir esta meta?')) {
+            // ===== CAPTURAR SONHOID ANTES DE EXCLUIR =====
+            const meta = this.metas.find(m => m.id === id);
+            const sonhoId = meta ? meta.sonhoId : null;
+            // ===== FIM DA CAPTURA =====
+
             this.metas = this.metas.filter(m => m.id !== id);
             this.salvarMetas();
+
+            // ===== ATUALIZAR PROGRESSO E RENDERIZAR SONHOS =====
+            if (sonhoId) {
+                this.atualizarProgressoAutomaticoSonho(sonhoId);
+                this.renderizarSonhos(); // Atualiza a grid de sonhos (progresso)
+            }
+            // ===== FIM DA ATUALIZAÇÃO =====
+            
             this.renderizarMetas();
             this.mostrarNotificacao('Meta excluída com sucesso!', 'sucesso');
         }
@@ -758,22 +1077,51 @@ class SonhosManager {
         container.style.display = 'block';
         emptyState.style.display = 'none';
 
-        // Agrupar metas por sonho
+        // Agrupar metas por sonho E calcular estatísticas
         const metasPorSonho = this.metas.reduce((acc, meta) => {
             const sonho = this.sonhos.find(s => s.id === meta.sonhoId);
             const sonhoTitulo = sonho ? sonho.titulo : 'Sonho não encontrado';
             
             if (!acc[sonhoTitulo]) {
-                acc[sonhoTitulo] = [];
+                acc[sonhoTitulo] = {
+                    metas: [],
+                    total: 0,
+                    concluidas: 0
+                };
             }
-            acc[sonhoTitulo].push(meta);
+            
+            acc[sonhoTitulo].metas.push(meta);
+            acc[sonhoTitulo].total++;
+            if (meta.status === 'concluida') {
+                acc[sonhoTitulo].concluidas++;
+            }
+            
             return acc;
         }, {});
 
-        container.innerHTML = Object.entries(metasPorSonho).map(([sonhoTitulo, metas]) => `
+        // Ordenar metas dentro de cada grupo (concluídas por último)
+        Object.values(metasPorSonho).forEach(grupo => {
+            grupo.metas.sort((a, b) => {
+                if (a.status === 'concluida' && b.status !== 'concluida') return 1;
+                if (a.status !== 'concluida' && b.status === 'concluida') return -1;
+                return new Date(a.prazo) - new Date(b.prazo); // Ordenar por prazo
+            });
+        });
+
+        container.innerHTML = Object.entries(metasPorSonho).map(([sonhoTitulo, dados]) => `
             <div class="metas-grupo">
-                <h4 class="metas-grupo-titulo">${sonhoTitulo}</h4>
-                ${metas.map(meta => this.criarItemMeta(meta)).join('')}
+                <button class="metas-grupo-header">
+                    <div class="metas-header-titulo">
+                        <i class="fas fa-chevron-right"></i>
+                        ${sonhoTitulo}
+                    </div>
+                    <span class="metas-header-summary">
+                        ${dados.concluidas} / ${dados.total} metas
+                    </span>
+                </button>
+                <div class="metas-grupo-content">
+                    ${dados.metas.map(meta => this.criarItemMeta(meta)).join('')}
+                </div>
             </div>
         `).join('');
     }
@@ -784,7 +1132,7 @@ class SonhosManager {
         const statusTexto = this.getNomeStatus(meta.status);
         
         return `
-            <div class="meta-item">
+	            <div class="meta-item" data-meta-id="${meta.id}">
                 <div class="meta-header">
                     <div class="meta-info">
                         <h4>${meta.titulo}</h4>
@@ -796,15 +1144,20 @@ class SonhosManager {
                 <div class="meta-footer">
                     <span class="meta-prazo">📅 ${prazoFormatado}</span>
                     <div class="meta-actions">
-                        ${meta.status !== 'concluida' ? `
-                            <button class="btn-icon" onclick="sonhosManager.alterarStatusMeta('${meta.id}', '${meta.status === 'pendente' ? 'progresso' : 'concluida'}')" title="${meta.status === 'pendente' ? 'Iniciar' : 'Concluir'}">
-                                <i class="fas fa-${meta.status === 'pendente' ? 'play' : 'check'}"></i>
-                            </button>
-                        ` : ''}
-                        <button class="btn-icon edit" onclick="sonhosManager.abrirModalMeta(${JSON.stringify(meta).replace(/"/g, '&quot;')})" title="Editar">
+	                        ${meta.status !== 'concluida' ? `
+	                            ${meta.status === 'progresso' ? `
+	                                <button class="btn-icon pause" data-meta-id="${meta.id}" title="Pausar">
+	                                    <i class="fas fa-pause"></i>
+	                                </button>
+	                            ` : ''}
+	                            <button class="btn-icon" data-meta-id="${meta.id}" title="${meta.status === 'progresso' ? 'Concluir' : meta.status === 'pausada' ? 'Retomar' : 'Iniciar'}">
+	                                <i class="fas fa-${meta.status === 'progresso' ? 'check' : meta.status === 'pausada' ? 'redo' : 'play'}"></i>
+	                            </button>
+	                        ` : ''}
+	                        <button class="btn-icon edit" data-meta-id="${meta.id}" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon delete" onclick="sonhosManager.excluirMeta('${meta.id}')" title="Excluir">
+	                        <button class="btn-icon delete" data-meta-id="${meta.id}" title="Excluir">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -1216,17 +1569,17 @@ function abrirModalSonho() {
     sonhosManager.abrirModalSonho();
 }
 
-function fecharModalSonho() {
-    sonhosManager.fecharModalSonho();
-}
-
-function abrirModalMeta() {
-    sonhosManager.abrirModalMeta();
-}
-
-function fecharModalMeta() {
-    sonhosManager.fecharModalMeta();
-}
+	function fecharModalSonho() {
+	    sonhosManager.fecharModalSonho();
+	}
+	
+	function abrirModalMeta() {
+	    sonhosManager.abrirModalMeta();
+	}
+	
+	function fecharModalMeta() {
+	    sonhosManager.fecharModalMeta();
+	}
 
 // ===== FUNÇÕES DE COMPARTILHAMENTO =====
 function compartilharTwitter() {
@@ -1256,17 +1609,31 @@ function copiarLink() {
     });
 }
 
-// ===== INICIALIZAÇÃO =====
-let sonhosManager;
+	// ===== FUNÇÕES GLOBAIS PARA FECHAMENTO DE MODAIS =====
+	function fecharModais() {
+	    // Fecha todos os modais
+	    document.querySelectorAll('.modal').forEach(modal => {
+	        modal.classList.remove('active');
+	    });
+	    // Limpa o estado de edição
+	    if (window.sonhosManager) {
+	        window.sonhosManager.sonhoEditando = null;
+	        window.sonhosManager.metaEditando = null;
+	    }
+	}
 
-document.addEventListener('DOMContentLoaded', () => {
-    sonhosManager = new SonhosManager();
-    
-    // Atualizar saldo global se disponível
-    if (typeof atualizarSaldoGlobal === 'function') {
-        atualizarSaldoGlobal();
-    }
-});
+	// ===== INICIALIZAÇÃO =====
+	let sonhosManager; // Mantido para as funções globais abaixo
+	
+	document.addEventListener('DOMContentLoaded', () => {
+	    sonhosManager = new SonhosManager();
+	    window.sonhosManager = sonhosManager; // <<< CORREÇÃO APLICADA AQUI
+	    
+	    // Atualizar saldo global se disponível
+	    if (typeof atualizarSaldoGlobal === 'function') {
+	        atualizarSaldoGlobal();
+	    }
+	});
 
 // Atualizar saldo quando dados financeiros mudarem
 window.addEventListener('storage', (event) => {
