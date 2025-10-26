@@ -195,6 +195,14 @@
   background: rgba(250, 179, 135, 1) !important;
 }
 
+/* Estilo para tipo 'task' (tarefa normal) */
+.calendar-task-task {
+  background: rgba(137, 180, 250, 0.8) !important; /* Azul (original) */
+}
+.calendar-task-task:hover {
+  background: rgba(137, 180, 250, 1) !important;
+}
+
 
 .calendar-task.completed {
   background: rgba(166, 227, 161, 0.8);
@@ -295,6 +303,42 @@
   color: #1e1e2e;
 }
 
+/* NOVO: Estilos da Barra de Busca */
+.task-search-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.task-search-input {
+  width: 100%;
+  background: #45475a;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  padding: 12px 12px 12px 40px; /* Espaço para o ícone */
+  color: #cdd6f4;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.task-search-input:focus {
+  outline: none;
+  border-color: #89b4fa;
+}
+
+.task-search-input::placeholder {
+  color: #6c7086;
+}
+
+.task-search-container .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c7086;
+}
+
+
 .tasks-list {
   max-height: 400px;
   overflow-y: auto;
@@ -314,6 +358,16 @@
   background: #585b70;
   transform: translateX(5px);
 }
+
+/* NOVO: Estilo para Sonho/Meta clicável */
+.task-item.clickable {
+  cursor: pointer;
+}
+
+.task-item.clickable:hover {
+  box-shadow: 0 0 8px rgba(137, 180, 250, 0.4);
+}
+
 
 .task-item.completed {
   opacity: 0.7;
@@ -362,6 +416,7 @@
 .task-actions {
   display: flex;
   gap: 8px;
+  margin-left: 10px; /* Garante espaço */
 }
 
 .task-action-btn {
@@ -372,6 +427,7 @@
   padding: 4px;
   border-radius: 4px;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* Impede que os botões encolham */
 }
 
 .task-action-btn:hover {
@@ -404,12 +460,15 @@
   align-items: center;
   font-size: 0.8rem;
   color: #6c7086;
+  flex-wrap: wrap; /* Permite quebra de linha em telas pequenas */
+  gap: 10px; /* Espaçamento entre os itens meta */
 }
 
 .task-datetime {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap; /* Permite quebra de linha */
 }
 
 .task-category {

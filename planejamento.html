@@ -139,6 +139,14 @@
             <button class="filter-btn" data-filter="no-date">
               <i class="fas fa-question-circle"></i> Sem Data
             </button>
+            <button id="archive-tasks-btn" class="filter-btn" title="Arquivar tarefas concluídas">
+              <i class="fas fa-archive"></i> Arquivar Concluídas
+            </button>
+          </div>
+
+          <div class="form-group task-search-container">
+            <input type="text" id="task-search" class="task-search-input" placeholder="Buscar tarefas por título ou descrição...">
+            <i class="fas fa-search search-icon"></i>
           </div>
 
           <div id="tasks-list" class="tasks-list">
@@ -168,8 +176,7 @@
             </div>
             <div class="stat-content">
               <span class="stat-number" id="total-tasks">0</span>
-              <span class="stat-label">Total de Tarefas</span>
-            </div>
+              <span class="stat-label">Total de Itens</span> </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">
@@ -186,7 +193,7 @@
             </div>
             <div class="stat-content">
               <span class="stat-number" id="completed-tasks">0</span>
-              <span class="stat-label">Concluídas</span>
+              <span class="stat-label">Concluídos</span>
             </div>
           </div>
           <div class="stat-card">
@@ -289,6 +296,7 @@
     <script src="js/saldo-global.js"></script>
     <script src="js/script.js"></script> <script src="js/planejamento.js"></script>
     <script src="js/notificacoes.js"></script>
+    <script src="js/unified-data-manager.js"></script>
 
   </body>
 </html>
