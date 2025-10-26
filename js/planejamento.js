@@ -45,6 +45,14 @@ class TaskPlanner {
         return dados ? JSON.parse(dados) : [];
     }
 
+    /**
+     * NOVO: Carrega as tarefas arquivadas
+     */
+    loadArchive() {
+        const archive = localStorage.getItem('sol-de-soter-tasks-archive');
+        return archive ? JSON.parse(archive) : [];
+    }
+
     // MODIFICADO: Apenas atualiza this.allItems, não retorna
     getAllItems() {
         // Mapeia sonhos para o formato de tarefa
@@ -467,7 +475,7 @@ class TaskPlanner {
         this.updateStats();
     }
     
-    // MODIFICADO: Usa a lista combinada (allItems) e aplica busca
+    // MODIFICADO: Usa a lista combinada (allItems) e aplica busca E ARQUIVAMENTO
     getFilteredTasks() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -490,6 +498,10 @@ class TaskPlanner {
                 break;
             case 'no-date':
                 filtered = this.allItems.filter(task => !task.date);
+                break;
+            // NOVO CASO: Carrega os arquivados
+            case 'archived':
+                filtered = this.loadArchive();
                 break;
             default:
                 filtered = [...this.allItems];
@@ -528,9 +540,11 @@ class TaskPlanner {
     }
 
     // ===== RENDERIZAÇÃO ===== //
+    // MODIFICADO: Passa o status 'isArchived' para 'createTaskHTML'
     renderTasks() {
         const tasksList = document.getElementById('tasks-list');
         const filteredTasks = this.getFilteredTasks();
+        const isArchivedView = (this.currentFilter === 'archived'); // Verifica se está na view de arquivos
 
         if (filteredTasks.length === 0) {
             tasksList.innerHTML = `<div style="text-align: center; padding: 40px; color: #6c7086;"><i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 15px;"></i><p>Nenhum item encontrado</p></div>`;
@@ -538,6 +552,14 @@ class TaskPlanner {
         }
 
         filteredTasks.sort((a, b) => {
+            // Em arquivos, ordena por data de conclusão (se existir), mais recentes primeiro
+            if (isArchivedView) {
+                const dateA = a.completedAt ? new Date(a.completedAt) : new Date(0);
+                const dateB = b.completedAt ? new Date(b.completedAt) : new Date(0);
+                return dateB - dateA;
+            }
+
+            // Lógica de ordenação original para tarefas ativas
             if (!a.date && b.date) return 1;
             if (a.date && !b.date) return -1;
             if (!a.date && !b.date) {
@@ -556,11 +578,12 @@ class TaskPlanner {
             return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
         });
 
-        tasksList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task)).join('');
+        tasksList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task, isArchivedView)).join('');
     }
 
     // MODIFICADO: Adiciona tag de tipo, evento de clique para sonho/meta, e botões condicionais
-    createTaskHTML(item) {
+    // E agora renderiza um item 'somente leitura' se 'isArchived' for true
+    createTaskHTML(item, isArchived = false) {
         let formattedDate = '';
         let formattedTime = item.time || '';
         
@@ -593,12 +616,13 @@ class TaskPlanner {
         const priorityClass = item.priority ? `${item.priority}-priority` : 'no-priority';
         const dateClass = !item.date ? 'no-date' : '';
         
-        const isTask = item.type === 'task';
-        const isClickable = item.type === 'sonho' || item.type === 'meta';
+        // Itens arquivados são tratados como 'task' para lógica de botões, e não são clicáveis
+        const isTask = item.type === 'task' || isArchived;
+        const isClickable = !isArchived && (item.type === 'sonho' || item.type === 'meta');
         const clickHandler = isClickable ? `onclick="taskPlanner.navigateToItem('${item.type}', '${item.id}')"` : '';
 
         return `
-            <div class="task-item ${item.completed ? 'completed' : ''} ${priorityClass} ${dateClass} ${isClickable ? 'clickable' : ''}" 
+            <div class="task-item ${item.completed ? 'completed' : ''} ${priorityClass} ${dateClass} ${isClickable ? 'clickable' : ''} ${isArchived ? 'is-archived' : ''}" 
                  data-task-id="${item.id}" 
                  ${clickHandler}>
                 <div class="task-header">
@@ -607,20 +631,25 @@ class TaskPlanner {
                         ${item.recurring ? '<span class="task-recurring"><i class="fas fa-redo"></i></span>' : ''}
                     </h4>
                     <div class="task-actions">
-                        <button class="task-action-btn complete-btn" 
-                                onclick="${isClickable ? 'event.stopPropagation();' : ''} taskPlanner.toggleTaskCompletion('${item.id}')" 
-                                title="${item.completed ? 'Marcar como pendente' : 'Marcar como concluída'}">
-                            <i class="fas ${item.completed ? 'fa-undo' : 'fa-check'}"></i>
-                        </button>
-                        
-                        ${isTask ? `
-                        <button class="task-action-btn edit-btn" onclick="taskPlanner.editTask('${item.id}')" title="Editar tarefa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="task-action-btn delete-btn" onclick="taskPlanner.confirmDeleteTask('${item.id}')" title="Excluir tarefa">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        ` : ''}
+                        ${isArchived ? 
+                            `<span class="archived-tag"><i class="fas fa-archive"></i> Arquivada</span>` :
+                            `
+                            <button class="task-action-btn complete-btn" 
+                                    onclick="${isClickable ? 'event.stopPropagation();' : ''} taskPlanner.toggleTaskCompletion('${item.id}')" 
+                                    title="${item.completed ? 'Marcar como pendente' : 'Marcar como concluída'}">
+                                <i class="fas ${item.completed ? 'fa-undo' : 'fa-check'}"></i>
+                            </button>
+                            
+                            ${isTask ? `
+                            <button class="task-action-btn edit-btn" onclick="taskPlanner.editTask('${item.id}')" title="Editar tarefa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="task-action-btn delete-btn" onclick="taskPlanner.confirmDeleteTask('${item.id}')" title="Excluir tarefa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                            `
+                        }
                     </div>
                 </div>
                 ${item.description ? `<p class="task-description">${item.description}</p>` : ''}
@@ -652,12 +681,25 @@ class TaskPlanner {
     }
 
 
-    // MODIFICADO: Usa a lista combinada (allItems) para as estatísticas
+    // MODIFICADO: Agora inclui tarefas arquivadas nas estatísticas
     updateStats() {
-        // this.allItems = this.getAllItems(); // REMOVIDO: this.allItems é atualizado em saveTasks
-        const totalTasks = this.allItems.length;
-        const pendingTasks = this.allItems.filter(task => !task.completed).length;
-        const completedTasks = totalTasks - pendingTasks;
+        // 1. Carrega o arquivo de tarefas
+        const archivedTasks = this.loadArchive();
+        
+        // 2. Combina os itens ativos (this.allItems) com as tarefas arquivadas
+        //    this.allItems já contém tarefas ativas, sonhos e metas.
+        //    As tarefas arquivadas são *apenas* tarefas concluídas que foram removidas de this.tasks.
+        const allItemsForStats = [...this.allItems, ...archivedTasks];
+
+        // 3. Calcula as estatísticas com base na lista combinada
+        const totalTasks = allItemsForStats.length;
+        
+        // Itens pendentes são apenas os de this.allItems, pois o arquivo só tem itens concluídos
+        const pendingTasks = this.allItems.filter(item => !item.completed).length; 
+        
+        // O total de concluídos é o total (ativos + arquivados) - pendentes (só ativos)
+        const completedTasks = totalTasks - pendingTasks; 
+        
         const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
         document.getElementById('total-tasks').textContent = totalTasks;
@@ -797,12 +839,37 @@ class TaskPlanner {
         }
     }
 
+    // MODIFICADO: Chama as funções de visualização
     setFilter(filter) {
         this.currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+
+        if (filter === 'archived') {
+            this.showArchiveView();
+        } else {
+            this.showActiveView();
+        }
+
         this.renderTasks();
     }
+
+    // NOVA FUNÇÃO: Esconde elementos da UI para a view de arquivos
+    showArchiveView() {
+        document.getElementById('add-task-btn').style.display = 'none';
+        document.getElementById('archive-tasks-btn').style.display = 'none';
+        document.querySelector('.calendar-section').style.display = 'none';
+        document.querySelector('.stats-section').style.display = 'none';
+    }
+
+    // NOVA FUNÇÃO: Mostra elementos da UI para a view ativa
+    showActiveView() {
+        document.getElementById('add-task-btn').style.display = 'flex';
+        document.getElementById('archive-tasks-btn').style.display = 'flex';
+        document.querySelector('.calendar-section').style.display = 'block';
+        document.querySelector('.stats-section').style.display = 'grid';
+    }
+
 
     // MODIFICADO: Adiciona listeners para busca e arquivamento
     bindEvents() {
@@ -819,7 +886,9 @@ class TaskPlanner {
         document.getElementById('task-form').addEventListener('submit', (e) => this.handleFormSubmit(e));
         
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.setFilter(btn.dataset.filter));
+            if (btn.dataset.filter) { // Garante que o botão de arquivar (sem data-filter) não quebre
+                btn.addEventListener('click', () => this.setFilter(btn.dataset.filter));
+            }
         });
         
         document.addEventListener('keydown', (e) => {
@@ -854,7 +923,7 @@ window.addEventListener('storage', (event) => {
     }
     
     // Recarrega os dados do planejamento se sonhos, metas ou tarefas forem alterados
-    if (event.key === 'sonhos-objetivos' || event.key === 'metas-objetivos' || event.key === 'sol-de-soter-tasks') {
+    if (event.key === 'sonhos-objetivos' || event.key === 'metas-objetivos' || event.key === 'sol-de-soter-tasks' || event.key === 'sol-de-soter-tasks-archive') {
         if(taskPlanner) {
             taskPlanner.tasks = taskPlanner.loadTasks(); // Recarrega tudo
             taskPlanner.sonhos = taskPlanner.loadSonhos();

@@ -884,3 +884,25 @@
 .dropdown {
   position: relative;
 }
+
+/* ===== NOVOS ESTILOS PARA TAREFAS ARQUIVADAS ===== */
+
+.task-item.is-archived {
+  background: #313244; /* Mais escuro */
+  border-left-color: #6c7086;
+  opacity: 0.8;
+}
+
+.task-item.is-archived:hover {
+  background: #313244; /* Sem efeito hover */
+  transform: none;
+  cursor: default;
+}
+
+.archived-tag {
+  color: #a6adc8;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
