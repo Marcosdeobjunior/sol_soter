@@ -9,6 +9,7 @@ class TaskPlanner {
         this.tasks = this.loadTasks();
         this.sonhos = this.loadSonhos();
         this.metas = this.loadMetas();
+        this.estudos = this.loadEstudos(); // NOVO: Carrega estudos
         
         // Inicializa propriedades
         this.allItems = [];
@@ -46,6 +47,14 @@ class TaskPlanner {
     }
 
     /**
+     * NOVO: Carrega os tópicos de estudo
+     */
+    loadEstudos() {
+        const dados = localStorage.getItem('studyPlannerTopics');
+        return dados ? JSON.parse(dados) : [];
+    }
+
+    /**
      * NOVO: Carrega as tarefas arquivadas
      */
     loadArchive() {
@@ -53,7 +62,7 @@ class TaskPlanner {
         return archive ? JSON.parse(archive) : [];
     }
 
-    // MODIFICADO: Apenas atualiza this.allItems, não retorna
+    // MODIFICADO: Agora inclui estudos
     getAllItems() {
         // Mapeia sonhos para o formato de tarefa
         const sonhosFormatados = this.sonhos
@@ -82,10 +91,33 @@ class TaskPlanner {
                 type: 'meta' // Adiciona um tipo para diferenciação
             }));
 
+        // NOVO: Mapeia estudos para o formato de tarefa
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const estudosFormatados = this.estudos
+            .filter(estudo => estudo.nextReviewAt) // Apenas agendados
+            .map(estudo => {
+                const reviewDate = new Date(estudo.nextReviewAt);
+                reviewDate.setHours(0, 0, 0, 0);
+                
+                return {
+                    id: `estudo-${estudo.id}`,
+                    title: estudo.name,
+                    description: `[Estudo] ${estudo.desc || 'Sem descrição.'} (Curso: ${estudo.course})`,
+                    date: new Date(estudo.nextReviewAt).toISOString().slice(0, 10),
+                    // Marca como 'completed' se estiver ATRASADO, para destaque visual
+                    completed: reviewDate.getTime() < hoje.getTime(), 
+                    category: 'study', // Categoria de 'estudos' já existe
+                    priority: estudo.priority, // 'alta', 'media', 'baixa'
+                    type: 'estudo'
+                };
+            });
+
         const tarefasComTipo = this.tasks.map(task => ({ ...task, type: 'task' }));
 
         // Combina tudo e ATUALIZA a propriedade da classe
-        this.allItems = [...tarefasComTipo, ...sonhosFormatados, ...metasFormatadas];
+        this.allItems = [...tarefasComTipo, ...sonhosFormatados, ...metasFormatadas, ...estudosFormatados];
     }
 
 
@@ -220,6 +252,7 @@ class TaskPlanner {
         }
     }
 
+    // MODIFICADO: Adiciona clique para 'estudo'
     createDayElement(day, month, year, isOtherMonth) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
@@ -267,6 +300,9 @@ class TaskPlanner {
             } else if (target && target.dataset.taskId.startsWith('meta-')) {
                 // Clique em meta navega
                 this.navigateToItem('meta', target.dataset.taskId);
+            } else if (target && target.dataset.taskId.startsWith('estudo-')) { // NOVO
+                // Clique em estudo navega
+                this.navigateToItem('estudo', target.dataset.taskId);
             } else {
                 // Clique no dia
                 this.selectDate(dayDate);
@@ -294,8 +330,10 @@ class TaskPlanner {
             if (item.type === 'task') {
                 dataId = `task-${item.id}`;
             }
+            // Para sonho, meta e estudo, o ID formatado (ex: 'sonho-123') já é o item.id
 
-            // Adiciona classe específica para sonho, meta ou tarefa
+            // Adiciona classe específica para sonho, meta, estudo ou tarefa
+            // O item 'completed' para estudo significa 'atrasado'
             taskElement.className = `calendar-task calendar-task-${item.type} ${item.completed ? 'completed' : ''} ${item.priority ? item.priority + '-priority' : 'no-priority'}`;
             taskElement.textContent = item.title;
             taskElement.dataset.taskId = dataId; // Usa o ID com prefixo
@@ -428,6 +466,9 @@ class TaskPlanner {
             this.toggleSonhoCompletion(id);
         } else if (id.startsWith('meta-')) {
             this.toggleMetaCompletion(id);
+        } else if (id.startsWith('estudo-')) {
+            // Itens de estudo não podem ser "concluídos" por aqui
+            console.warn('A conclusão de estudos é gerenciada na página de Estudos.');
         } else {
             // Lógica original para tarefas
             const task = this.tasks.find(task => task.id === id);
@@ -484,10 +525,12 @@ class TaskPlanner {
 
         switch (this.currentFilter) {
             case 'pending':
-                filtered = this.allItems.filter(task => !task.completed);
+                // Modificado: Itens de estudo "completed" (atrasados) são considerados pendentes
+                filtered = this.allItems.filter(task => !task.completed || task.type === 'estudo');
                 break;
             case 'completed':
-                filtered = this.allItems.filter(task => task.completed);
+                // Modificado: Itens de estudo nunca são mostrados como concluídos aqui
+                filtered = this.allItems.filter(task => task.completed && task.type !== 'estudo');
                 break;
             case 'today':
                 filtered = this.allItems.filter(task => {
@@ -522,7 +565,6 @@ class TaskPlanner {
 
     // MODIFICADO: Usa a lista combinada (allItems)
     getTasksForDate(date) {
-        // this.allItems = this.getAllItems(); // REMOVIDO: this.allItems é atualizado em saveTasks
         return this.allItems.filter(task => {
             if (!task.date) return false;
             const taskDate = new Date(task.date + 'T00:00:00');
@@ -558,6 +600,11 @@ class TaskPlanner {
                 const dateB = b.completedAt ? new Date(b.completedAt) : new Date(0);
                 return dateB - dateA;
             }
+            
+            // Lógica de ordenação para itens ativos
+            // Itens de estudo atrasados ('completed' = true) devem vir primeiro
+            if (a.type === 'estudo' && a.completed && (b.type !== 'estudo' || !b.completed)) return -1;
+            if (b.type === 'estudo' && b.completed && (a.type !== 'estudo' || !a.completed)) return 1;
 
             // Lógica de ordenação original para tarefas ativas
             if (!a.date && b.date) return 1;
@@ -581,7 +628,7 @@ class TaskPlanner {
         tasksList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task, isArchivedView)).join('');
     }
 
-    // MODIFICADO: Adiciona tag de tipo, evento de clique para sonho/meta, e botões condicionais
+    // MODIFICADO: Adiciona tag de tipo, evento de clique para sonho/meta/estudo, e botões condicionais
     // E agora renderiza um item 'somente leitura' se 'isArchived' for true
     createTaskHTML(item, isArchived = false) {
         let formattedDate = '';
@@ -596,14 +643,14 @@ class TaskPlanner {
             work: 'Trabalho', 
             personal: 'Pessoal', 
             health: 'Saúde', 
-            study: 'Estudos', 
+            study: 'Estudos', // Categoria existente
             other: 'Outros',
             viagem: 'Viagem',
             profissional: 'Profissional',
             financeiro: 'Financeiro',
             meta: 'Meta'
         };
-        const categoryLabel = categoryLabels[item.category] || 'Outros';
+        const categoryLabel = categoryLabels[item.category] || item.category || 'Outros';
 
         // Tag para diferenciar o tipo de item
         let typeTag = '';
@@ -611,34 +658,44 @@ class TaskPlanner {
             typeTag = '<span class="item-type-tag sonho-tag"><i class="fas fa-star"></i> Sonho</span>';
         } else if (item.type === 'meta') {
             typeTag = '<span class="item-type-tag meta-tag"><i class="fas fa-bullseye"></i> Meta</span>';
+        } else if (item.type === 'estudo') {
+            typeTag = '<span class="item-type-tag estudo-tag"><i class="fas fa-book-open"></i> Estudo</span>';
         }
 
+        // Para estudos, 'completed' significa 'atrasado', então damos uma classe de prioridade
+        const isOverdueStudy = (item.type === 'estudo' && item.completed);
         const priorityClass = item.priority ? `${item.priority}-priority` : 'no-priority';
         const dateClass = !item.date ? 'no-date' : '';
+        const completedClass = (item.completed && item.type !== 'estudo') ? 'completed' : ''; // Estudo não fica opaco
+        const overdueClass = isOverdueStudy ? 'high-priority' : ''; // Faz estudo atrasado ficar vermelho
+
         
         // Itens arquivados são tratados como 'task' para lógica de botões, e não são clicáveis
         const isTask = item.type === 'task' || isArchived;
-        const isClickable = !isArchived && (item.type === 'sonho' || item.type === 'meta');
+        const isClickable = !isArchived && (item.type === 'sonho' || item.type === 'meta' || item.type === 'estudo');
         const clickHandler = isClickable ? `onclick="taskPlanner.navigateToItem('${item.type}', '${item.id}')"` : '';
 
         return `
-            <div class="task-item ${item.completed ? 'completed' : ''} ${priorityClass} ${dateClass} ${isClickable ? 'clickable' : ''} ${isArchived ? 'is-archived' : ''}" 
+            <div class="task-item ${completedClass} ${priorityClass} ${dateClass} ${overdueClass} ${isClickable ? 'clickable' : ''} ${isArchived ? 'is-archived' : ''}" 
                  data-task-id="${item.id}" 
                  ${clickHandler}>
                 <div class="task-header">
                     <h4 class="task-title">
                         ${item.title}
                         ${item.recurring ? '<span class="task-recurring"><i class="fas fa-redo"></i></span>' : ''}
+                        ${isOverdueStudy ? '<span class="task-recurring" style="color: #f38ba8;">(Atrasado)</span>' : ''}
                     </h4>
                     <div class="task-actions">
                         ${isArchived ? 
                             `<span class="archived-tag"><i class="fas fa-archive"></i> Arquivada</span>` :
                             `
-                            <button class="task-action-btn complete-btn" 
+                            ${item.type !== 'estudo' ? // NÃO mostrar botão de completar para estudo
+                            `<button class="task-action-btn complete-btn" 
                                     onclick="${isClickable ? 'event.stopPropagation();' : ''} taskPlanner.toggleTaskCompletion('${item.id}')" 
                                     title="${item.completed ? 'Marcar como pendente' : 'Marcar como concluída'}">
                                 <i class="fas ${item.completed ? 'fa-undo' : 'fa-check'}"></i>
-                            </button>
+                            </button>`
+                            : ''}
                             
                             ${isTask ? `
                             <button class="task-action-btn edit-btn" onclick="taskPlanner.editTask('${item.id}')" title="Editar tarefa">
@@ -664,7 +721,7 @@ class TaskPlanner {
         `;
     }
     
-    // NOVA FUNÇÃO: Navegação para Sonhos/Metas
+    // MODIFICADO: Navegação para Sonhos/Metas/Estudos
     navigateToItem(type, id) {
         if (type === 'sonho') {
             const originalId = id.replace('sonho-', '');
@@ -672,11 +729,10 @@ class TaskPlanner {
             location.href = `sonhos.html?id=${originalId}`;
         } else if (type === 'meta') {
             const originalId = id.replace('meta-', '');
-            // Não há página 'metas.html' no nav.
-            // Apenas loga no console para evitar um link quebrado.
             console.log(`Navegação para 'meta' id: ${id} (ID original: ${originalId}). Página de destino não definida.`);
-            // Se houvesse uma página, seria:
-            // location.href = `metas.html?id=${originalId}`;
+        } else if (type === 'estudo') {
+            // Apenas navega para a página de estudos, que listará os pendentes
+            location.href = 'estudos.html';
         }
     }
 
@@ -687,24 +743,24 @@ class TaskPlanner {
         const archivedTasks = this.loadArchive();
         
         // 2. Combina os itens ativos (this.allItems) com as tarefas arquivadas
-        //    this.allItems já contém tarefas ativas, sonhos e metas.
-        //    As tarefas arquivadas são *apenas* tarefas concluídas que foram removidas de this.tasks.
+        //    this.allItems já contém tarefas ativas, sonhos, metas e estudos.
         const allItemsForStats = [...this.allItems, ...archivedTasks];
 
         // 3. Calcula as estatísticas com base na lista combinada
-        const totalTasks = allItemsForStats.length;
+        const totalItems = allItemsForStats.length;
         
-        // Itens pendentes são apenas os de this.allItems, pois o arquivo só tem itens concluídos
-        const pendingTasks = this.allItems.filter(item => !item.completed).length; 
+        // Itens pendentes são os de this.allItems que não estão concluídos
+        // (Lembrando: estudos 'completed' são 'atrasados', então contam como pendentes)
+        const pendingItems = this.allItems.filter(item => !item.completed || item.type === 'estudo').length; 
         
         // O total de concluídos é o total (ativos + arquivados) - pendentes (só ativos)
-        const completedTasks = totalTasks - pendingTasks; 
+        const completedItems = totalItems - pendingItems; 
         
-        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
-        document.getElementById('total-tasks').textContent = totalTasks;
-        document.getElementById('pending-tasks').textContent = pendingTasks;
-        document.getElementById('completed-tasks').textContent = completedTasks;
+        document.getElementById('total-tasks').textContent = totalItems;
+        document.getElementById('pending-tasks').textContent = pendingItems;
+        document.getElementById('completed-tasks').textContent = completedItems;
         document.getElementById('completion-rate').textContent = `${completionRate}%`;
     }
 
@@ -922,12 +978,21 @@ window.addEventListener('storage', (event) => {
         atualizarSaldoGlobal();
     }
     
-    // Recarrega os dados do planejamento se sonhos, metas ou tarefas forem alterados
-    if (event.key === 'sonhos-objetivos' || event.key === 'metas-objetivos' || event.key === 'sol-de-soter-tasks' || event.key === 'sol-de-soter-tasks-archive') {
+    // Recarrega os dados do planejamento se sonhos, metas, tarefas OU ESTUDOS forem alterados
+    const keysToWatch = [
+        'sonhos-objetivos', 
+        'metas-objetivos', 
+        'sol-de-soter-tasks', 
+        'sol-de-soter-tasks-archive',
+        'studyPlannerTopics' // NOVO
+    ];
+
+    if (keysToWatch.includes(event.key)) {
         if(taskPlanner) {
             taskPlanner.tasks = taskPlanner.loadTasks(); // Recarrega tudo
             taskPlanner.sonhos = taskPlanner.loadSonhos();
             taskPlanner.metas = taskPlanner.loadMetas();
+            taskPlanner.estudos = taskPlanner.loadEstudos(); // NOVO
             taskPlanner.getAllItems(); // Reconstrói allItems
             taskPlanner.renderCalendar();
             taskPlanner.renderTasks();

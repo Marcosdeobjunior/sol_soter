@@ -46,8 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const tarefas = this.getTarefasNotifications();
             const financas = this.getFinancasNotifications();
             const conquistas = this.getConquistasNotifications();
+            const estudos = this.getEstudosNotifications(); // NOVO
 
-            this.notifications = [...metas, ...tarefas, ...financas, ...conquistas];
+            this.notifications = [...metas, ...tarefas, ...financas, ...conquistas, ...estudos];
             
             // Ordena as notificações, talvez por data (a ser implementado se houver datas)
             // Por enquanto, a ordem de busca é mantida.
@@ -106,6 +107,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             return notifications;
         }
+
+        /**
+         * NOVO: Busca por tópicos de estudo para revisar hoje.
+         */
+        getEstudosNotifications() {
+            const topics = JSON.parse(localStorage.getItem('studyPlannerTopics')) || [];
+            const notifications = [];
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            topics.forEach(topic => {
+                if (topic.nextReviewAt) {
+                    const reviewDate = new Date(topic.nextReviewAt);
+                    reviewDate.setHours(0, 0, 0, 0);
+
+                    // Adiciona notificação se a data de revisão for hoje ou anterior (atrasada)
+                    if (reviewDate.getTime() <= hoje.getTime()) {
+                        notifications.push({
+                            icon: 'fa-book-open',
+                            type: 'estudo', // Classe 'estudo' será usada
+                            text: `Revisão de estudo: "${topic.name}".`,
+                            timestamp: `Curso: ${topic.course || 'Geral'}`
+                        });
+                    }
+                }
+            });
+            return notifications;
+        }
+
 
         /**
          * Busca por contas a pagar próximas (EXEMPLO).

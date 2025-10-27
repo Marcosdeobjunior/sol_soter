@@ -906,3 +906,29 @@
   align-items: center;
   gap: 5px;
 }
+
+/* ===== NOVOS ESTILOS PARA ESTUDOS ===== */
+
+/* Tag de Estudo na Lista de Tarefas */
+.estudo-tag {
+  background-color: #94e2d5; /* Verde-água/Ciano */
+  color: #1e1e2e;
+}
+
+/* Item de Estudo no Calendário */
+.calendar-task-estudo {
+  background: rgba(148, 226, 213, 0.8) !important; /* Verde-água/Ciano */
+}
+.calendar-task-estudo:hover {
+  background: rgba(148, 226, 213, 1) !important;
+}
+
+/* Ajuste para item de estudo 'atrasado' (marcado como 'completed') no calendário */
+.calendar-task-estudo.completed {
+    background: rgba(243, 139, 168, 0.8) !important; /* Vermelho (atrasado) */
+    color: #1e1e2e;
+    text-decoration: none; /* Não queremos riscado, só cor de atraso */
+}
+.calendar-task-estudo.completed:hover {
+    background: rgba(243, 139, 168, 1) !important;
+}
