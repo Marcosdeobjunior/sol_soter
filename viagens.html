@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/viagens.css"> </head>
   <link rel="stylesheet" href="css/notificacoes.css">
   <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
+
 <body>
   <header>
       <div class="logo-container">
@@ -172,8 +173,20 @@
         </button>
       </div>
       <form id="travel-form">
-        <label for="destination">Destino:</label>
+        <label for="destination">Destino (Cidade, País, Restaurante, Museu, etc.):</label>
         <input type="text" id="destination" required>
+
+        <label for="travel-type">Tipo de Local:</label>
+        <select id="travel-type">
+          <option value="">Selecione um tipo...</option>
+          <option value="Desejo">Desejo (Wishlist)</option>
+          <option value="Cidade/País">Cidade/País</option>
+          <option value="Restaurante">Restaurante</option>
+          <option value="Museu">Museu</option>
+          <option value="Parque de Diversão">Parque de Diversão</option>
+          <option value="Parque Municipal">Parque Municipal</option>
+          <option value="Outro">Outro</option>
+        </select>
 
         <label for="start-date">Data de Início:</label>
         <input type="date" id="start-date">

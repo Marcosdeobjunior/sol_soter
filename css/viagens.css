@@ -401,7 +401,8 @@
 
 #travel-form input[type="text"],
 #travel-form input[type="date"],
-#travel-form input[type="number"] {
+#travel-form input[type="number"],
+#travel-form select { /* ATUALIZADO */
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;

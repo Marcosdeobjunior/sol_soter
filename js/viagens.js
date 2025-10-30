@@ -366,6 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Preencher o formulário com os dados da viagem
     document.getElementById("destination").value = travel.destination;
+    document.getElementById("travel-type").value = travel.category || ""; // ATUALIZADO
     document.getElementById("start-date").value = travel.startDate;
     document.getElementById("end-date").value = travel.endDate;
     document.getElementById("budget").value = travel.budget || "";
@@ -449,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         : "";
       
       const categoryHtml = travel.category
-        ? `<p class="travel-category">${travel.category}</p>`
+        ? `<p class="travel-category" style="font-weight: 600; opacity: 1; margin-top: 5px;">${travel.category}</p>`
         : "";
 
       card.innerHTML = `
@@ -572,13 +573,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const startDateInput = document.getElementById("start-date");
     const endDateInput = document.getElementById("end-date");
     const budgetInput = document.getElementById("budget");
+    const travelTypeInput = document.getElementById("travel-type"); // ATUALIZADO
 
     const destination = destinationInput.value.trim();
     const startDate = startDateInput.value;
     const endDate = endDateInput.value;
     const budget = parseFloat(budgetInput.value) || 0;
+    const category = travelTypeInput.value; // ATUALIZADO
 
-    console.log("Dados do formulário:", { destination, startDate, endDate, budget });
+    console.log("Dados do formulário:", { destination, startDate, endDate, budget, category });
 
     // Validação
     if (!destination) {
@@ -599,15 +602,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const weatherInfo = await getWeatherInfo(destination);
       const eventsInfo = await getEventsInfo(destination);
       
-      // Categorizar como "Desejo" se não tiver data ou orçamento
-      const category = (!startDate && !budgetInput.value) ? "Desejo" : null;
+      // A lógica de categoria "Desejo" agora vem do dropdown
+      // const category = (!startDate && !budgetInput.value) ? "Desejo" : null; // LÓGICA ANTIGA REMOVIDA
 
       const travelData = {
         destination,
         startDate,
         endDate,
         budget,
-        category,
+        category, // ATUALIZADO
         weather: weatherInfo,
         events: eventsInfo,
         createdAt: isEditing ? travels[editingIndex].createdAt : new Date().toISOString(),
