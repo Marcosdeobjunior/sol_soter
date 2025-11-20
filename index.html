@@ -225,7 +225,70 @@
     </header>
 
     <main>
+      <section class="top-widgets">
+        <div class="weather-widget" id="weather-widget">
+          <div class="weather-header"><i class="fas fa-cloud-sun"></i> Pirapora do Bom Jesus</div>
+          <div class="weather-current" id="weather-current"></div>
+          <div class="weather-forecast" id="weather-forecast"></div>
+        </div>
 
+        <div class="favorites-carousel" id="favorites-carousel">
+          <div class="carousel-header"><i class="fas fa-star"></i> Destaques</div>
+          <div class="carousel-viewport">
+            <div class="carousel-track" id="carousel-track"></div>
+          </div>
+        </div>
+
+        <div class="daily-planner" id="daily-planner">
+          <div class="planner-header"><i class="fas fa-calendar-day"></i> Tarefas de Hoje</div>
+          <ul class="planner-list" id="planner-list"></ul>
+        </div>
+      </section>
+      <section class="dreams-section">
+        <div class="dreams-header"><i class="fas fa-cloud"></i> Sonhos</div>
+        <div class="dreams-controls">
+          <select id="dream-select" aria-label="Selecione o sonho"></select>
+          <label class="btn-file"><span>Selecionar imagem</span><input type="file" id="dream-image-input" accept="image/png,image/jpeg,image/webp" hidden></label>
+          <button id="dream-upload-btn" class="dashboard-btn import"><i class="fas fa-upload"></i> Enviar</button>
+          <span class="dream-feedback" id="dream-feedback" aria-live="polite"></span>
+        </div>
+        <div class="dreams-grid" id="dreams-grid"></div>
+        <div class="dream-overlay" id="dream-overlay" aria-hidden="true">
+          <div class="dream-modal">
+            <button class="dream-close" id="dream-close" aria-label="Fechar"><i class="fas fa-times"></i></button>
+            <div class="dream-modal-image" id="dream-modal-image"></div>
+            <div class="dream-modal-title" id="dream-modal-title"></div>
+            <div class="dream-modal-desc" id="dream-modal-desc"></div>
+          </div>
+        </div>
+      </section>
+      <section class="current-shopping">
+        <div class="current-shopping-header"><i class="fas fa-shopping-bag"></i> Compras</div>
+        <div class="current-shopping-body" id="current-shopping-body"></div>
+      </section>
+      <section class="trips-section">
+        <div class="trips-header"><i class="fas fa-plane"></i> Viagens</div>
+        <div class="trips-tabs" id="trips-tabs"></div>
+        <div class="trip-list" id="trip-list"></div>
+      </section>
+      <section class="dashboard">
+        <div class="dashboard-actions">
+          <button id="dashboard-export" class="dashboard-btn export"><i class="fas fa-download"></i> Exportar</button>
+          <button id="dashboard-import" class="dashboard-btn import"><i class="fas fa-upload"></i> Importar</button>
+          <input id="dashboard-import-input" type="file" accept=".json" hidden>
+          <div id="dashboard-feedback" class="dashboard-feedback" aria-live="polite"></div>
+        </div>
+
+        <div class="dashboard-grid"></div>
+      </section>
+      <section class="current-entertainment">
+        <div class="current-entertainment-header"><i class="fas fa-film"></i> Entretenimento</div>
+        <div class="current-entertainment-body" id="current-entertainment-body"></div>
+      </section>
+      <section class="current-reading">
+        <div class="current-reading-header"><i class="fas fa-book-open"></i> Leitura Atual</div>
+        <div class="current-reading-body" id="current-reading-body"></div>
+      </section>
     </main>
 
     <footer>

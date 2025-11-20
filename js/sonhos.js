@@ -166,6 +166,23 @@ class SonhosManager {
 
 	        // Formulários
         document.getElementById('form-sonho').addEventListener('submit', (e) => this.salvarSonho(e));
+        const imgInput = document.getElementById('sonho-imagem');
+        if (imgInput) {
+            imgInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                const allowed = ['image/png','image/jpeg','image/webp'];
+                const max = 2 * 1024 * 1024;
+                if (!allowed.includes(file.type)) { this.mostrarNotificacao('Formato inválido. Use PNG, JPEG ou WEBP.', 'erro'); e.target.value = ''; return; }
+                if (file.size > max) { this.mostrarNotificacao('Imagem muito grande (máx 2MB).', 'erro'); e.target.value = ''; return; }
+                const preview = document.getElementById('sonho-imagem-preview');
+                if (preview) {
+                    const r = new FileReader();
+                    r.onload = () => { preview.style.backgroundImage = `url('${r.result}')`; };
+                    r.readAsDataURL(file);
+                }
+            });
+        }
         document.getElementById('form-meta').addEventListener('submit', (e) => this.salvarMeta(e));
 
         // Abas
@@ -604,7 +621,7 @@ class SonhosManager {
         document.getElementById('sonho-custo').value = sonho.custo || '';
     }
 
-    salvarSonho(e) {
+    async salvarSonho(e) {
         e.preventDefault();
         
         const dados = {
@@ -625,17 +642,27 @@ class SonhosManager {
             return;
         }
 
+        const imgInput = document.getElementById('sonho-imagem');
+        const file = imgInput && imgInput.files && imgInput.files[0];
+
         if (this.sonhoEditando) {
             // Editar sonho existente
             const index = this.sonhos.findIndex(s => s.id === this.sonhoEditando.id);
             // Mantém o progresso existente se for edição, pois ele é controlado pelas metas
             dados.progresso = this.sonhoEditando.progresso; 
-            this.sonhos[index] = { ...this.sonhoEditando, ...dados, dataAtualizacao: new Date().toISOString() };
+            let imagem = this.sonhoEditando.imagem;
+            if (file) {
+                imagem = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+            }
+            this.sonhos[index] = { ...this.sonhoEditando, ...dados, imagem, dataAtualizacao: new Date().toISOString() };
             // Recalcula o progresso caso as metas já existam
             this.atualizarProgressoAutomaticoSonho(this.sonhoEditando.id);
         } else {
             // Criar novo sonho
             dados.id = Date.now().toString();
+            if (file) {
+                dados.imagem = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+            }
             this.sonhos.push(dados);
             
             // Adicionar XP por criar sonho
@@ -901,13 +928,15 @@ class SonhosManager {
         `;
         // ===== FIM DAS NOVAS VARIÁVEIS =====
 
+        const imgTag = sonho.imagem ? `<img class="sonho-img" src="${sonho.imagem}" alt="${sonho.titulo}" loading="lazy"/>` : '';
         return `
-	            <div class="sonho-card" data-sonho-id="${sonho.id}">
-                <div class="sonho-header">
-                    <div class="sonho-categoria categoria-${sonho.categoria}">${this.getNomeCategoria(sonho.categoria)}</div>
-                    <h3 class="sonho-titulo">${sonho.titulo}</h3>
-                    ${sonho.descricao ? `<p class="sonho-descricao">${sonho.descricao}</p>` : ''}
-                </div>
+                <div class="sonho-card" data-sonho-id="${sonho.id}">
+                    ${imgTag}
+                    <div class="sonho-header">
+                        <div class="sonho-categoria categoria-${sonho.categoria}">${this.getNomeCategoria(sonho.categoria)}</div>
+                        <h3 class="sonho-titulo">${sonho.titulo}</h3>
+                        ${sonho.descricao ? `<p class="sonho-descricao">${sonho.descricao}</p>` : ''}
+                    </div>
                 <div class="sonho-body">
                     <div class="sonho-info">
                         <span class="sonho-prazo">📅 ${prazoFormatado}</span>
