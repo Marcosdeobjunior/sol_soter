@@ -57,6 +57,8 @@ class SonhosManager {
         this.metas = this.carregarMetas();
         this.conquistas = this.carregarConquistas();
         this.gamificacao = this.carregarGamificacao();
+        // NORMALIZA gamificação para evitar undefined
+        this.normalizarGamificacao();
         this.notificacoes = this.carregarNotificacoes();
         this.sonhoEditando = null;
         this.metaEditando = null;
@@ -69,6 +71,23 @@ class SonhosManager {
         // ===== FIM DA MELHORIA =====
         
         this.inicializar();
+    }
+
+    // ===== NOVA FUNÇÃO: normalizar gamificação para evitar campos undefined =====
+    normalizarGamificacao() {
+        // Se gamificacao for null/undefined ou não for objeto, inicializa
+        if (!this.gamificacao || typeof this.gamificacao !== 'object') {
+            this.gamificacao = {};
+        }
+        this.gamificacao = {
+            nivel: this.gamificacao.nivel ?? 1,
+            xp: this.gamificacao.xp ?? 0,
+            pontosSonhos: this.gamificacao.pontosSonhos ?? 0,
+            pontosMetas: this.gamificacao.pontosMetas ?? 0,
+            sequenciaDias: this.gamificacao.sequenciaDias ?? 0,
+            ultimaAtividade: this.gamificacao.ultimaAtividade ?? null,
+            badges: Array.isArray(this.gamificacao.badges) ? this.gamificacao.badges : []
+        };
     }
 
     inicializar() {
@@ -330,10 +349,15 @@ class SonhosManager {
             ? Math.round(sonhosAtivosComProgresso.reduce((acc, s) => acc + s.progresso, 0) / sonhosAtivosComProgresso.length)
             : 0;
 
-        document.getElementById('total-sonhos').textContent = totalSonhos;
-        document.getElementById('sonhos-concluidos').textContent = sonhosConcluidos;
-        document.getElementById('progresso-medio').textContent = `${progressoMedio}%`;
-        document.getElementById('metas-ativas').textContent = metasAtivas;
+        const totalEl = document.getElementById('total-sonhos');
+        const concluidosEl = document.getElementById('sonhos-concluidos');
+        const progressoEl = document.getElementById('progresso-medio');
+        const metasAtivasEl = document.getElementById('metas-ativas');
+
+        if (totalEl) totalEl.textContent = totalSonhos;
+        if (concluidosEl) concluidosEl.textContent = sonhosConcluidos;
+        if (progressoEl) progressoEl.textContent = `${progressoMedio}%`;
+        if (metasAtivasEl) metasAtivasEl.textContent = metasAtivas;
     }
 
     // ===== GRÁFICOS E VISUALIZAÇÕES =====
@@ -345,7 +369,9 @@ class SonhosManager {
     }
 
     criarChartCategorias() {
-        const ctx = document.getElementById('chart-categorias').getContext('2d');
+        const el = document.getElementById('chart-categorias');
+        if (!el) return;
+        const ctx = el.getContext('2d');
         
         // Contar sonhos por categoria
         const categorias = {};
@@ -383,7 +409,9 @@ class SonhosManager {
     }
 
     criarChartStatus() {
-        const ctx = document.getElementById('chart-status').getContext('2d');
+        const el = document.getElementById('chart-status');
+        if (!el) return;
+        const ctx = el.getContext('2d');
         
         const pendentes = this.sonhos.filter(s => !s.concluido && s.progresso === 0).length;
         const emProgresso = this.sonhos.filter(s => !s.concluido && s.progresso > 0).length;
@@ -417,7 +445,9 @@ class SonhosManager {
     }
 
     criarChartPrazos() {
-        const ctx = document.getElementById('chart-prazos').getContext('2d');
+        const el = document.getElementById('chart-prazos');
+        if (!el) return;
+        const ctx = el.getContext('2d');
         
         const hoje = new Date();
         const proximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate());
@@ -486,7 +516,9 @@ class SonhosManager {
     }
 
     criarChartEvolucao() {
-        const ctx = document.getElementById('chart-evolucao').getContext('2d');
+        const el = document.getElementById('chart-evolucao');
+        if (!el) return;
+        const ctx = el.getContext('2d');
         
         // Simular dados de evolução mensal (últimos 6 meses)
         const meses = [];
@@ -872,6 +904,8 @@ class SonhosManager {
         
         // ===== FIM DA LÓGICA DE FILTRO =====
         
+        if (!container || !emptyState) return; // evita erros se elementos não existirem
+        
         if (sonhosAtivos.length === 0) {
             container.innerHTML = ''; // Limpa o grid
             container.style.display = 'none';
@@ -1148,6 +1182,8 @@ class SonhosManager {
         const container = document.getElementById('metas-list');
         const emptyState = document.getElementById('empty-metas');
         
+        if (!container || !emptyState) return;
+        
         if (this.metas.length === 0) {
             container.style.display = 'none';
             emptyState.style.display = 'block';
@@ -1248,6 +1284,7 @@ class SonhosManager {
 
     atualizarSelectSonhos() {
         const select = document.getElementById('meta-sonho');
+        if (!select) return;
         const sonhosAtivos = this.sonhos.filter(s => !s.concluido);
         
         select.innerHTML = '<option value="">Selecione um sonho</option>' + 
@@ -1267,6 +1304,7 @@ class SonhosManager {
     renderizarConquistas() {
         const container = document.getElementById('conquistas-timeline');
         const emptyState = document.getElementById('empty-conquistas');
+        if (!container || !emptyState) return;
         
         if (this.conquistas.length === 0) {
             container.style.display = 'none';
@@ -1448,21 +1486,32 @@ class SonhosManager {
     }
 
     renderizarGamificacao() {
+        // Segurança: garante que gamificacao está normalizada antes de renderizar
+        this.normalizarGamificacao();
+
         // Atualizar informações de nível
-        document.getElementById('nivel-badge').textContent = this.gamificacao.nivel;
-        document.getElementById('xp-atual').textContent = this.gamificacao.xp;
+        const nivelBadgeEl = document.getElementById('nivel-badge');
+        const xpAtualEl = document.getElementById('xp-atual');
+        const xpProximoEl = document.getElementById('xp-proximo');
+        const xpFillEl = document.getElementById('xp-fill');
+        const pontosSonhosEl = document.getElementById('pontos-sonhos');
+        const pontosMetasEl = document.getElementById('pontos-metas');
+        const sequenciaDiasEl = document.getElementById('sequencia-dias');
+
+        if (nivelBadgeEl) nivelBadgeEl.textContent = this.gamificacao.nivel;
+        if (xpAtualEl) xpAtualEl.textContent = this.gamificacao.xp;
         
         const xpProximoNivel = this.calcularXPProximoNivel(this.gamificacao.nivel);
-        document.getElementById('xp-proximo').textContent = xpProximoNivel;
+        if (xpProximoEl) xpProximoEl.textContent = xpProximoNivel;
         
         const xpAtualNivel = this.gamificacao.xp - ((this.gamificacao.nivel - 1) * 100);
         const porcentagemXP = (xpAtualNivel / 100) * 100;
-        document.getElementById('xp-fill').style.width = `${porcentagemXP}%`;
+        if (xpFillEl) xpFillEl.style.width = `${porcentagemXP}%`;
         
         // Atualizar pontuação
-        document.getElementById('pontos-sonhos').textContent = this.gamificacao.pontosSonhos;
-        document.getElementById('pontos-metas').textContent = this.gamificacao.pontosMetas;
-        document.getElementById('sequencia-dias').textContent = this.gamificacao.sequenciaDias;
+        if (pontosSonhosEl) pontosSonhosEl.textContent = this.gamificacao.pontosSonhos;
+        if (pontosMetasEl) pontosMetasEl.textContent = this.gamificacao.pontosMetas;
+        if (sequenciaDiasEl) sequenciaDiasEl.textContent = this.gamificacao.sequenciaDias;
         
         // Renderizar badges
         this.renderizarBadges();
@@ -1471,7 +1520,8 @@ class SonhosManager {
     renderizarBadges() {
         const container = document.getElementById('badges-grid');
         const emptyState = document.getElementById('empty-badges');
-        
+        if (!container || !emptyState) return;
+
         const todosOsBadges = [
             { id: 'primeiro_sonho', nome: 'Primeiro Sonho', icone: 'star' },
             { id: 'sonhador_dedicado', nome: 'Sonhador Dedicado', icone: 'heart' },
@@ -1482,7 +1532,10 @@ class SonhosManager {
             { id: 'nivel_5', nome: 'Experiente', icone: 'medal' }
         ];
 
-        if (this.gamificacao.badges.length === 0) {
+        // Usa um array seguro para badges (evita erro se for undefined)
+        const badgesArray = Array.isArray(this.gamificacao.badges) ? this.gamificacao.badges : [];
+
+        if (badgesArray.length === 0) {
             container.style.display = 'none';
             emptyState.style.display = 'block';
             return;
@@ -1492,7 +1545,7 @@ class SonhosManager {
         emptyState.style.display = 'none';
 
         container.innerHTML = todosOsBadges.map(badge => {
-            const conquistado = this.gamificacao.badges.includes(badge.id);
+            const conquistado = badgesArray.includes(badge.id);
             return `
                 <div class="badge-item ${conquistado ? 'conquistado' : ''}">
                     <div class="badge-icon">
