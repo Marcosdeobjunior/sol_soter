@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sonhos e Objetivos - Sol de Sóter</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
-  
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/financas.css">
-  <link rel="stylesheet" href="css/style_viagens.css">
-  <link rel="stylesheet" href="css/sonhos.css">
-  <link rel="stylesheet" href="css/notificacoes.css">
-</head>
-<body>
-  <header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Sol de Sóter</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <link
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
+    />
+
+    <link rel="stylesheet" href="css/sonhos.css" />
+    <link rel="stylesheet" href="css/notificacoes.css" />
+  </head>
+  <body>
+    <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
           <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
@@ -99,20 +125,115 @@
             </ul>
           </div>
         </div>
+
+        <div class="saldo-display">
+          <span class="saldo-header-label">Saldo Atual</span>
+          <div id="saldo-do-dia">R$ 0,00</div>
+        </div>
+
         <div class="dropdown profile-dropdown">
-          <div class="profile">
-            <span>Marcos</span>
-            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+          <div class="profile rpg-profile-trigger">
+            <div class="profile-info">
+              <span class="profile-name">Marcos</span>
+              <div class="rpg-mini-bar-container" title="Progresso Geral">
+                <div
+                  class="rpg-mini-bar-fill"
+                  id="header-xp-bar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="profile-avatar-wrapper">
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <span class="level-badge" id="header-level-badge">1</span>
+            </div>
           </div>
-          <ul class="dropdown-menu profile-menu">
-            <li class="saldo-menu-item">
-              <div id="saldo-header">
-                <span class="saldo-header-label">Saldo Atual</span>
-                <div id="saldo-do-dia">R$ 0,00</div>
+
+          <ul class="dropdown-menu profile-menu rpg-extended-menu">
+            <li class="rpg-stats-panel">
+              <div class="rpg-stat-row">
+                <span class="stat-icon strength"
+                  ><i class="fas fa-dumbbell"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill strength-fill"
+                      id="bar-str"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon intelligence"
+                  ><i class="fas fa-brain"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Intelecto (Lvl <span id="lvl-int">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill intelligence-fill"
+                      id="bar-int"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon wisdom"
+                  ><i class="fas fa-scroll"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Sabedoria (Lvl <span id="lvl-wis">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill wisdom-fill"
+                      id="bar-wis"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon productivity"
+                  ><i class="fas fa-briefcase"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Produtividade (Lvl <span id="lvl-prod">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill productivity-fill"
+                      id="bar-prod"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
               </div>
             </li>
+            <li class="divider"></li>
+
             <li>
-              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+              <a href="#" class="corinthians-item">
+                <img
+                  src="img/Corinthians_simbolo.png"
+                  alt="Escudo do Corinthians"
+                  class="corinthians-shield"
+                />
+                Corinthians
+              </a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
             </li>
             <li>
               <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
@@ -122,418 +243,493 @@
       </div>
     </header>
 
-  <main class="sonhos-main">
-    <div class="sonhos-container">
-      <div class="page-header">
-        <div class="header-content">
-          <div class="header-icon">
-            <i class="fas fa-rocket"></i>
-          </div>
-          <div class="header-text">
-            <h1>Sonhos e Objetivos</h1>
-            <p>Transforme seus sonhos em realidade através de planejamento estratégico e metas alcançáveis</p>
-          </div>
-        </div>
-        <button class="btn-primary" id="btn-novo-sonho">
-          <i class="fas fa-plus"></i>
-          Novo Sonho
-        </button>
-      </div>
-
-      <div class="stats-overview">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-star"></i>
-          </div>
-          <div class="stat-content">
-            <h3 id="total-sonhos">0</h3>
-            <p>Sonhos Ativos</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <div class="stat-content">
-            <h3 id="sonhos-concluidos">0</h3>
-            <p>Realizados</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <div class="stat-content">
-            <h3 id="progresso-medio">0%</h3>
-            <p>Progresso Médio</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-bullseye"></i>
-          </div>
-          <div class="stat-content">
-            <h3 id="metas-ativas">0</h3>
-            <p>Metas Ativas</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-section">
-        <div class="dashboard-header">
-          <h3>Dashboard de Progresso</h3>
-          <div class="dashboard-controls">
-            <button class="btn-secondary" id="btn-refresh-charts">
-              <i class="fas fa-sync-alt"></i>
-              Atualizar
-            </button>
-          </div>
-        </div>
-        <div class="charts-grid">
-          <div class="chart-card">
-            <h4>Progresso por Categoria</h4>
-            <canvas id="chart-categorias" width="300" height="200"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Status dos Sonhos</h4>
-            <canvas id="chart-status" width="300" height="200"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Metas por Prazo</h4>
-            <canvas id="chart-prazos" width="300" height="200"></canvas>
-          </div>
-          <div class="chart-card">
-            <h4>Evolução Mensal</h4>
-            <canvas id="chart-evolucao" width="300" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="content-tabs">
-        <div class="tab-buttons">
-          <button class="tab-btn active" data-tab="sonhos">
-            <i class="fas fa-star"></i>
-            Meus Sonhos
-          </button>
-          <button class="tab-btn" data-tab="metas">
-            <i class="fas fa-bullseye"></i>
-            Metas
-          </button>
-          <button class="tab-btn" data-tab="conquistas">
-            <i class="fas fa-trophy"></i>
-            Conquistas
-          </button>
-          <button class="tab-btn" data-tab="gamificacao">
-            <i class="fas fa-gamepad"></i>
-            Gamificação
-          </button>
-        </div>
-
-        <div class="tab-content active" id="tab-sonhos">
-          <div class="sonhos-filtros">
-            <div class="filtro-item">
-              <label for="filtro-categoria">Categoria</label>
-              <select id="filtro-categoria">
-                <option value="todas">Todas</option>
-                <option value="pessoal">Pessoal</option>
-                <option value="profissional">Profissional</option>
-                <option value="financeiro">Financeiro</option>
-                <option value="saude">Saúde</option>
-                <option value="relacionamento">Relacionamento</option>
-                <option value="educacao">Educação</option>
-                <option value="viagem">Viagem</option>
-                <option value="hobby">Hobby</option>
-              </select>
-            </div>
-            <div class="filtro-item">
-              <label for="filtro-prioridade">Prioridade</label>
-              <select id="filtro-prioridade">
-                <option value="todas">Todas</option>
-                <option value="alta">Alta</option>
-                <option value="media">Média</option>
-                <option value="baixa">Baixa</option>
-              </select>
-            </div>
-            <div class="filtro-item">
-              <label for="ordenacao-sonhos">Ordenar por</label>
-              <select id="ordenacao-sonhos">
-                <option value="recente">Mais Recente</option>
-                <option value="prazo">Prazo</option>
-                <option value="prioridade">Prioridade</option>
-                <option value="progresso">Progresso</option>
-              </select>
-            </div>
-          </div>
-          <div class="sonhos-grid" id="sonhos-grid">
-            </div>
-          <div class="empty-state" id="empty-sonhos" style="display: none;">
-            <div class="empty-icon">
-              <i class="fas fa-star"></i>
-            </div>
-            <h3>Nenhum sonho cadastrado</h3>
-            <p>Comece criando seu primeiro sonho e transforme-o em realidade!</p>
-            <button class="btn-primary" onclick="abrirModalSonho()">
-              <i class="fas fa-plus"></i>
-              Criar Primeiro Sonho
-            </button>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-metas">
-          <div class="metas-container">
-            <div class="metas-header">
-              <h3>Metas por Sonho</h3>
-              <button class="btn-secondary" id="btn-nova-meta">
-                <i class="fas fa-plus"></i>
-                Nova Meta
-              </button>
-            </div>
-            <div class="metas-list" id="metas-list">
+    <main>
+      <main class="sonhos-main">
+        <div class="sonhos-container">
+          <div class="page-header">
+            <div class="header-content">
+              <div class="header-icon">
+                <i class="fas fa-rocket"></i>
               </div>
-            <div class="empty-state" id="empty-metas" style="display: none;">
-              <div class="empty-icon">
+              <div class="header-text">
+                <h1>Sonhos e Objetivos</h1>
+                <p>
+                  Transforme seus sonhos em realidade através de planejamento
+                  estratégico e metas alcançáveis
+                </p>
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-novo-sonho">
+              <i class="fas fa-plus"></i>
+              Novo Sonho
+            </button>
+          </div>
+
+          <div class="stats-overview">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="stat-content">
+                <h3 id="total-sonhos">0</h3>
+                <p>Sonhos Ativos</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <h3 id="sonhos-concluidos">0</h3>
+                <p>Realizados</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="stat-content">
+                <h3 id="progresso-medio">0%</h3>
+                <p>Progresso Médio</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
                 <i class="fas fa-bullseye"></i>
               </div>
-              <h3>Nenhuma meta definida</h3>
-              <p>Crie metas específicas para alcançar seus sonhos mais rapidamente!</p>
+              <div class="stat-content">
+                <h3 id="metas-ativas">0</h3>
+                <p>Metas Ativas</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="tab-content" id="tab-conquistas">
-          <div class="conquistas-container">
-            <div class="conquistas-timeline" id="conquistas-timeline">
+          <div class="dashboard-section">
+            <div class="dashboard-header">
+              <h3>Dashboard de Progresso</h3>
+              <div class="dashboard-controls">
+                <button class="btn-secondary" id="btn-refresh-charts">
+                  <i class="fas fa-sync-alt"></i>
+                  Atualizar
+                </button>
               </div>
-            <div class="empty-state" id="empty-conquistas" style="display: none;">
-              <div class="empty-icon">
+            </div>
+            <div class="charts-grid">
+              <div class="chart-card">
+                <h4>Progresso por Categoria</h4>
+                <canvas id="chart-categorias" width="300" height="200"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4>Status dos Sonhos</h4>
+                <canvas id="chart-status" width="300" height="200"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4>Metas por Prazo</h4>
+                <canvas id="chart-prazos" width="300" height="200"></canvas>
+              </div>
+              <div class="chart-card">
+                <h4>Evolução Mensal</h4>
+                <canvas id="chart-evolucao" width="300" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-tabs">
+            <div class="tab-buttons">
+              <button class="tab-btn active" data-tab="sonhos">
+                <i class="fas fa-star"></i>
+                Meus Sonhos
+              </button>
+              <button class="tab-btn" data-tab="metas">
+                <i class="fas fa-bullseye"></i>
+                Metas
+              </button>
+              <button class="tab-btn" data-tab="conquistas">
                 <i class="fas fa-trophy"></i>
-              </div>
-              <h3>Nenhuma conquista ainda</h3>
-              <p>Suas conquistas aparecerão aqui conforme você completa seus sonhos e metas!</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-gamificacao">
-          <div class="gamificacao-container">
-            <div class="nivel-usuario">
-              <div class="nivel-info">
-                <div class="avatar-nivel">
-                  <img src="img/eu-gtp1.1.png" alt="Avatar" class="avatar-img">
-                  <div class="nivel-badge" id="nivel-badge">1</div>
-                </div>
-                <div class="nivel-detalhes">
-                  <h3>Marcos - Sonhador Iniciante</h3>
-                  <div class="xp-info">
-                    <span id="xp-atual">0</span> / <span id="xp-proximo">100</span> XP
-                  </div>
-                  <div class="xp-bar">
-                    <div class="xp-fill" id="xp-fill" style="width: 0%"></div>
-                  </div>
-                </div>
-              </div>
+                Conquistas
+              </button>
+              <button class="tab-btn" data-tab="gamificacao">
+                <i class="fas fa-gamepad"></i>
+                Gamificação
+              </button>
             </div>
 
-            <div class="badges-section">
-              <h4>Distintivos Conquistados</h4>
-              <div class="badges-grid" id="badges-grid">
+            <div class="tab-content active" id="tab-sonhos">
+              <div class="sonhos-filtros">
+                <div class="filtro-item">
+                  <label for="filtro-categoria">Categoria</label>
+                  <select id="filtro-categoria">
+                    <option value="todas">Todas</option>
+                    <option value="pessoal">Pessoal</option>
+                    <option value="profissional">Profissional</option>
+                    <option value="financeiro">Financeiro</option>
+                    <option value="saude">Saúde</option>
+                    <option value="relacionamento">Relacionamento</option>
+                    <option value="educacao">Educação</option>
+                    <option value="viagem">Viagem</option>
+                    <option value="hobby">Hobby</option>
+                  </select>
                 </div>
-              <div class="empty-state" id="empty-badges" style="display: none;">
+                <div class="filtro-item">
+                  <label for="filtro-prioridade">Prioridade</label>
+                  <select id="filtro-prioridade">
+                    <option value="todas">Todas</option>
+                    <option value="alta">Alta</option>
+                    <option value="media">Média</option>
+                    <option value="baixa">Baixa</option>
+                  </select>
+                </div>
+                <div class="filtro-item">
+                  <label for="ordenacao-sonhos">Ordenar por</label>
+                  <select id="ordenacao-sonhos">
+                    <option value="recente">Mais Recente</option>
+                    <option value="prazo">Prazo</option>
+                    <option value="prioridade">Prioridade</option>
+                    <option value="progresso">Progresso</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sonhos-grid" id="sonhos-grid"></div>
+              <div class="empty-state" id="empty-sonhos" style="display: none">
                 <div class="empty-icon">
-                  <i class="fas fa-medal"></i>
+                  <i class="fas fa-star"></i>
                 </div>
-                <h3>Nenhum distintivo ainda</h3>
-                <p>Complete sonhos e metas para conquistar distintivos especiais!</p>
+                <h3>Nenhum sonho cadastrado</h3>
+                <p>
+                  Comece criando seu primeiro sonho e transforme-o em realidade!
+                </p>
+                <button class="btn-primary" onclick="abrirModalSonho()">
+                  <i class="fas fa-plus"></i>
+                  Criar Primeiro Sonho
+                </button>
               </div>
             </div>
 
-            <div class="ranking-section">
-              <h4>Sistema de Pontuação</h4>
-              <div class="pontuacao-cards">
-                <div class="pontuacao-card">
-                  <div class="pontuacao-icon">
-                    <i class="fas fa-star"></i>
-                  </div>
-                  <div class="pontuacao-info">
-                    <h5>Sonhos Realizados</h5>
-                    <p><span id="pontos-sonhos">0</span> pontos</p>
-                  </div>
+            <div class="tab-content" id="tab-metas">
+              <div class="metas-container">
+                <div class="metas-header">
+                  <h3>Metas por Sonho</h3>
+                  <button class="btn-secondary" id="btn-nova-meta">
+                    <i class="fas fa-plus"></i>
+                    Nova Meta
+                  </button>
                 </div>
-                <div class="pontuacao-card">
-                  <div class="pontuacao-icon">
+                <div class="metas-list" id="metas-list"></div>
+                <div class="empty-state" id="empty-metas" style="display: none">
+                  <div class="empty-icon">
                     <i class="fas fa-bullseye"></i>
                   </div>
-                  <div class="pontuacao-info">
-                    <h5>Metas Concluídas</h5>
-                    <p><span id="pontos-metas">0</span> pontos</p>
-                  </div>
-                </div>
-                <div class="pontuacao-card">
-                  <div class="pontuacao-icon">
-                    <i class="fas fa-fire"></i>
-                  </div>
-                  <div class="pontuacao-info">
-                    <h5>Sequência Atual</h5>
-                    <p><span id="sequencia-dias">0</span> dias</p>
-                  </div>
+                  <h3>Nenhuma meta definida</h3>
+                  <p>
+                    Crie metas específicas para alcançar seus sonhos mais
+                    rapidamente!
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div class="compartilhamento-section">
-              <h4>Compartilhar Conquistas</h4>
-              <div class="compartilhamento-opcoes">
-                <button class="btn-social twitter" onclick="compartilharTwitter()">
-                  <i class="fab fa-twitter"></i>
-                  Twitter
-                </button>
-                <button class="btn-social facebook" onclick="compartilharFacebook()">
-                  <i class="fab fa-facebook"></i>
-                  Facebook
-                </button>
-                <button class="btn-social whatsapp" onclick="compartilharWhatsApp()">
-                  <i class="fab fa-whatsapp"></i>
-                  WhatsApp
-                </button>
-                <button class="btn-social copiar" onclick="copiarLink()">
-                  <i class="fas fa-link"></i>
-                  Copiar Link
-                </button>
+            <div class="tab-content" id="tab-conquistas">
+              <div class="conquistas-container">
+                <div class="conquistas-timeline" id="conquistas-timeline"></div>
+                <div
+                  class="empty-state"
+                  id="empty-conquistas"
+                  style="display: none"
+                >
+                  <div class="empty-icon">
+                    <i class="fas fa-trophy"></i>
+                  </div>
+                  <h3>Nenhuma conquista ainda</h3>
+                  <p>
+                    Suas conquistas aparecerão aqui conforme você completa seus
+                    sonhos e metas!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-content" id="tab-gamificacao">
+              <div class="gamificacao-container">
+                <div class="nivel-usuario">
+                  <div class="nivel-info">
+                    <div class="avatar-nivel">
+                      <img
+                        src="img/eu-gtp1.1.png"
+                        alt="Avatar"
+                        class="avatar-img"
+                      />
+                      <div class="nivel-badge" id="nivel-badge">1</div>
+                    </div>
+                    <div class="nivel-detalhes">
+                      <h3>Marcos - Sonhador Iniciante</h3>
+                      <div class="xp-info">
+                        <span id="xp-atual">0</span> /
+                        <span id="xp-proximo">100</span> XP
+                      </div>
+                      <div class="xp-bar">
+                        <div
+                          class="xp-fill"
+                          id="xp-fill"
+                          style="width: 0%"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="badges-section">
+                  <h4>Distintivos Conquistados</h4>
+                  <div class="badges-grid" id="badges-grid"></div>
+                  <div
+                    class="empty-state"
+                    id="empty-badges"
+                    style="display: none"
+                  >
+                    <div class="empty-icon">
+                      <i class="fas fa-medal"></i>
+                    </div>
+                    <h3>Nenhum distintivo ainda</h3>
+                    <p>
+                      Complete sonhos e metas para conquistar distintivos
+                      especiais!
+                    </p>
+                  </div>
+                </div>
+
+                <div class="ranking-section">
+                  <h4>Sistema de Pontuação</h4>
+                  <div class="pontuacao-cards">
+                    <div class="pontuacao-card">
+                      <div class="pontuacao-icon">
+                        <i class="fas fa-star"></i>
+                      </div>
+                      <div class="pontuacao-info">
+                        <h5>Sonhos Realizados</h5>
+                        <p><span id="pontos-sonhos">0</span> pontos</p>
+                      </div>
+                    </div>
+                    <div class="pontuacao-card">
+                      <div class="pontuacao-icon">
+                        <i class="fas fa-bullseye"></i>
+                      </div>
+                      <div class="pontuacao-info">
+                        <h5>Metas Concluídas</h5>
+                        <p><span id="pontos-metas">0</span> pontos</p>
+                      </div>
+                    </div>
+                    <div class="pontuacao-card">
+                      <div class="pontuacao-icon">
+                        <i class="fas fa-fire"></i>
+                      </div>
+                      <div class="pontuacao-info">
+                        <h5>Sequência Atual</h5>
+                        <p><span id="sequencia-dias">0</span> dias</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="compartilhamento-section">
+                  <h4>Compartilhar Conquistas</h4>
+                  <div class="compartilhamento-opcoes">
+                    <button
+                      class="btn-social twitter"
+                      onclick="compartilharTwitter()"
+                    >
+                      <i class="fab fa-twitter"></i>
+                      Twitter
+                    </button>
+                    <button
+                      class="btn-social facebook"
+                      onclick="compartilharFacebook()"
+                    >
+                      <i class="fab fa-facebook"></i>
+                      Facebook
+                    </button>
+                    <button
+                      class="btn-social whatsapp"
+                      onclick="compartilharWhatsApp()"
+                    >
+                      <i class="fab fa-whatsapp"></i>
+                      WhatsApp
+                    </button>
+                    <button class="btn-social copiar" onclick="copiarLink()">
+                      <i class="fas fa-link"></i>
+                      Copiar Link
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </main>
+
+      <div class="modal" id="modal-sonho">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="modal-title">Novo Sonho</h2>
+            <button class="modal-close" onclick="fecharModalSonho()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="form-sonho">
+            <div class="form-group">
+              <label for="sonho-titulo">Título do Sonho *</label>
+              <input
+                type="text"
+                id="sonho-titulo"
+                required
+                placeholder="Ex: Viajar para o Japão"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="sonho-descricao">Descrição</label>
+              <textarea
+                id="sonho-descricao"
+                rows="3"
+                placeholder="Descreva seu sonho em detalhes..."
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sonho-categoria">Categoria</label>
+                <select id="sonho-categoria">
+                  <option value="pessoal">Pessoal</option>
+                  <option value="profissional">Profissional</option>
+                  <option value="financeiro">Financeiro</option>
+                  <option value="saude">Saúde</option>
+                  <option value="relacionamento">Relacionamento</option>
+                  <option value="educacao">Educação</option>
+                  <option value="viagem">Viagem</option>
+                  <option value="hobby">Hobby</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="sonho-prioridade">Prioridade</label>
+                <select id="sonho-prioridade">
+                  <option value="baixa">Baixa</option>
+                  <option value="media">Média</option>
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sonho-prazo">Prazo Desejado</label>
+                <input type="date" id="sonho-prazo" />
+              </div>
+
+              <div class="form-group">
+                <label for="sonho-custo">Custo Estimado (R$)</label>
+                <input
+                  type="number"
+                  id="sonho-custo"
+                  min="0"
+                  step="0.01"
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="fecharModalSonho()"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i>
+                Salvar Sonho
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  </main>
 
-  <div class="modal" id="modal-sonho">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modal-title">Novo Sonho</h2>
-        <button class="modal-close" onclick="fecharModalSonho()">
-          <i class="fas fa-times"></i>
-        </button>
+      <div class="modal" id="modal-meta">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Nova Meta</h2>
+            <button class="modal-close" onclick="fecharModalMeta()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form id="form-meta">
+            <div class="form-group">
+              <label for="meta-sonho">Sonho Relacionado *</label>
+              <select id="meta-sonho" required>
+                <option value="">Selecione um sonho</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="meta-titulo">Título da Meta *</label>
+              <input
+                type="text"
+                id="meta-titulo"
+                required
+                placeholder="Ex: Economizar R$ 5.000"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="meta-descricao">Descrição</label>
+              <textarea
+                id="meta-descricao"
+                rows="2"
+                placeholder="Descreva como alcançar esta meta..."
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="meta-prazo">Prazo *</label>
+                <input type="date" id="meta-prazo" required />
+              </div>
+
+              <div class="form-group">
+                <label for="meta-tipo">Tipo de Meta</label>
+                <select id="meta-tipo">
+                  <option value="acao">Ação</option>
+                  <option value="habito">Hábito</option>
+                  <option value="resultado">Resultado</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="fecharModalMeta()"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i>
+                Salvar Meta
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-      <form id="form-sonho">
-        <div class="form-group">
-          <label for="sonho-titulo">Título do Sonho *</label>
-          <input type="text" id="sonho-titulo" required placeholder="Ex: Viajar para o Japão">
-        </div>
-        
-        <div class="form-group">
-          <label for="sonho-descricao">Descrição</label>
-          <textarea id="sonho-descricao" rows="3" placeholder="Descreva seu sonho em detalhes..."></textarea>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sonho-categoria">Categoria</label>
-            <select id="sonho-categoria">
-              <option value="pessoal">Pessoal</option>
-              <option value="profissional">Profissional</option>
-              <option value="financeiro">Financeiro</option>
-              <option value="saude">Saúde</option>
-              <option value="relacionamento">Relacionamento</option>
-              <option value="educacao">Educação</option>
-              <option value="viagem">Viagem</option>
-              <option value="hobby">Hobby</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="sonho-prioridade">Prioridade</label>
-            <select id="sonho-prioridade">
-              <option value="baixa">Baixa</option>
-              <option value="media">Média</option>
-              <option value="alta">Alta</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sonho-prazo">Prazo Desejado</label>
-            <input type="date" id="sonho-prazo">
-          </div>
-          
-          <div class="form-group">
-            <label for="sonho-custo">Custo Estimado (R$)</label>
-            <input type="number" id="sonho-custo" min="0" step="0.01" placeholder="0,00">
-          </div>
-        </div>
-        
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="fecharModalSonho()">Cancelar</button>
-          <button type="submit" class="btn-primary">
-            <i class="fas fa-save"></i>
-            Salvar Sonho
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+    </main>
 
-  <div class="modal" id="modal-meta">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Nova Meta</h2>
-        <button class="modal-close" onclick="fecharModalMeta()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <form id="form-meta">
-        <div class="form-group">
-          <label for="meta-sonho">Sonho Relacionado *</label>
-          <select id="meta-sonho" required>
-            <option value="">Selecione um sonho</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="meta-titulo">Título da Meta *</label>
-          <input type="text" id="meta-titulo" required placeholder="Ex: Economizar R$ 5.000">
-        </div>
-        
-        <div class="form-group">
-          <label for="meta-descricao">Descrição</label>
-          <textarea id="meta-descricao" rows="2" placeholder="Descreva como alcançar esta meta..."></textarea>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="meta-prazo">Prazo *</label>
-            <input type="date" id="meta-prazo" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="meta-tipo">Tipo de Meta</label>
-            <select id="meta-tipo">
-              <option value="acao">Ação</option>
-              <option value="habito">Hábito</option>
-              <option value="resultado">Resultado</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="fecharModalMeta()">Cancelar</button>
-          <button type="submit" class="btn-primary">
-            <i class="fas fa-save"></i>
-            Salvar Meta
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+    <footer>
+      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+    </footer>
 
-  <footer>
-    <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
-  </footer>
-
-  <script src="js/saldo-global.js"></script>
-  <script src="js/script.js"></script>
-  <script src="js/sonhos.js"></script>
-  <script src="js/notificacoes.js"></script>
-</body>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/saldo-global.js"></script>
+    <script src="js/sonhos.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/rpg.js"></script>
+  </body>
 </html>

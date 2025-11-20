@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Planejamento de Tarefas - Sol de Sóter</title>
+    <title>Dashboard - Sol de Sóter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
@@ -13,23 +13,34 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
 
-    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
+    <link
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
+    />
 
+    <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/planejamento.css" />
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/financas.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
-  <header>
-  <div class="logo-container">
-    <a href="index.html" class="logo-link">
-      <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-      <h1>Sol de Sóter</h1>
-    </a>
-  </div>
+  </head>
+  <body>
+    <div id="rpg-toast-container" class="rpg-toast-container"></div>
 
-  <div class="menu-profile">
-    <nav class="navbar">
+    <header>
+      <div class="logo-container">
+        <a href="index.html" class="logo-link">
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <h1>Sol de Sóter</h1>
+        </a>
+      </div>
+
+      <div class="menu-profile">
+        <nav class="navbar">
           <ul class="nav-menu">
             <li class="dropdown">
               <div class="dropdown-header">
@@ -80,97 +91,284 @@
           </ul>
         </nav>
 
-    <div class="notification-center">
-      <button id="notification-bell" class="notification-bell">
-        <i class="fas fa-bell"></i>
-        <span id="notification-count" class="notification-count" style="display: none;">0</span>
-      </button>
-      <div id="notification-panel" class="notification-panel">
-        <div class="notification-panel-header">
-          <h3>Notificações</h3>
-        </div>
-        <ul id="notification-list" class="notification-list">
-          <li class="empty-state">
-            <i class="fas fa-inbox"></i>
-            <p>Nenhuma notificação nova</p>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="dropdown profile-dropdown">
-      <div class="profile">
-        <span>Marcos</span>
-        <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
-      </div>
-      <ul class="dropdown-menu profile-menu">
-        <li class="saldo-menu-item">
-          <div id="saldo-header">
-            <span class="saldo-header-label">Saldo Atual</span>
-            <div id="saldo-do-dia">R$ 0,00</div>
+        <div class="notification-center">
+          <button id="notification-bell" class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span
+              id="notification-count"
+              class="notification-count"
+              style="display: none"
+              >0</span
+            >
+          </button>
+          <div id="notification-panel" class="notification-panel">
+            <div class="notification-panel-header">
+              <h3>Notificações</h3>
+            </div>
+            <ul id="notification-list" class="notification-list">
+              <li class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Nenhuma notificação nova</p>
+              </li>
+            </ul>
           </div>
-        </li>
-        <li>
-          <a href="#"><i class="fas fa-cog"></i> Configurações</a>
-        </li>
-        <li>
-          <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</header>
+        </div>
+
+        <div class="saldo-display">
+          <span class="saldo-header-label">Saldo Atual</span>
+          <div id="saldo-do-dia">R$ 0,00</div>
+        </div>
+
+        <div class="dropdown profile-dropdown">
+          <div class="profile rpg-profile-trigger">
+            <div class="profile-info">
+              <span class="profile-name">Marcos</span>
+              <div class="rpg-mini-bar-container" title="Progresso Geral">
+                <div
+                  class="rpg-mini-bar-fill"
+                  id="header-xp-bar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="profile-avatar-wrapper">
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <span class="level-badge" id="header-level-badge">1</span>
+            </div>
+          </div>
+
+          <ul class="dropdown-menu profile-menu rpg-extended-menu">
+            <li class="rpg-stats-panel">
+              <div class="rpg-stat-row">
+                <span class="stat-icon strength"
+                  ><i class="fas fa-dumbbell"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill strength-fill"
+                      id="bar-str"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon intelligence"
+                  ><i class="fas fa-brain"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Intelecto (Lvl <span id="lvl-int">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill intelligence-fill"
+                      id="bar-int"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon wisdom"
+                  ><i class="fas fa-scroll"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Sabedoria (Lvl <span id="lvl-wis">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill wisdom-fill"
+                      id="bar-wis"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon productivity"
+                  ><i class="fas fa-briefcase"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Produtividade (Lvl <span id="lvl-prod">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill productivity-fill"
+                      id="bar-prod"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="divider"></li>
+
+            <li>
+              <a href="#" class="corinthians-item">
+                <img
+                  src="img/Corinthians_simbolo.png"
+                  alt="Escudo do Corinthians"
+                  class="corinthians-shield"
+                />
+                Corinthians
+              </a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
 
     <main class="planejamento-main">
       <div class="planejamento-container">
-        <div class="page-header">
-          <h1><i class="fas fa-calendar-check"></i> Planejamento de Tarefas</h1>
-          <p>Organize suas atividades e mantenha-se produtivo</p>
+        <div class="page-header-container">
+          <div class="page-header">
+            <h1>
+              <i class="fas fa-calendar-check"></i> Planejamento de Tarefas
+            </h1>
+            <p>Gerencie suas prioridades, ganhe XP e evolua seu perfil.</p>
+          </div>
         </div>
 
-        <div class="tasks-section">
-          <div class="section-header">
-            <h2><i class="fas fa-tasks"></i> Tarefas</h2>
-            <button id="add-task-btn" class="add-task-btn">
-              <i class="fas fa-plus"></i> Nova Tarefa
-            </button>
-          </div>
-
-          <div class="task-filters">
-            <button class="filter-btn active" data-filter="all">
-              <i class="fas fa-list"></i> Todas
-            </button>
-            <button class="filter-btn" data-filter="pending">
-              <i class="fas fa-clock"></i> Pendentes
-            </button>
-            <button class="filter-btn" data-filter="completed">
-              <i class="fas fa-check"></i> Concluídas
-            </button>
-            <button class="filter-btn" data-filter="today">
-              <i class="fas fa-calendar-day"></i> Hoje
-            </button>
-            <button class="filter-btn" data-filter="no-date">
-              <i class="fas fa-question-circle"></i> Sem Data
-            </button>
-            <button id="archive-tasks-btn" class="filter-btn" title="Arquivar tarefas concluídas">
-              <i class="fas fa-archive"></i> Arquivar Concluídas
-            </button>
-            <button class="filter-btn" data-filter="archived" title="Ver tarefas arquivadas">
-              <i class="fas fa-box-open"></i> Ver Arquivadas
-            </button>
-          </div>
-
-          <div class="form-group task-search-container">
-            <input type="text" id="task-search" class="task-search-input" placeholder="Buscar tarefas por título ou descrição...">
-            <i class="fas fa-search search-icon"></i>
-          </div>
-
-          <div id="tasks-list" class="tasks-list">
+        <div class="main-layout-grid">
+          <aside class="left-sidebar">
+            <div class="tasks-section today-section">
+              <div class="section-header">
+                <h2>
+                  <i
+                    class="fas fa-sun"
+                    style="color: var(--acento-amarelo)"
+                  ></i>
+                  Foco de Hoje
+                </h2>
+                <span class="today-date-label" id="today-date-display"></span>
+              </div>
+              <div
+                id="today-tasks-list"
+                class="tasks-list today-list-styled"
+              ></div>
             </div>
+
+            <div class="stats-grid-sidebar">
+              <div class="stat-card">
+                <div class="stat-icon total-icon">
+                  <i class="fas fa-list-check"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number" id="total-tasks">0</span>
+                  <span class="stat-label">Total</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon pending-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number" id="pending-tasks">0</span>
+                  <span class="stat-label">Pendentes</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon completed-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number" id="completed-tasks">0</span>
+                  <span class="stat-label">Concluídos</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon rate-icon">
+                  <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-number" id="completion-rate">0%</span>
+                  <span class="stat-label">Taxa</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section class="main-content-area">
+            <div class="tasks-section">
+              <div class="section-header">
+                <h2><i class="fas fa-tasks"></i> Todas as Tarefas</h2>
+                <button id="add-task-btn" class="add-task-btn">
+                  <i class="fas fa-plus"></i> Nova Tarefa
+                </button>
+              </div>
+
+              <div class="task-controls-wrapper">
+                <div class="task-filters">
+                  <button class="filter-btn active" data-filter="all">
+                    Todas
+                  </button>
+                  <button class="filter-btn" data-filter="pending">
+                    Pendentes
+                  </button>
+                  <button class="filter-btn" data-filter="completed">
+                    Concluídas
+                  </button>
+                  <button class="filter-btn" data-filter="no-date">
+                    Sem Data
+                  </button>
+                  <button class="filter-btn" data-filter="work">
+                    Trabalho
+                  </button>
+                  <button class="filter-btn" data-filter="personal">
+                    Pessoal
+                  </button>
+
+                  <div class="divider-vertical"></div>
+                  <button
+                    id="archive-tasks-btn"
+                    class="filter-btn icon-only"
+                    title="Arquivar tarefas concluídas"
+                  >
+                    <i class="fas fa-archive"></i>
+                  </button>
+                  <button
+                    class="filter-btn icon-only"
+                    data-filter="archived"
+                    title="Ver Arquivadas"
+                  >
+                    <i class="fas fa-box-open"></i>
+                  </button>
+                </div>
+
+                <div class="search-bar">
+                  <input
+                    type="text"
+                    id="task-search"
+                    class="task-search-input"
+                    placeholder="Buscar..."
+                  />
+                  <i class="fas fa-search search-icon"></i>
+                </div>
+              </div>
+
+              <div id="tasks-list" class="tasks-list main-list-styled"></div>
+
+              <div id="pagination-controls" class="pagination-container"></div>
+            </div>
+          </section>
         </div>
 
-        <div class="calendar-section">
+        <div class="big-calendar-wrapper">
           <div class="section-header">
-            <h2><i class="fas fa-calendar-alt"></i> Calendário</h2>
+            <h2><i class="fas fa-calendar-alt"></i> Calendário Geral</h2>
             <div class="calendar-controls">
               <button id="prev-month" class="calendar-nav-btn">
                 <i class="fas fa-chevron-left"></i>
@@ -181,127 +379,94 @@
               </button>
             </div>
           </div>
-          <div id="calendar" class="calendar-grid"></div>
+          <div id="calendar" class="calendar-grid big-calendar"></div>
         </div>
 
-        <div class="stats-section">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i class="fas fa-list-check"></i>
+        <div id="task-modal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="modal-title">Nova Tarefa</h3>
+              <button id="close-modal" class="close-btn">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-            <div class="stat-content">
-              <span class="stat-number" id="total-tasks">0</span>
-              <span class="stat-label">Total de Itens</span> </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-              <span class="stat-number" id="pending-tasks">0</span>
-              <span class="stat-label">Pendentes</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-content">
-              <span class="stat-number" id="completed-tasks">0</span>
-              <span class="stat-label">Concluídos</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <i class="fas fa-percentage"></i>
-            </div>
-            <div class="stat-content">
-              <span class="stat-number" id="completion-rate">0%</span>
-              <span class="stat-label">Taxa de Conclusão</span>
-            </div>
+            <form id="task-form">
+              <div class="form-group">
+                <label for="task-title">Título da Tarefa</label>
+                <input type="text" id="task-title" required />
+              </div>
+              <div class="form-group">
+                <label for="task-description">Descrição</label>
+                <textarea id="task-description" rows="3"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="task-date">Data</label>
+                  <input type="date" id="task-date" />
+                  <div class="form-checkbox">
+                    <input type="checkbox" id="no-date-checkbox" />
+                    <label for="no-date-checkbox">Sem data específica</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="task-time">Horário</label>
+                  <input type="time" id="task-time" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="task-priority">Prioridade</label>
+                  <select id="task-priority">
+                    <option value="">Sem prioridade</option>
+                    <option value="low">Baixa</option>
+                    <option value="medium" selected>Média</option>
+                    <option value="high">Alta</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="task-category">Categoria</label>
+                  <select id="task-category">
+                    <option value="work">Trabalho</option>
+                    <option value="personal">Pessoal</option>
+                    <option value="health">Saúde / Academia</option>
+                    <option value="study">Estudos / Livraria</option>
+                    <option value="financeiro">Financeiro</option>
+                    <option value="other">Outros</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-checkbox">
+                  <input type="checkbox" id="recurring-checkbox" />
+                  <label for="recurring-checkbox">Tarefa recorrente</label>
+                </div>
+                <div
+                  id="recurring-options"
+                  class="recurring-options"
+                  style="display: none"
+                >
+                  <label for="recurring-type">Repetir:</label>
+                  <select id="recurring-type">
+                    <option value="daily">Diariamente</option>
+                    <option value="weekly">Semanalmente</option>
+                    <option value="monthly">Mensalmente</option>
+                    <option value="yearly">Anualmente</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" id="cancel-task" class="btn-secondary">
+                  Cancelar
+                </button>
+                <button type="submit" class="btn-primary">
+                  <i class="fas fa-save"></i> Salvar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </main>
-
-    <div id="task-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 id="modal-title">Nova Tarefa</h3>
-          <button id="close-modal" class="close-btn">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <form id="task-form">
-          <div class="form-group">
-            <label for="task-title">Título da Tarefa</label>
-            <input type="text" id="task-title" required />
-          </div>
-          <div class="form-group">
-            <label for="task-description">Descrição</label>
-            <textarea id="task-description" rows="3"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-date">Data</label>
-              <input type="date" id="task-date" />
-              <div class="form-checkbox">
-                <input type="checkbox" id="no-date-checkbox" />
-                <label for="no-date-checkbox">Tarefa sem data específica</label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="task-time">Horário</label>
-              <input type="time" id="task-time" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="task-priority">Prioridade</label>
-              <select id="task-priority">
-                <option value="">Sem prioridade</option>
-                <option value="low">Baixa</option>
-                <option value="medium" selected>Média</option>
-                <option value="high">Alta</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="task-category">Categoria</label>
-              <select id="task-category">
-                <option value="work">Trabalho</option>
-                <option value="personal">Pessoal</option>
-                <option value="health">Saúde</option>
-                <option value="study">Estudos</option>
-                <option value="other">Outros</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="form-checkbox">
-              <input type="checkbox" id="recurring-checkbox" />
-              <label for="recurring-checkbox">Tarefa recorrente</label>
-            </div>
-            <div id="recurring-options" class="recurring-options" style="display: none;">
-              <label for="recurring-type">Repetir:</label>
-              <select id="recurring-type">
-                <option value="daily">Diariamente</option>
-                <option value="weekly">Semanalmente</option>
-                <option value="monthly">Mensalmente</option>
-                <option value="yearly">Anualmente</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" id="cancel-task" class="btn-secondary">
-              Cancelar
-            </button>
-            <button type="submit" class="btn-primary">
-              <i class="fas fa-save"></i> Salvar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
 
     <footer>
       <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
@@ -309,9 +474,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script> <script src="js/planejamento.js"></script>
     <script src="js/notificacoes.js"></script>
-    <script src="js/unified-data-manager.js"></script>
-
+    <script src="js/planejamento.js"></script>
   </body>
 </html>

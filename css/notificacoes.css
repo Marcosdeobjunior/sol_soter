@@ -10,7 +10,7 @@
 .notification-bell {
   background: none;
   border: none;
-  color: #cdd6f4;
+  color: var(--texto-principal); /* Alterado de #cdd6f4 */
   font-size: 1.2rem;
   cursor: pointer;
   position: relative;
@@ -18,15 +18,15 @@
 }
 
 .notification-bell:hover {
-  color: #89b4fa;
+  color: var(--acento-azul); /* Alterado de #89b4fa */
 }
 
 .notification-count {
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #f38ba8; /* Vermelho */
-  color: #1e1e2e;
+  background-color: #f38ba8; /* Mantido o tom de destaque (Vermelho) para COUNT, pois é um alerta forte */
+  color: var(--fundo-superficie); /* Alterado de #1e1e2e */
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #1e1e2e; /* Cor de fundo do header */
+  border: 2px solid var(--fundo-superficie); /* Alterado de #1e1e2e */
 }
 
 .notification-panel {
@@ -45,8 +45,8 @@
   right: 0;
   width: 350px;
   max-height: 400px;
-  background-color: #313244;
-  border: 1px solid #45475a;
+  background-color: var(--fundo-superficie); /* Alterado de #313244 */
+  border: 1px solid var(--borda); /* Alterado de #45475a */
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
   z-index: 1001; /* Acima de outros elementos */
@@ -66,12 +66,12 @@
 
 .notification-panel-header {
   padding: 15px 20px;
-  border-bottom: 1px solid #45475a;
+  border-bottom: 1px solid var(--borda); /* Alterado de #45475a */
 }
 
 .notification-panel-header h3 {
   margin: 0;
-  color: #cdd6f4;
+  color: var(--texto-principal); /* Alterado de #cdd6f4 */
   font-size: 1.1rem;
 }
 
@@ -88,7 +88,7 @@
   width: 5px;
 }
 .notification-list::-webkit-scrollbar-thumb {
-  background: #585b70;
+  background: var(--texto-sutil); /* Aproximado de #585b70 */
   border-radius: 3px;
 }
 
@@ -96,12 +96,12 @@
   display: flex;
   gap: 15px;
   padding: 15px 20px;
-  border-bottom: 1px solid #45475a;
+  border-bottom: 1px solid var(--borda); /* Alterado de #45475a */
   transition: background-color 0.2s ease;
 }
 
 .notification-item:hover {
-  background-color: #45475a;
+  background-color: var(--fundo-overlay); /* Alterado de #45475a */
 }
 
 .notification-item:last-child {
@@ -114,23 +114,23 @@
   text-align: center;
   flex-shrink: 0;
 }
-/* Cores dos ícones por tipo */
-.notification-icon.meta { color: #fab387; } /* Laranja */
-.notification-icon.tarefa { color: #89b4fa; } /* Azul */
-.notification-icon.financa { color: #f38ba8; } /* Vermelho */
-.notification-icon.conquista { color: #a6e3a1; } /* Verde */
+/* Cores dos ícones por tipo (Mantive os tons fortes originais para diferenciação) */
+.notification-icon.meta { color: #fab387; } /* Laranja (Tom original) */
+.notification-icon.tarefa { color: var(--acento-azul); } /* Azul (Usando variável) */
+.notification-icon.financa { color: #f38ba8; } /* Vermelho (Tom original) */
+.notification-icon.conquista { color: #a6e3a1; } /* Verde (Tom original) */
 
 
 .notification-content p {
   margin: 0;
-  color: #cdd6f4;
+  color: var(--texto-principal); /* Alterado de #cdd6f4 */
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
 .notification-content span {
   font-size: 0.75rem;
-  color: #6c7086;
+  color: var(--texto-sutil); /* Alterado de #6c7086 */
   margin-top: 4px;
   display: block;
 }
@@ -142,7 +142,7 @@
   justify-content: center;
   text-align: center;
   padding: 40px 20px;
-  color: #6c7086;
+  color: var(--texto-sutil); /* Alterado de #6c7086 */
 }
 
 .empty-state i {

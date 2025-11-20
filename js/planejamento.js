@@ -1,1002 +1,850 @@
-// ===== PLANEJAMENTO DE TAREFAS - FUNCIONALIDADES ===== //
+// Lógica de Dropdown Global
+document.querySelectorAll(".dropdown").forEach((dropdownContainer) => {
+  const toggle = dropdownContainer.querySelector(".dropdown-header, .profile");
+  if (toggle) {
+    toggle.addEventListener("click", (event) => {
+      if (event.target.tagName === "A") return;
+      document.querySelectorAll(".dropdown.active").forEach((active) => {
+        if (active !== dropdownContainer) active.classList.remove("active");
+      });
+      dropdownContainer.classList.toggle("active");
+    });
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".dropdown")) {
+    document
+      .querySelectorAll(".dropdown.active")
+      .forEach((d) => d.classList.remove("active"));
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof atualizarSaldoGlobal === "function") atualizarSaldoGlobal();
+});
+
+window.addEventListener("storage", (event) => {
+  if (
+    event.key === "financeiro-widget" &&
+    typeof atualizarSaldoGlobal === "function"
+  ) {
+    atualizarSaldoGlobal();
+  }
+});
+
+// ===== SISTEMA RPG (GAMIFICATION) ===== //
+class RPGSystem {
+  constructor() {
+    this.data = this.loadData();
+    this.updateUI();
+  }
+
+  loadData() {
+    const saved = localStorage.getItem("sol-de-soter-rpg");
+    // Estrutura inicial padrão
+    return saved
+      ? JSON.parse(saved)
+      : {
+          level: 1,
+          xp: 0,
+          xpToNextLevel: 100,
+          stats: {
+            strength: { lvl: 1, xp: 0, name: "Força" },
+            intelligence: { lvl: 1, xp: 0, name: "Intelecto" },
+            wisdom: { lvl: 1, xp: 0, name: "Sabedoria" },
+            productivity: { lvl: 1, xp: 0, name: "Produtividade" },
+          },
+        };
+  }
+
+  saveData() {
+    localStorage.setItem("sol-de-soter-rpg", JSON.stringify(this.data));
+    this.updateUI();
+  }
+
+  // Ganhar XP baseado na categoria
+  gainXP(category) {
+    const xpAmount = 10; // XP base por tarefa
+    let statKey = "productivity"; // Default
+
+    // Mapeamento de Categorias para Stats
+    if (category === "health") statKey = "strength";
+    else if (category === "study") statKey = "intelligence";
+    else if (category === "financeiro" || category === "meta")
+      statKey = "wisdom";
+    else if (category === "sonho") statKey = "wisdom"; // Sonhos dão sabedoria
+
+    // Atualiza Stat Específico
+    const stat = this.data.stats[statKey];
+    stat.xp += xpAmount;
+
+    // Level Up do Stat Específico (Simples: lvl * 50)
+    const statNextLvl = stat.lvl * 50;
+    let statLeveledUp = false;
+    if (stat.xp >= statNextLvl) {
+      stat.lvl++;
+      stat.xp -= statNextLvl;
+      statLeveledUp = true;
+    }
+
+    // Atualiza XP Geral
+    this.data.xp += xpAmount;
+    let charLeveledUp = false;
+    if (this.data.xp >= this.data.xpToNextLevel) {
+      this.data.level++;
+      this.data.xp -= this.data.xpToNextLevel;
+      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2); // Curva de dificuldade
+      charLeveledUp = true;
+    }
+
+    this.saveData();
+    this.showToast(xpAmount, statKey, statLeveledUp, charLeveledUp);
+  }
+
+  // Atualiza Elementos da Interface (Header e Menu)
+  updateUI() {
+    // XP Geral no Header
+    const xpPercent = (this.data.xp / this.data.xpToNextLevel) * 100;
+    const headerBar = document.getElementById("header-xp-bar");
+    const headerBadge = document.getElementById("header-level-badge");
+
+    if (headerBar) headerBar.style.width = `${xpPercent}%`;
+    if (headerBadge) headerBadge.textContent = this.data.level;
+
+    // Stats Detalhados no Menu Dropdown
+    this.updateStatUI("str", "strength");
+    this.updateStatUI("int", "intelligence");
+    this.updateStatUI("wis", "wisdom");
+    this.updateStatUI("prod", "productivity");
+  }
+
+  updateStatUI(idSuffix, statKey) {
+    const stat = this.data.stats[statKey];
+    const nextLvl = stat.lvl * 50;
+    const percent = (stat.xp / nextLvl) * 100;
+
+    const lvlEl = document.getElementById(`lvl-${idSuffix}`);
+    const barEl = document.getElementById(`bar-${idSuffix}`);
+
+    if (lvlEl) lvlEl.textContent = stat.lvl;
+    if (barEl) barEl.style.width = `${percent}%`;
+  }
+
+  showToast(xp, type, statLevelUp, charLevelUp) {
+    const container = document.getElementById("rpg-toast-container");
+    if (!container) return;
+
+    // Ícones
+    const icons = {
+      strength: '<i class="fas fa-dumbbell"></i>',
+      intelligence: '<i class="fas fa-brain"></i>',
+      wisdom: '<i class="fas fa-scroll"></i>',
+      productivity: '<i class="fas fa-briefcase"></i>',
+    };
+
+    // Notificação de XP
+    const toast = document.createElement("div");
+    toast.className = `rpg-toast toast-${
+      type === "strength"
+        ? "str"
+        : type === "intelligence"
+        ? "int"
+        : type === "wisdom"
+        ? "wis"
+        : "prod"
+    }`;
+    toast.innerHTML = `${icons[type]} <span>+<span class="rpg-toast-xp">${xp} XP</span> em ${this.data.stats[type].name}</span>`;
+    container.appendChild(toast);
+
+    // Notificação de Level Up (Personagem)
+    if (charLevelUp) {
+      setTimeout(() => {
+        const lvlToast = document.createElement("div");
+        lvlToast.className = "rpg-toast toast-levelup";
+        lvlToast.innerHTML = `<i class="fas fa-crown" style="color:gold"></i> <span>Level Up! Nível <span class="rpg-toast-xp">${this.data.level}</span></span>`;
+        container.appendChild(lvlToast);
+        setTimeout(() => lvlToast.remove(), 4500);
+      }, 500);
+    }
+
+    // Remove toast após animação
+    setTimeout(() => toast.remove(), 4500);
+  }
+}
+
+// ===== CLASSE PRINCIPAL DE PLANEJAMENTO ===== //
 
 class TaskPlanner {
-    constructor() {
-        this.currentDate = new Date();
-        this.selectedDate = new Date();
-        
-        // Carrega dados
-        this.tasks = this.loadTasks();
-        this.sonhos = this.loadSonhos();
-        this.metas = this.loadMetas();
-        this.estudos = this.loadEstudos(); // NOVO: Carrega estudos
-        
-        // Inicializa propriedades
-        this.allItems = [];
-        this.getAllItems(); // Popula this.allItems
-        
-        this.currentFilter = 'all';
-        this.currentSearchTerm = ''; // NOVO: Para o campo de busca
-        this.editingTaskId = null;
-        
-        this.init();
+  constructor() {
+    this.currentDate = new Date();
+    this.selectedDate = new Date();
+
+    // Configuração de Paginação (ALTERADO PARA 5)
+    this.currentPage = 1;
+    this.itemsPerPage = 5;
+
+    this.tasks = this.loadTasks();
+    this.sonhos = this.loadSonhos();
+    this.metas = this.loadMetas();
+    this.estudos = this.loadEstudos();
+
+    this.allItems = [];
+    this.currentFilter = "all";
+    this.currentSearchTerm = "";
+    this.editingTaskId = null;
+
+    // Inicializa RPG
+    this.rpg = new RPGSystem();
+
+    this.getAllItems();
+    this.init();
+  }
+
+  init() {
+    this.archiveOldTasks();
+    this.renderCalendar();
+    this.renderTasks();
+    this.renderTodayColumn();
+    this.updateStats();
+    this.bindEvents();
+  }
+
+  // --- DATA LOADING ---
+  loadTasks() {
+    return JSON.parse(localStorage.getItem("sol-de-soter-tasks")) || [];
+  }
+  loadSonhos() {
+    return JSON.parse(localStorage.getItem("sonhos-objetivos")) || [];
+  }
+  loadMetas() {
+    return JSON.parse(localStorage.getItem("metas-objetivos")) || [];
+  }
+  loadEstudos() {
+    return JSON.parse(localStorage.getItem("studyPlannerTopics")) || [];
+  }
+  loadArchive() {
+    return JSON.parse(localStorage.getItem("sol-de-soter-tasks-archive")) || [];
+  }
+
+  getAllItems() {
+    // Mapeamento para unificar formato
+    const formatSonho = (s) => ({
+      id: `sonho-${s.id}`,
+      title: s.titulo,
+      description: s.descricao,
+      date: s.prazo,
+      completed: s.concluido,
+      category: "sonho",
+      type: "sonho",
+      priority: s.prioridade,
+    });
+
+    const formatMeta = (m) => ({
+      id: `meta-${m.id}`,
+      title: m.titulo,
+      description: m.descricao,
+      date: m.prazo,
+      completed: m.status === "concluida",
+      category: "meta",
+      type: "meta",
+    });
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const formatEstudo = (e) => {
+      const reviewDate = new Date(e.nextReviewAt);
+      reviewDate.setHours(0, 0, 0, 0);
+      return {
+        id: `estudo-${e.id}`,
+        title: e.name,
+        description: `[Estudo] ${e.desc || ""} (${e.course})`,
+        date: new Date(e.nextReviewAt).toISOString().slice(0, 10),
+        completed: reviewDate.getTime() < hoje.getTime(), // Atrasado conta como "check" visual
+        category: "study",
+        priority: e.priority,
+        type: "estudo",
+      };
+    };
+
+    const tarefas = this.tasks.map((t) => ({ ...t, type: "task" }));
+    const sonhos = this.sonhos
+      .filter((s) => s.prazo && !s.concluido)
+      .map(formatSonho);
+    const metas = this.metas
+      .filter((m) => m.prazo && m.status !== "concluida")
+      .map(formatMeta);
+    const estudos = this.estudos
+      .filter((e) => e.nextReviewAt)
+      .map(formatEstudo);
+
+    this.allItems = [...tarefas, ...sonhos, ...metas, ...estudos];
+  }
+
+  saveTasks() {
+    localStorage.setItem("sol-de-soter-tasks", JSON.stringify(this.tasks));
+    this.getAllItems();
+    this.updateStats();
+    this.renderTasks();
+    this.renderTodayColumn();
+    this.renderCalendar();
+  }
+
+  // --- ARQUIVAMENTO ---
+  archiveOldTasks() {
+    const limit = new Date();
+    limit.setMonth(limit.getMonth() - 2);
+    const toArchive = this.tasks.filter(
+      (t) => t.completed && t.completedAt && new Date(t.completedAt) < limit
+    );
+    if (toArchive.length > 0) {
+      const keep = this.tasks.filter((t) => !toArchive.includes(t));
+      const archive = this.loadArchive();
+      localStorage.setItem(
+        "sol-de-soter-tasks-archive",
+        JSON.stringify([...archive, ...toArchive])
+      );
+      this.tasks = keep;
+      this.saveTasks();
+    }
+  }
+
+  manualArchiveTasks() {
+    const completed = this.tasks.filter((t) => t.completed);
+    if (completed.length === 0) return alert("Nada concluído para arquivar.");
+    if (confirm(`Arquivar ${completed.length} tarefas concluídas?`)) {
+      const keep = this.tasks.filter((t) => !t.completed);
+      const archive = this.loadArchive();
+      localStorage.setItem(
+        "sol-de-soter-tasks-archive",
+        JSON.stringify([...archive, ...completed])
+      );
+      this.tasks = keep;
+      this.saveTasks();
+      alert("Tarefas arquivadas!");
+    }
+  }
+
+  // --- CALENDÁRIO ---
+  renderCalendar() {
+    const calendar = document.getElementById("calendar");
+    const monthYear = document.getElementById("current-month-year");
+    const months = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+
+    monthYear.textContent = `${
+      months[this.currentDate.getMonth()]
+    } ${this.currentDate.getFullYear()}`;
+    calendar.innerHTML = "";
+
+    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    weekDays.forEach((day) => {
+      const h = document.createElement("div");
+      h.className = "calendar-header";
+      h.textContent = day;
+      calendar.appendChild(h);
+    });
+
+    const firstDay = new Date(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth(),
+      1
+    ).getDay();
+    const daysInMonth = new Date(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth() + 1,
+      0
+    ).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const d = document.createElement("div");
+      d.className = "calendar-day other-month";
+      calendar.appendChild(d);
     }
 
-    init() {
-        this.archiveOldTasks(); // NOVO: Arquiva tarefas antigas ao iniciar
-        this.renderCalendar();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(
+        this.currentDate.getFullYear(),
+        this.currentDate.getMonth(),
+        day
+      );
+      const dayEl = document.createElement("div");
+      dayEl.className = "calendar-day";
+      if (date.getTime() === today.getTime()) dayEl.classList.add("today");
+
+      dayEl.innerHTML = `<div class="calendar-day-number">${day}</div><div class="calendar-tasks"></div>`;
+
+      this.renderCalendarTasks(date, dayEl.querySelector(".calendar-tasks"));
+
+      dayEl.onclick = (e) => {
+        if (e.target.closest(".calendar-task")) return;
+        this.selectedDate = date;
+        this.openTaskModal();
+      };
+      calendar.appendChild(dayEl);
+    }
+  }
+
+  renderCalendarTasks(date, container) {
+    const tasks = this.getTasksForDate(date);
+    tasks.slice(0, 4).forEach((task) => {
+      const el = document.createElement("div");
+      let catClass = "cal-task-other";
+      if (task.category === "work") catClass = "cal-task-work";
+      if (task.category === "personal") catClass = "cal-task-personal";
+      if (task.category === "health") catClass = "cal-task-health";
+      if (task.category === "study") catClass = "cal-task-study";
+      if (task.category === "financeiro") catClass = "cal-task-finance";
+      if (task.type === "sonho") catClass = "cal-task-sonho";
+      if (task.type === "meta") catClass = "cal-task-meta";
+
+      el.className = `calendar-task ${catClass} ${
+        task.completed ? "completed" : ""
+      }`;
+      el.textContent = task.title;
+      el.onclick = (e) => {
+        e.stopPropagation();
+        if (task.type === "task") this.editTask(task.id);
+        else this.navigateToItem(task.type, task.id);
+      };
+      container.appendChild(el);
+    });
+    if (tasks.length > 4) {
+      const more = document.createElement("div");
+      more.style.fontSize = "0.7rem";
+      more.style.color = "#888";
+      more.textContent = `+${tasks.length - 4} mais`;
+      container.appendChild(more);
+    }
+  }
+
+  getTasksForDate(date) {
+    return this.allItems.filter((t) => {
+      if (!t.date) return false;
+      const tDate = new Date(t.date + "T00:00:00");
+      return (
+        tDate.getFullYear() === date.getFullYear() &&
+        tDate.getMonth() === date.getMonth() &&
+        tDate.getDate() === date.getDate()
+      );
+    });
+  }
+
+  // --- RENDERIZAÇÃO DA LISTA PRINCIPAL ---
+  renderTasks() {
+    const list = document.getElementById("tasks-list");
+    const filtered = this.getFilteredTasks();
+
+    filtered.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(a.date) - new Date(b.date);
+    });
+
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+    if (this.currentPage > totalPages) this.currentPage = totalPages || 1;
+
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    const pageItems = filtered.slice(start, end);
+
+    list.innerHTML = "";
+    if (pageItems.length === 0) {
+      list.innerHTML = `<div style="text-align:center; padding:40px; color:var(--texto-secundario);">Nenhum item encontrado.</div>`;
+    } else {
+      pageItems.forEach(
+        (task) => (list.innerHTML += this.createTaskHTML(task))
+      );
+    }
+
+    this.renderPagination(totalItems);
+  }
+
+  renderPagination(totalItems) {
+    const container = document.getElementById("pagination-controls");
+    container.innerHTML = "";
+    const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement("button");
+    prev.className = "page-btn";
+    prev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    prev.onclick = () => {
+      if (this.currentPage > 1) {
+        this.currentPage--;
         this.renderTasks();
-        this.updateStats();
-        this.bindEvents();
-    }
+      }
+    };
+    if (this.currentPage === 1) prev.disabled = true;
+    container.appendChild(prev);
 
-    // ===== GERENCIAMENTO DE DADOS ===== //
-    loadTasks() {
-        const saved = localStorage.getItem('sol-de-soter-tasks');
-        return saved ? JSON.parse(saved) : [];
-    }
-
-    loadSonhos() {
-        const dados = localStorage.getItem('sonhos-objetivos');
-        return dados ? JSON.parse(dados) : [];
-    }
-    
-    loadMetas() {
-        const dados = localStorage.getItem('metas-objetivos');
-        return dados ? JSON.parse(dados) : [];
-    }
-
-    /**
-     * NOVO: Carrega os tópicos de estudo
-     */
-    loadEstudos() {
-        const dados = localStorage.getItem('studyPlannerTopics');
-        return dados ? JSON.parse(dados) : [];
-    }
-
-    /**
-     * NOVO: Carrega as tarefas arquivadas
-     */
-    loadArchive() {
-        const archive = localStorage.getItem('sol-de-soter-tasks-archive');
-        return archive ? JSON.parse(archive) : [];
-    }
-
-    // MODIFICADO: Agora inclui estudos
-    getAllItems() {
-        // Mapeia sonhos para o formato de tarefa
-        const sonhosFormatados = this.sonhos
-            .filter(sonho => sonho.prazo && !sonho.concluido) // Apenas sonhos com prazo e não concluídos
-            .map(sonho => ({
-                id: `sonho-${sonho.id}`,
-                title: sonho.titulo,
-                description: sonho.descricao,
-                date: sonho.prazo,
-                completed: sonho.concluido,
-                category: sonho.categoria,
-                priority: sonho.prioridade,
-                type: 'sonho' // Adiciona um tipo para diferenciação
-            }));
-
-        // Mapeia metas para o formato de tarefa
-        const metasFormatadas = this.metas
-            .filter(meta => meta.prazo && meta.status !== 'concluida') // Apenas metas com prazo e não concluídas
-            .map(meta => ({
-                id: `meta-${meta.id}`,
-                title: meta.titulo,
-                description: meta.descricao,
-                date: meta.prazo,
-                completed: meta.status === 'concluida',
-                category: 'meta', // Categoria genérica
-                type: 'meta' // Adiciona um tipo para diferenciação
-            }));
-
-        // NOVO: Mapeia estudos para o formato de tarefa
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-
-        const estudosFormatados = this.estudos
-            .filter(estudo => estudo.nextReviewAt) // Apenas agendados
-            .map(estudo => {
-                const reviewDate = new Date(estudo.nextReviewAt);
-                reviewDate.setHours(0, 0, 0, 0);
-                
-                return {
-                    id: `estudo-${estudo.id}`,
-                    title: estudo.name,
-                    description: `[Estudo] ${estudo.desc || 'Sem descrição.'} (Curso: ${estudo.course})`,
-                    date: new Date(estudo.nextReviewAt).toISOString().slice(0, 10),
-                    // Marca como 'completed' se estiver ATRASADO, para destaque visual
-                    completed: reviewDate.getTime() < hoje.getTime(), 
-                    category: 'study', // Categoria de 'estudos' já existe
-                    priority: estudo.priority, // 'alta', 'media', 'baixa'
-                    type: 'estudo'
-                };
-            });
-
-        const tarefasComTipo = this.tasks.map(task => ({ ...task, type: 'task' }));
-
-        // Combina tudo e ATUALIZA a propriedade da classe
-        this.allItems = [...tarefasComTipo, ...sonhosFormatados, ...metasFormatadas, ...estudosFormatados];
-    }
-
-
-    saveTasks() {
-        localStorage.setItem('sol-de-soter-tasks', JSON.stringify(this.tasks));
-        // Recarrega todos os itens para manter a consistência
-        this.getAllItems(); // ATUALIZA this.allItems
-        this.updateStats();
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.className = `page-btn ${i === this.currentPage ? "active" : ""}`;
+      btn.textContent = i;
+      btn.onclick = () => {
+        this.currentPage = i;
         this.renderTasks();
-        this.renderCalendar();
-    }
-    
-    // ===== NOVAS FUNÇÕES DE ARQUIVAMENTO ===== //
-
-    /**
-     * Arquiva tarefas concluídas há mais de 2 meses.
-     * Roda automaticamente na inicialização.
-     */
-    archiveOldTasks() {
-        const twoMonthsAgo = new Date();
-        twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-
-        const tasksToArchive = this.tasks.filter(task => 
-            task.completed && task.completedAt && new Date(task.completedAt) < twoMonthsAgo
-        );
-
-        if (tasksToArchive.length > 0) {
-            const tasksToKeep = this.tasks.filter(task => 
-                !task.completed || !task.completedAt || new Date(task.completedAt) >= twoMonthsAgo
-            );
-            
-            const archive = localStorage.getItem('sol-de-soter-tasks-archive');
-            const oldArchive = archive ? JSON.parse(archive) : [];
-            const newArchive = [...oldArchive, ...tasksToArchive];
-            
-            localStorage.setItem('sol-de-soter-tasks-archive', JSON.stringify(newArchive));
-            this.tasks = tasksToKeep;
-            this.saveTasks(); // Salva as tarefas mantidas e atualiza a UI
-            console.log(`Arquivadas ${tasksToArchive.length} tarefas antigas.`);
-        }
+      };
+      container.appendChild(btn);
     }
 
-    /**
-     * Arquiva manualmente TODAS as tarefas concluídas.
-     * Acionado pelo botão na UI.
-     */
-    manualArchiveTasks() {
-        const tasksToArchive = this.tasks.filter(task => task.completed);
-
-        if (tasksToArchive.length === 0) {
-            alert('Nenhuma tarefa concluída para arquivar.');
-            return;
-        }
-
-        if (confirm(`Arquivar ${tasksToArchive.length} tarefa(s) concluída(s)? Elas sairão da lista principal.`)) {
-            const tasksToKeep = this.tasks.filter(task => !task.completed);
-            
-            const archive = localStorage.getItem('sol-de-soter-tasks-archive');
-            const oldArchive = archive ? JSON.parse(archive) : [];
-            const newArchive = [...oldArchive, ...tasksToArchive];
-            
-            localStorage.setItem('sol-de-soter-tasks-archive', JSON.stringify(newArchive));
-            this.tasks = tasksToKeep;
-            this.saveTasks(); // Salva as tarefas mantidas e atualiza a UI
-            alert('Tarefas arquivadas com sucesso.');
-        }
-    }
-
-    // =========================================== //
-
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    // ===== CALENDÁRIO ===== //
-    renderCalendar() {
-        const calendar = document.getElementById('calendar');
-        const monthYear = document.getElementById('current-month-year');
-        
-        const months = [
-            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-        ];
-        monthYear.textContent = `${months[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
-
-        calendar.innerHTML = '';
-
-        const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        weekDays.forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'calendar-header';
-            header.textContent = day;
-            calendar.appendChild(header);
-        });
-
-        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
-
-        const prevMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 0);
-        for (let i = startingDayOfWeek; i > 0; i--) {
-            const dayElement = this.createDayElement(
-                prevMonth.getDate() - i + 1,
-                this.currentDate.getMonth() - 1,
-                this.currentDate.getFullYear(),
-                true
-            );
-            calendar.appendChild(dayElement);
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = this.createDayElement(
-                day,
-                this.currentDate.getMonth(),
-                this.currentDate.getFullYear(),
-                false
-            );
-            calendar.appendChild(dayElement);
-        }
-
-        const totalCells = calendar.children.length - 7;
-        const remainingCells = (totalCells > 35 ? 42 : 35) - totalCells;
-        for (let day = 1; day <= remainingCells; day++) {
-            const dayElement = this.createDayElement(
-                day,
-                this.currentDate.getMonth() + 1,
-                this.currentDate.getFullYear(),
-                true
-            );
-            calendar.appendChild(dayElement);
-        }
-    }
-
-    // MODIFICADO: Adiciona clique para 'estudo'
-    createDayElement(day, month, year, isOtherMonth) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-
-        const dayDate = new Date(year, month, day);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        if (isOtherMonth) {
-            dayElement.classList.add('other-month');
-        }
-
-        if (this.isSameDay(dayDate, today)) {
-            dayElement.classList.add('today');
-        }
-
-        if (this.isSameDay(dayDate, this.selectedDate)) {
-            dayElement.classList.add('selected');
-        }
-
-        // Criar estrutura do dia
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'calendar-day-number';
-        dayNumber.textContent = day;
-        dayElement.appendChild(dayNumber);
-
-        const tasksContainer = document.createElement('div');
-        tasksContainer.className = 'calendar-tasks';
-        dayElement.appendChild(tasksContainer);
-
-        // Adicionar tarefas do dia
-        this.renderCalendarTasks(dayDate, tasksContainer);
-
-        // Eventos
-        dayElement.addEventListener('click', (e) => {
-            const target = e.target.closest('.calendar-task');
-            
-            if (target && target.dataset.taskId.startsWith('task-')) {
-                // Clique em tarefa (task) abre edição
-                const taskId = target.dataset.taskId.replace('task-', '');
-                this.editTask(taskId);
-            } else if (target && target.dataset.taskId.startsWith('sonho-')) {
-                // Clique em sonho navega
-                this.navigateToItem('sonho', target.dataset.taskId);
-            } else if (target && target.dataset.taskId.startsWith('meta-')) {
-                // Clique em meta navega
-                this.navigateToItem('meta', target.dataset.taskId);
-            } else if (target && target.dataset.taskId.startsWith('estudo-')) { // NOVO
-                // Clique em estudo navega
-                this.navigateToItem('estudo', target.dataset.taskId);
-            } else {
-                // Clique no dia
-                this.selectDate(dayDate);
-                if (e.detail === 2) {
-                    this.openTaskModal();
-                }
-            }
-        });
-
-        return dayElement;
-    }
-    
-    // MODIFICADO: Adiciona classe de tipo ao item no calendário
-    renderCalendarTasks(date, container) {
-        const tasksForDay = this.getTasksForDate(date);
-        const maxVisible = 3;
-        
-        container.innerHTML = '';
-        
-        tasksForDay.slice(0, maxVisible).forEach(item => {
-            const taskElement = document.createElement('div');
-            
-            // Define o ID correto com base no tipo
-            let dataId = item.id;
-            if (item.type === 'task') {
-                dataId = `task-${item.id}`;
-            }
-            // Para sonho, meta e estudo, o ID formatado (ex: 'sonho-123') já é o item.id
-
-            // Adiciona classe específica para sonho, meta, estudo ou tarefa
-            // O item 'completed' para estudo significa 'atrasado'
-            taskElement.className = `calendar-task calendar-task-${item.type} ${item.completed ? 'completed' : ''} ${item.priority ? item.priority + '-priority' : 'no-priority'}`;
-            taskElement.textContent = item.title;
-            taskElement.dataset.taskId = dataId; // Usa o ID com prefixo
-            taskElement.title = item.description || item.title;
-            container.appendChild(taskElement);
-        });
-
-        if (tasksForDay.length > maxVisible) {
-            const moreElement = document.createElement('div');
-            moreElement.className = 'calendar-more-tasks';
-            moreElement.textContent = `+${tasksForDay.length - maxVisible} mais`;
-            container.appendChild(moreElement);
-        }
-    }
-
-
-    selectDate(date) {
-        this.selectedDate = new Date(date);
-        this.selectedDate.setHours(0, 0, 0, 0);
-        this.renderCalendar();
-    }
-
-    isSameDay(date1, date2) {
-        return date1.getFullYear() === date2.getFullYear() &&
-               date1.getMonth() === date2.getMonth() &&
-               date1.getDate() === date2.getDate();
-    }
-
-    previousMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-        this.renderCalendar();
-    }
-
-    nextMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-        this.renderCalendar();
-    }
-
-    // ===== GERENCIAMENTO DE TAREFAS ===== //
-    addTask(taskData) {
-        const task = {
-            id: this.generateId(),
-            ...taskData,
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
-
-        this.tasks.push(task);
-        
-        if (task.recurring && task.recurringType && task.date) {
-            this.createRecurringTasks(task);
-        }
-        
-        this.saveTasks();
-    }
-
-    createRecurringTasks(baseTask) {
-        const startDate = new Date(baseTask.date + 'T00:00:00');
-        const endDate = new Date(startDate);
-        endDate.setFullYear(endDate.getFullYear() + 1);
-
-        let currentDate = new Date(startDate);
-        
-        while (currentDate <= endDate) {
-            switch (baseTask.recurringType) {
-                case 'daily':
-                    currentDate.setDate(currentDate.getDate() + 1);
-                    break;
-                case 'weekly':
-                    currentDate.setDate(currentDate.getDate() + 7);
-                    break;
-                case 'monthly':
-                    currentDate.setMonth(currentDate.getMonth() + 1);
-                    break;
-                case 'yearly':
-                    currentDate.setFullYear(currentDate.getFullYear() + 1);
-                    break;
-            }
-
-            if (currentDate <= endDate) {
-                const recurringTask = {
-                    ...baseTask,
-                    id: this.generateId(),
-                    date: this.formatDate(currentDate),
-                    parentTaskId: baseTask.id,
-                    createdAt: new Date().toISOString()
-                };
-                this.tasks.push(recurringTask);
-            }
-        }
-    }
-
-    formatDate(date) {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    updateTask(id, taskData) {
-        const taskIndex = this.tasks.findIndex(task => task.id === id);
-        if (taskIndex > -1) {
-            const oldTask = this.tasks[taskIndex];
-            this.tasks[taskIndex] = {
-                ...oldTask,
-                ...taskData,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (taskData.recurring && taskData.recurringType && !oldTask.recurring && taskData.date) {
-                this.createRecurringTasks(this.tasks[taskIndex]);
-            }
-            else if (!taskData.recurring && oldTask.recurring) {
-                this.tasks = this.tasks.filter(task => task.parentTaskId !== id);
-            }
-
-            this.saveTasks();
-        }
-    }
-
-    deleteTask(id) {
-        // Lógica original: Exclui a tarefa E todas as recorrências filhas
-        this.tasks = this.tasks.filter(task => task.id !== id && task.parentTaskId !== id);
-        this.saveTasks();
-    }
-
-    // MODIFICADO: Gerencia conclusão de tarefas, sonhos e metas
-    toggleTaskCompletion(id) {
-        if (id.startsWith('sonho-')) {
-            this.toggleSonhoCompletion(id);
-        } else if (id.startsWith('meta-')) {
-            this.toggleMetaCompletion(id);
-        } else if (id.startsWith('estudo-')) {
-            // Itens de estudo não podem ser "concluídos" por aqui
-            console.warn('A conclusão de estudos é gerenciada na página de Estudos.');
-        } else {
-            // Lógica original para tarefas
-            const task = this.tasks.find(task => task.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                task.completedAt = task.completed ? new Date().toISOString() : null;
-                this.saveTasks();
-            }
-        }
-    }
-
-    // NOVA FUNÇÃO: Concluir Sonho
-    toggleSonhoCompletion(id) {
-        const originalId = id.replace('sonho-', '');
-        const sonho = this.sonhos.find(s => s.id == originalId); // Comparação solta para '1' vs 1
-        if (!sonho) return;
-        
-        // Inverte o status
-        sonho.concluido = !sonho.concluido;
-        localStorage.setItem('sonhos-objetivos', JSON.stringify(this.sonhos));
-
-        // Força recarga e re-render
-        this.sonhos = this.loadSonhos(); // Recarrega do storage
-        this.getAllItems(); // Reconstrói allItems
+    const next = document.createElement("button");
+    next.className = "page-btn";
+    next.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    next.onclick = () => {
+      if (this.currentPage < totalPages) {
+        this.currentPage++;
         this.renderTasks();
-        this.renderCalendar();
-        this.updateStats();
-    }
+      }
+    };
+    if (this.currentPage === totalPages) next.disabled = true;
+    container.appendChild(next);
+  }
 
-    // NOVA FUNÇÃO: Concluir Meta
-    toggleMetaCompletion(id) {
-        const originalId = id.replace('meta-', '');
-        const meta = this.metas.find(m => m.id == originalId); // Comparação solta
-        if (!meta) return;
+  createTaskHTML(item) {
+    const dateStr = item.date
+      ? new Date(item.date + "T00:00:00").toLocaleDateString("pt-BR")
+      : "Sem data";
 
-        // Inverte o status
-        meta.status = meta.status === 'concluida' ? 'pendente' : 'concluida'; // Assumindo status
-        localStorage.setItem('metas-objetivos', JSON.stringify(this.metas));
+    let catClass = "cat-other";
+    if (item.category === "work") catClass = "cat-work";
+    else if (item.category === "personal") catClass = "cat-personal";
+    else if (item.category === "health") catClass = "cat-health";
+    else if (item.category === "study") catClass = "cat-study";
+    else if (item.category === "financeiro") catClass = "cat-finance";
 
-        // Força recarga e re-render
-        this.metas = this.loadMetas(); // Recarrega do storage
-        this.getAllItems(); // Reconstrói allItems
-        this.renderTasks();
-        this.renderCalendar();
-        this.updateStats();
-    }
-    
-    // MODIFICADO: Usa a lista combinada (allItems) e aplica busca E ARQUIVAMENTO
-    getFilteredTasks() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        let filtered = [];
+    const priorityClass = item.priority ? `${item.priority}-priority` : "";
+    const completedClass = item.completed ? "completed" : "";
+    const isClickable = ["sonho", "meta", "estudo"].includes(item.type);
 
-        switch (this.currentFilter) {
-            case 'pending':
-                // Modificado: Itens de estudo "completed" (atrasados) são considerados pendentes
-                filtered = this.allItems.filter(task => !task.completed || task.type === 'estudo');
-                break;
-            case 'completed':
-                // Modificado: Itens de estudo nunca são mostrados como concluídos aqui
-                filtered = this.allItems.filter(task => task.completed && task.type !== 'estudo');
-                break;
-            case 'today':
-                filtered = this.allItems.filter(task => {
-                    if (!task.date) return false;
-                    const taskDate = new Date(task.date + 'T00:00:00');
-                    return this.isSameDay(taskDate, today);
-                });
-                break;
-            case 'no-date':
-                filtered = this.allItems.filter(task => !task.date);
-                break;
-            // NOVO CASO: Carrega os arquivados
-            case 'archived':
-                filtered = this.loadArchive();
-                break;
-            default:
-                filtered = [...this.allItems];
-        }
-        
-        // NOVO: Aplicar filtro de pesquisa
-        if (this.currentSearchTerm) {
-            filtered = filtered.filter(item => {
-                const title = item.title || '';
-                const description = item.description || '';
-                return title.toLowerCase().includes(this.currentSearchTerm) ||
-                       description.toLowerCase().includes(this.currentSearchTerm);
-            });
-        }
+    const editBtn =
+      item.type === "task"
+        ? `<button class="task-action-btn" onclick="taskPlanner.editTask('${item.id}')"><i class="fas fa-edit"></i></button>
+         <button class="task-action-btn delete-btn" onclick="taskPlanner.deleteTask('${item.id}')"><i class="fas fa-trash"></i></button>`
+        : "";
 
-        return filtered;
-    }
+    const checkBtn =
+      item.type !== "estudo"
+        ? `<button class="task-action-btn complete-btn" onclick="event.stopPropagation(); taskPlanner.toggleTaskCompletion('${
+            item.id
+          }')">
+            <i class="fas ${item.completed ? "fa-undo" : "fa-check"}"></i>
+         </button>`
+        : "";
 
-    // MODIFICADO: Usa a lista combinada (allItems)
-    getTasksForDate(date) {
-        return this.allItems.filter(task => {
-            if (!task.date) return false;
-            const taskDate = new Date(task.date + 'T00:00:00');
-            return this.isSameDay(taskDate, date);
-        }).sort((a, b) => {
-            if (a.time && b.time) {
-                return a.time.localeCompare(b.time);
-            }
-            if (a.time) return -1;
-            if (b.time) return 1;
-            
-            const priorityOrder = { high: 3, medium: 2, low: 1, '': 0 };
-            return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-        });
-    }
-
-    // ===== RENDERIZAÇÃO ===== //
-    // MODIFICADO: Passa o status 'isArchived' para 'createTaskHTML'
-    renderTasks() {
-        const tasksList = document.getElementById('tasks-list');
-        const filteredTasks = this.getFilteredTasks();
-        const isArchivedView = (this.currentFilter === 'archived'); // Verifica se está na view de arquivos
-
-        if (filteredTasks.length === 0) {
-            tasksList.innerHTML = `<div style="text-align: center; padding: 40px; color: #6c7086;"><i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 15px;"></i><p>Nenhum item encontrado</p></div>`;
-            return;
-        }
-
-        filteredTasks.sort((a, b) => {
-            // Em arquivos, ordena por data de conclusão (se existir), mais recentes primeiro
-            if (isArchivedView) {
-                const dateA = a.completedAt ? new Date(a.completedAt) : new Date(0);
-                const dateB = b.completedAt ? new Date(b.completedAt) : new Date(0);
-                return dateB - dateA;
-            }
-            
-            // Lógica de ordenação para itens ativos
-            // Itens de estudo atrasados ('completed' = true) devem vir primeiro
-            if (a.type === 'estudo' && a.completed && (b.type !== 'estudo' || !b.completed)) return -1;
-            if (b.type === 'estudo' && b.completed && (a.type !== 'estudo' || !a.completed)) return 1;
-
-            // Lógica de ordenação original para tarefas ativas
-            if (!a.date && b.date) return 1;
-            if (a.date && !b.date) return -1;
-            if (!a.date && !b.date) {
-                const priorityOrder = { high: 3, medium: 2, low: 1, '': 0 };
-                return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-            }
-
-            const dateA = new Date(a.date + (a.time ? `T${a.time}` : 'T00:00:00'));
-            const dateB = new Date(b.date + (b.time ? `T${b.time}` : 'T00:00:00'));
-            
-            if (dateA.getTime() !== dateB.getTime()) {
-                return dateA - dateB;
-            }
-            
-            const priorityOrder = { high: 3, medium: 2, low: 1, '': 0 };
-            return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-        });
-
-        tasksList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task, isArchivedView)).join('');
-    }
-
-    // MODIFICADO: Adiciona tag de tipo, evento de clique para sonho/meta/estudo, e botões condicionais
-    // E agora renderiza um item 'somente leitura' se 'isArchived' for true
-    createTaskHTML(item, isArchived = false) {
-        let formattedDate = '';
-        let formattedTime = item.time || '';
-        
-        if (item.date) {
-            const taskDate = new Date(item.date + 'T00:00:00');
-            formattedDate = taskDate.toLocaleDateString("pt-BR");
-        }
-        
-        const categoryLabels = { 
-            work: 'Trabalho', 
-            personal: 'Pessoal', 
-            health: 'Saúde', 
-            study: 'Estudos', // Categoria existente
-            other: 'Outros',
-            viagem: 'Viagem',
-            profissional: 'Profissional',
-            financeiro: 'Financeiro',
-            meta: 'Meta'
-        };
-        const categoryLabel = categoryLabels[item.category] || item.category || 'Outros';
-
-        // Tag para diferenciar o tipo de item
-        let typeTag = '';
-        if (item.type === 'sonho') {
-            typeTag = '<span class="item-type-tag sonho-tag"><i class="fas fa-star"></i> Sonho</span>';
-        } else if (item.type === 'meta') {
-            typeTag = '<span class="item-type-tag meta-tag"><i class="fas fa-bullseye"></i> Meta</span>';
-        } else if (item.type === 'estudo') {
-            typeTag = '<span class="item-type-tag estudo-tag"><i class="fas fa-book-open"></i> Estudo</span>';
-        }
-
-        // Para estudos, 'completed' significa 'atrasado', então damos uma classe de prioridade
-        const isOverdueStudy = (item.type === 'estudo' && item.completed);
-        const priorityClass = item.priority ? `${item.priority}-priority` : 'no-priority';
-        const dateClass = !item.date ? 'no-date' : '';
-        const completedClass = (item.completed && item.type !== 'estudo') ? 'completed' : ''; // Estudo não fica opaco
-        const overdueClass = isOverdueStudy ? 'high-priority' : ''; // Faz estudo atrasado ficar vermelho
-
-        
-        // Itens arquivados são tratados como 'task' para lógica de botões, e não são clicáveis
-        const isTask = item.type === 'task' || isArchived;
-        const isClickable = !isArchived && (item.type === 'sonho' || item.type === 'meta' || item.type === 'estudo');
-        const clickHandler = isClickable ? `onclick="taskPlanner.navigateToItem('${item.type}', '${item.id}')"` : '';
-
-        return `
-            <div class="task-item ${completedClass} ${priorityClass} ${dateClass} ${overdueClass} ${isClickable ? 'clickable' : ''} ${isArchived ? 'is-archived' : ''}" 
-                 data-task-id="${item.id}" 
-                 ${clickHandler}>
-                <div class="task-header">
-                    <h4 class="task-title">
-                        ${item.title}
-                        ${item.recurring ? '<span class="task-recurring"><i class="fas fa-redo"></i></span>' : ''}
-                        ${isOverdueStudy ? '<span class="task-recurring" style="color: #f38ba8;">(Atrasado)</span>' : ''}
-                    </h4>
-                    <div class="task-actions">
-                        ${isArchived ? 
-                            `<span class="archived-tag"><i class="fas fa-archive"></i> Arquivada</span>` :
-                            `
-                            ${item.type !== 'estudo' ? // NÃO mostrar botão de completar para estudo
-                            `<button class="task-action-btn complete-btn" 
-                                    onclick="${isClickable ? 'event.stopPropagation();' : ''} taskPlanner.toggleTaskCompletion('${item.id}')" 
-                                    title="${item.completed ? 'Marcar como pendente' : 'Marcar como concluída'}">
-                                <i class="fas ${item.completed ? 'fa-undo' : 'fa-check'}"></i>
-                            </button>`
-                            : ''}
-                            
-                            ${isTask ? `
-                            <button class="task-action-btn edit-btn" onclick="taskPlanner.editTask('${item.id}')" title="Editar tarefa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="task-action-btn delete-btn" onclick="taskPlanner.confirmDeleteTask('${item.id}')" title="Excluir tarefa">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            ` : ''}
-                            `
-                        }
-                    </div>
-                </div>
-                ${item.description ? `<p class="task-description">${item.description}</p>` : ''}
-                <div class="task-meta">
-                    <div class="task-datetime">
-                        ${typeTag} ${formattedDate ? `<span><i class="fas fa-calendar"></i> ${formattedDate}</span>` : '<span><i class="fas fa-question-circle"></i> Sem data</span>'}
-                        ${formattedTime ? `<span><i class="fas fa-clock"></i> ${formattedTime}</span>` : ''}
-                    </div>
-                    <span class="task-category">${categoryLabel}</span>
+    return `
+        <div class="task-item ${catClass} ${priorityClass} ${completedClass}" onclick="${
+      isClickable
+        ? `taskPlanner.navigateToItem('${item.type}','${item.id}')`
+        : ""
+    }">
+            <div class="task-header">
+                <span class="task-title">${item.title}</span>
+                <div class="task-actions">
+                    ${checkBtn}
+                    ${editBtn}
                 </div>
             </div>
-        `;
-    }
-    
-    // MODIFICADO: Navegação para Sonhos/Metas/Estudos
-    navigateToItem(type, id) {
-        if (type === 'sonho') {
-            const originalId = id.replace('sonho-', '');
-            // Redireciona para a página de sonhos
-            location.href = `sonhos.html?id=${originalId}`;
-        } else if (type === 'meta') {
-            const originalId = id.replace('meta-', '');
-            console.log(`Navegação para 'meta' id: ${id} (ID original: ${originalId}). Página de destino não definida.`);
-        } else if (type === 'estudo') {
-            // Apenas navega para a página de estudos, que listará os pendentes
-            location.href = 'estudos.html';
-        }
-    }
+            <div class="task-meta">
+                <span class="task-category-tag">${
+                  item.category || "Geral"
+                }</span>
+                <span><i class="far fa-calendar"></i> ${dateStr}</span>
+                ${
+                  item.time
+                    ? `<span><i class="far fa-clock"></i> ${item.time}</span>`
+                    : ""
+                }
+            </div>
+        </div>
+      `;
+  }
 
+  getFilteredTasks() {
+    let list =
+      this.currentFilter === "archived"
+        ? this.loadArchive()
+        : [...this.allItems];
+    const term = this.currentSearchTerm.toLowerCase();
 
-    // MODIFICADO: Agora inclui tarefas arquivadas nas estatísticas
-    updateStats() {
-        // 1. Carrega o arquivo de tarefas
-        const archivedTasks = this.loadArchive();
-        
-        // 2. Combina os itens ativos (this.allItems) com as tarefas arquivadas
-        //    this.allItems já contém tarefas ativas, sonhos, metas e estudos.
-        const allItemsForStats = [...this.allItems, ...archivedTasks];
-
-        // 3. Calcula as estatísticas com base na lista combinada
-        const totalItems = allItemsForStats.length;
-        
-        // Itens pendentes são os de this.allItems que não estão concluídos
-        // (Lembrando: estudos 'completed' são 'atrasados', então contam como pendentes)
-        const pendingItems = this.allItems.filter(item => !item.completed || item.type === 'estudo').length; 
-        
-        // O total de concluídos é o total (ativos + arquivados) - pendentes (só ativos)
-        const completedItems = totalItems - pendingItems; 
-        
-        const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-
-        document.getElementById('total-tasks').textContent = totalItems;
-        document.getElementById('pending-tasks').textContent = pendingItems;
-        document.getElementById('completed-tasks').textContent = completedItems;
-        document.getElementById('completion-rate').textContent = `${completionRate}%`;
+    if (this.currentFilter === "pending")
+      list = list.filter((t) => !t.completed);
+    else if (this.currentFilter === "completed")
+      list = list.filter((t) => t.completed);
+    else if (this.currentFilter === "no-date")
+      list = list.filter((t) => !t.date);
+    else if (
+      ["work", "personal", "health", "study", "financeiro"].includes(
+        this.currentFilter
+      )
+    ) {
+      list = list.filter((t) => t.category === this.currentFilter);
     }
 
-    // ===== MODAL E FORMULÁRIO (sem alterações significativas, pois gerencia apenas tarefas) ===== //
-    openTaskModal(task = null) {
-        const modal = document.getElementById('task-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const form = document.getElementById('task-form');
+    if (term) list = list.filter((t) => t.title.toLowerCase().includes(term));
+    return list;
+  }
 
-        if (task) {
-            modalTitle.textContent = 'Editar Tarefa';
-            this.editingTaskId = task.id;
-            this.populateForm(task);
-        } else {
-            modalTitle.textContent = 'Nova Tarefa';
-            this.editingTaskId = null;
-            form.reset();
-            
-            const dateInput = document.getElementById('task-date');
-            const year = this.selectedDate.getFullYear();
-            const month = (this.selectedDate.getMonth() + 1).toString().padStart(2, '0');
-            const day = this.selectedDate.getDate().toString().padStart(2, '0');
-            dateInput.value = `${year}-${month}-${day}`;
-        }
+  setFilter(filter) {
+    this.currentFilter = filter;
+    this.currentPage = 1;
+    document
+      .querySelectorAll(".filter-btn")
+      .forEach((b) => b.classList.remove("active"));
+    const btn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+    if (btn) btn.classList.add("active");
+    this.renderTasks();
+  }
 
-        modal.classList.add('active');
+  renderTodayColumn() {
+    const container = document.getElementById("today-tasks-list");
+    const dateDisplay = document.getElementById("today-date-display");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    dateDisplay.textContent = today.toLocaleDateString("pt-BR", {
+      weekday: "short",
+      day: "numeric",
+    });
+
+    const todayTasks = this.allItems.filter((t) => {
+      if (!t.date) return false;
+      const d = new Date(t.date + "T00:00:00");
+      return d.getTime() === today.getTime() && !t.completed;
+    });
+
+    container.innerHTML = "";
+    if (todayTasks.length === 0) {
+      container.innerHTML = `<p style="font-size:0.85rem; color:var(--texto-secundario); text-align:center;">Nada para hoje.</p>`;
+      return;
     }
 
-    closeTaskModal() {
-        document.getElementById('task-modal').classList.remove('active');
-        this.editingTaskId = null;
+    todayTasks
+      .slice(0, 5)
+      .forEach((task) => (container.innerHTML += this.createTaskHTML(task)));
+    if (todayTasks.length > 5) {
+      container.innerHTML += `<div style="text-align:center; font-size:0.8rem; color:var(--texto-sutil); margin-top:5px;">+${
+        todayTasks.length - 5
+      } tarefas</div>`;
     }
+  }
 
-    populateForm(task) {
-        document.getElementById('task-title').value = task.title;
-        document.getElementById('task-description').value = task.description || '';
-        document.getElementById('task-date').value = task.date || '';
-        document.getElementById('task-time').value = task.time || '';
-        document.getElementById('task-priority').value = task.priority || '';
-        document.getElementById('task-category').value = task.category;
-        document.getElementById('no-date-checkbox').checked = !task.date;
-        document.getElementById('recurring-checkbox').checked = task.recurring || false;
-        document.getElementById('recurring-type').value = task.recurringType || 'daily';
-        
-        this.toggleDateField();
-        this.toggleRecurringOptions();
-    }
+  // --- ACTIONS ---
+  addTask(data) {
+    const task = {
+      id: Date.now().toString(36),
+      ...data,
+      completed: false,
+      createdAt: new Date(),
+    };
+    this.tasks.push(task);
 
-    handleFormSubmit(event) {
-        event.preventDefault();
-        
-        const noDate = document.getElementById('no-date-checkbox').checked;
-        const recurring = document.getElementById('recurring-checkbox').checked;
-        
-        const formData = {
-            title: document.getElementById('task-title').value.trim(),
-            description: document.getElementById('task-description').value.trim(),
-            date: noDate ? null : document.getElementById('task-date').value,
-            time: document.getElementById('task-time').value,
-            priority: document.getElementById('task-priority').value,
-            category: document.getElementById('task-category').value,
-            recurring: recurring,
-            recurringType: recurring ? document.getElementById('recurring-type').value : null
-        };
+    if (data.recurring && data.date) {
+      let nextDate = new Date(data.date + "T00:00:00");
+      for (let i = 1; i <= 5; i++) {
+        if (data.recurringType === "daily")
+          nextDate.setDate(nextDate.getDate() + 1);
+        if (data.recurringType === "weekly")
+          nextDate.setDate(nextDate.getDate() + 7);
+        if (data.recurringType === "monthly")
+          nextDate.setMonth(nextDate.getMonth() + 1);
 
-        if (!formData.title) {
-            alert('Por favor, preencha o título da tarefa.');
-            return;
-        }
-
-        if (recurring && !formData.date) {
-            alert('Tarefas recorrentes precisam ter uma data inicial.');
-            return;
-        }
-
-        if (this.editingTaskId) {
-            this.updateTask(this.editingTaskId, formData);
-        } else {
-            this.addTask(formData);
-        }
-
-        this.closeTaskModal();
-    }
-
-    toggleDateField() {
-        const noDateCheckbox = document.getElementById('no-date-checkbox');
-        const dateInput = document.getElementById('task-date');
-        const timeInput = document.getElementById('task-time');
-        
-        if (noDateCheckbox.checked) {
-            dateInput.disabled = true;
-            timeInput.disabled = true;
-            dateInput.value = '';
-            timeInput.value = '';
-        } else {
-            dateInput.disabled = false;
-            timeInput.disabled = false;
-        }
-    }
-
-    toggleRecurringOptions() {
-        const recurringCheckbox = document.getElementById('recurring-checkbox');
-        const recurringOptions = document.getElementById('recurring-options');
-        
-        if (recurringCheckbox.checked) {
-            recurringOptions.style.display = 'block';
-        } else {
-            recurringOptions.style.display = 'none';
-        }
-    }
-
-    editTask(id) {
-        const task = this.tasks.find(task => task.id === id);
-        if (task) this.openTaskModal(task);
-    }
-
-    // MODIFICADO: Confirmação mais clara para tarefas recorrentes
-    confirmDeleteTask(id) {
-        const task = this.tasks.find(task => task.id === id);
-        if (task) {
-            let message = `Tem certeza que deseja excluir a tarefa "${task.title}"?`;
-            
-            if (task.recurring) {
-                message = `"${task.title}" é uma tarefa base recorrente.\n\nTem certeza que deseja excluir esta tarefa E TODAS as suas futuras instâncias?`;
-            } else if (task.parentTaskId) {
-                message = `Tem certeza que deseja excluir apenas esta instância da tarefa recorrente "${task.title}"?`;
-            }
-            
-            if (confirm(message)) {
-                this.deleteTask(id);
-            }
-        }
-    }
-
-    // MODIFICADO: Chama as funções de visualização
-    setFilter(filter) {
-        this.currentFilter = filter;
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-
-        if (filter === 'archived') {
-            this.showArchiveView();
-        } else {
-            this.showActiveView();
-        }
-
-        this.renderTasks();
-    }
-
-    // NOVA FUNÇÃO: Esconde elementos da UI para a view de arquivos
-    showArchiveView() {
-        document.getElementById('add-task-btn').style.display = 'none';
-        document.getElementById('archive-tasks-btn').style.display = 'none';
-        document.querySelector('.calendar-section').style.display = 'none';
-        document.querySelector('.stats-section').style.display = 'none';
-    }
-
-    // NOVA FUNÇÃO: Mostra elementos da UI para a view ativa
-    showActiveView() {
-        document.getElementById('add-task-btn').style.display = 'flex';
-        document.getElementById('archive-tasks-btn').style.display = 'flex';
-        document.querySelector('.calendar-section').style.display = 'block';
-        document.querySelector('.stats-section').style.display = 'grid';
-    }
-
-
-    // MODIFICADO: Adiciona listeners para busca e arquivamento
-    bindEvents() {
-        document.getElementById('prev-month').addEventListener('click', () => this.previousMonth());
-        document.getElementById('next-month').addEventListener('click', () => this.nextMonth());
-        document.getElementById('add-task-btn').addEventListener('click', () => this.openTaskModal());
-        document.getElementById('close-modal').addEventListener('click', () => this.closeTaskModal());
-        document.getElementById('cancel-task').addEventListener('click', () => this.closeTaskModal());
-        
-        document.getElementById('task-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'task-modal') this.closeTaskModal();
+        this.tasks.push({
+          ...task,
+          id: task.id + "-" + i,
+          date: nextDate.toISOString().slice(0, 10),
+          parent: task.id,
         });
-        
-        document.getElementById('task-form').addEventListener('submit', (e) => this.handleFormSubmit(e));
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            if (btn.dataset.filter) { // Garante que o botão de arquivar (sem data-filter) não quebre
-                btn.addEventListener('click', () => this.setFilter(btn.dataset.filter));
-            }
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') this.closeTaskModal();
-        });
-
-        document.getElementById('no-date-checkbox').addEventListener('change', () => this.toggleDateField());
-        document.getElementById('recurring-checkbox').addEventListener('change', () => this.toggleRecurringOptions());
-
-        // --- NOVOS EVENTOS ---
-        document.getElementById('archive-tasks-btn').addEventListener('click', () => this.manualArchiveTasks());
-        
-        document.getElementById('task-search').addEventListener('input', (e) => {
-            this.currentSearchTerm = e.target.value.toLowerCase();
-            this.renderTasks();
-        });
+      }
     }
+    this.saveTasks();
+  }
+
+  editTask(id) {
+    const t = this.tasks.find((x) => x.id === id);
+    if (!t) return;
+    this.openTaskModal();
+    document.getElementById("task-title").value = t.title;
+    document.getElementById("task-description").value = t.description || "";
+    document.getElementById("task-date").value = t.date || "";
+    document.getElementById("task-time").value = t.time || "";
+    document.getElementById("task-priority").value = t.priority || "";
+    document.getElementById("task-category").value = t.category || "other";
+    this.editingTaskId = id;
+    document.getElementById("modal-title").textContent = "Editar Tarefa";
+  }
+
+  deleteTask(id) {
+    if (confirm("Excluir tarefa?")) {
+      this.tasks = this.tasks.filter((t) => t.id !== id);
+      this.saveTasks();
+    }
+  }
+
+  // CORE RPG LOGIC ON COMPLETION
+  toggleTaskCompletion(id) {
+    let gainedXP = false;
+    let category = "other";
+
+    if (id.startsWith("sonho-")) {
+      const sid = id.replace("sonho-", "");
+      const s = this.sonhos.find((x) => x.id == sid);
+      if (s) {
+        s.concluido = !s.concluido;
+        if (s.concluido) {
+          gainedXP = true;
+          category = "sonho";
+        }
+        localStorage.setItem("sonhos-objetivos", JSON.stringify(this.sonhos));
+      }
+    } else if (id.startsWith("meta-")) {
+      const mid = id.replace("meta-", "");
+      const m = this.metas.find((x) => x.id == mid);
+      if (m) {
+        m.status = m.status === "concluida" ? "pendente" : "concluida";
+        if (m.status === "concluida") {
+          gainedXP = true;
+          category = "meta";
+        }
+        localStorage.setItem("metas-objetivos", JSON.stringify(this.metas));
+      }
+    } else {
+      const t = this.tasks.find((x) => x.id === id);
+      if (t) {
+        t.completed = !t.completed;
+        t.completedAt = t.completed ? new Date().toISOString() : null;
+        if (t.completed) {
+          gainedXP = true;
+          category = t.category;
+        }
+        this.saveTasks();
+        // Se ganhou XP, processa
+        if(gainedXP && window.rpgSystem) window.rpgSystem.gainXP(category);
+        return;
+      }
+    }
+
+    // Se for sonho/meta externo
+    if (gainedXP) this.rpg.gainXP(category);
+
+    // Recarrega
+    this.sonhos = this.loadSonhos();
+    this.metas = this.loadMetas();
+    this.getAllItems();
+    this.renderTasks();
+    this.renderTodayColumn();
+    this.renderCalendar();
+    this.updateStats();
+  }
+
+  updateStats() {
+    const total = this.allItems.length;
+    const pending = this.allItems.filter((t) => !t.completed).length;
+    const completed = total - pending;
+    const rate = total ? Math.round((completed / total) * 100) : 0;
+
+    document.getElementById("total-tasks").textContent = total;
+    document.getElementById("pending-tasks").textContent = pending;
+    document.getElementById("completed-tasks").textContent = completed;
+    document.getElementById("completion-rate").textContent = rate + "%";
+  }
+
+  // --- MODAL ---
+  openTaskModal() {
+    document.getElementById("task-modal").classList.add("active");
+    document.getElementById("task-form").reset();
+    this.editingTaskId = null;
+    document.getElementById("modal-title").textContent = "Nova Tarefa";
+    if (this.selectedDate) {
+      document.getElementById("task-date").value = this.selectedDate
+        .toISOString()
+        .slice(0, 10);
+    }
+  }
+
+  handleFormSubmit(e) {
+    e.preventDefault();
+    const data = {
+      title: document.getElementById("task-title").value,
+      description: document.getElementById("task-description").value,
+      date: document.getElementById("no-date-checkbox").checked
+        ? null
+        : document.getElementById("task-date").value,
+      time: document.getElementById("task-time").value,
+      priority: document.getElementById("task-priority").value,
+      category: document.getElementById("task-category").value,
+      recurring: document.getElementById("recurring-checkbox").checked,
+      recurringType: document.getElementById("recurring-type").value,
+    };
+
+    if (this.editingTaskId) {
+      const idx = this.tasks.findIndex((t) => t.id === this.editingTaskId);
+      if (idx > -1) {
+        this.tasks[idx] = { ...this.tasks[idx], ...data };
+        this.saveTasks();
+      }
+    } else {
+      this.addTask(data);
+    }
+    document.getElementById("task-modal").classList.remove("active");
+  }
+
+  navigateToItem(type, id) {
+    if (type === "sonho") location.href = "sonhos.html";
+    if (type === "estudo") location.href = "estudos.html";
+  }
+
+  bindEvents() {
+    document.getElementById("prev-month").onclick = () => {
+      this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+      this.renderCalendar();
+    };
+    document.getElementById("next-month").onclick = () => {
+      this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+      this.renderCalendar();
+    };
+
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      if (btn.dataset.filter)
+        btn.onclick = () => this.setFilter(btn.dataset.filter);
+    });
+
+    document.getElementById("task-search").oninput = (e) => {
+      this.currentSearchTerm = e.target.value;
+      this.renderTasks();
+    };
+
+    document.getElementById("add-task-btn").onclick = () =>
+      this.openTaskModal();
+    document.getElementById("close-modal").onclick = () =>
+      document.getElementById("task-modal").classList.remove("active");
+    document.getElementById("cancel-task").onclick = () =>
+      document.getElementById("task-modal").classList.remove("active");
+    document.getElementById("task-form").onsubmit = (e) =>
+      this.handleFormSubmit(e);
+    document.getElementById("archive-tasks-btn").onclick = () =>
+      this.manualArchiveTasks();
+  }
 }
 
 let taskPlanner;
-document.addEventListener('DOMContentLoaded', () => {
-    taskPlanner = new TaskPlanner();
-    if (typeof atualizarSaldoGlobal === 'function') {
-        atualizarSaldoGlobal();
-    }
-});
-
-// MODIFICADO: Listener de storage agora recarrega todos os dados
-window.addEventListener('storage', (event) => {
-    if (event.key === 'financeiro-widget' && typeof atualizarSaldoGlobal === 'function') {
-        atualizarSaldoGlobal();
-    }
-    
-    // Recarrega os dados do planejamento se sonhos, metas, tarefas OU ESTUDOS forem alterados
-    const keysToWatch = [
-        'sonhos-objetivos', 
-        'metas-objetivos', 
-        'sol-de-soter-tasks', 
-        'sol-de-soter-tasks-archive',
-        'studyPlannerTopics' // NOVO
-    ];
-
-    if (keysToWatch.includes(event.key)) {
-        if(taskPlanner) {
-            taskPlanner.tasks = taskPlanner.loadTasks(); // Recarrega tudo
-            taskPlanner.sonhos = taskPlanner.loadSonhos();
-            taskPlanner.metas = taskPlanner.loadMetas();
-            taskPlanner.estudos = taskPlanner.loadEstudos(); // NOVO
-            taskPlanner.getAllItems(); // Reconstrói allItems
-            taskPlanner.renderCalendar();
-            taskPlanner.renderTasks();
-            taskPlanner.updateStats();
-        }
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  taskPlanner = new TaskPlanner();
 });

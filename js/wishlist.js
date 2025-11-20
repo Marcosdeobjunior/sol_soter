@@ -1,6 +1,64 @@
-// js/wishlist.js
+// Lógica de Dropdown aprimorada para todos os menus
+document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
+  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
+  if (toggle) {
+    toggle.addEventListener('click', (event) => {
+      if (event.target.tagName === 'A') return;
+      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
+        if (activeDropdown !== dropdownContainer) {
+          activeDropdown.classList.remove('active');
+        }
+      });
+      dropdownContainer.classList.toggle('active');
+    });
+  }
+});
 
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+      dropdown.classList.remove('active');
+    });
+  }
+});
+
+// Atualiza o saldo
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof atualizarSaldoGlobal === 'function') {
+        atualizarSaldoGlobal();
+    }
+});
+
+window.addEventListener('storage', (event) => {
+    if (event.key === 'financeiro-widget') {
+        if (typeof atualizarSaldoGlobal === 'function') {
+            atualizarSaldoGlobal();
+        }
+    }
+});
+
+// js/wishlist.js
+document.addEventListener('DOMContentLoaded', () => {
+    // --- ELEMENTOS MENU HAMBÚRGUER ---
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const actionButtons = document.getElementById('actionButtons');
+
+    // Toggle do Menu Hambúrguer
+    if (hamburgerBtn && actionButtons) {
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            actionButtons.classList.toggle('show');
+        });
+
+        // Fechar menu ao clicar em uma ação
+        actionButtons.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                actionButtons.classList.remove('show');
+            });
+        });
+    }
+
     // --- ELEMENTOS DOS MODAIS ---
     const modal = document.getElementById('addItemModal');
     const openModalBtn = document.getElementById('openModalBtn');
@@ -31,17 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const filterSelect = document.getElementById('filterSelect');
 
-    // --- CARREGAMENTO DE DADOS DO LOCALSTORAGE ---
+    // --- CARREGAMENTO DE DADOS ---
     let wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
     let purchasedItems = JSON.parse(localStorage.getItem('purchasedItems')) || [];
     let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 
     // --- LÓGICA DO BADGE DO CARRINHO ---
     const updateCartBadge = () => {
-        // A contagem de itens únicos é simplesmente o tamanho do array 'cartItems'
         const uniqueItemCount = cartItems.length;
         cartItemCountBadge.textContent = uniqueItemCount;
-
         if (uniqueItemCount === 0) {
             cartItemCountBadge.classList.add('hidden');
         } else {
@@ -84,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = 0;
 
         if (cartItems.length === 0) {
-            cartGrid.innerHTML = `<p style="text-align: center; color: #666;">Seu carrinho está vazio.</p>`;
+            cartGrid.innerHTML = `<p style="text-align: center; color: var(--texto-secundario);">Seu carrinho está vazio.</p>`;
         } else {
             cartItems.forEach((item, index) => {
                 const itemElement = document.createElement('div');
@@ -93,8 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 total += subtotal;
 
                 itemElement.innerHTML = `
-                    <div class="cart-item-image">
-                        <img src="${item.image || 'img/placeholder.png'}" alt="${item.name}" onerror="this.onerror=null;this.src='img/placeholder.png';">
+                    <div class="cart-item-image" style="display:none;"> <img src="${item.image || 'img/placeholder.png'}" alt="${item.name}">
                     </div>
                     <div class="cart-item-info">
                         <h5>${item.name}</h5>
@@ -119,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPurchaseHistory = () => {
         purchaseHistoryGrid.innerHTML = '';
         if (purchasedItems.length === 0) {
-            purchaseHistoryGrid.innerHTML = `<p style="text-align: center; color: #666; grid-column: 1 / -1;">Seu histórico de compras está vazio.</p>`;
+            purchaseHistoryGrid.innerHTML = `<p style="text-align: center; color: var(--texto-secundario); grid-column: 1 / -1;">Seu histórico de compras está vazio.</p>`;
         } else {
             purchasedItems.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
             purchasedItems.forEach(item => {
@@ -146,9 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // --- RENDERIZAÇÃO DA WISHLIST (CATÁLOGO COM ESTOQUE) ---
+    // --- RENDERIZAÇÃO DA WISHLIST ---
     const renderWishlist = () => {
-        // ... (lógica de busca e filtro continua a mesma)
         const searchTerm = searchInput.value.toLowerCase();
         let filteredItems = wishlistItems.filter(item => item.name.toLowerCase().includes(searchTerm));
         const filterValue = filterSelect.value;
@@ -167,12 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         wishlistGrid.innerHTML = '';
         if (filteredItems.length === 0) {
-            wishlistGrid.innerHTML = `<p style="text-align: center; color: #666; grid-column: 1 / -1;">Nenhum item encontrado.</p>`;
+            wishlistGrid.innerHTML = `<p style="text-align: center; color: var(--texto-secundario); grid-column: 1 / -1;">Nenhum item encontrado.</p>`;
         } else {
             filteredItems.forEach((item, itemIndex) => {
                 const itemElement = document.createElement('div');
                 itemElement.classList.add('wishlist-item');
-                // Desabilita o botão se o estoque for 0
+                
                 const isOutOfStock = item.quantity <= 0;
                 const disabledAttribute = isOutOfStock ? 'disabled' : '';
                 const buttonText = isOutOfStock ? 'Sem Estoque' : 'Adicionar ao Carrinho';
@@ -197,13 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ADICIONAR NOVO ITEM (COM QUANTIDADE) ---
+    // --- ADICIONAR NOVO ITEM ---
     addItemForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const newItem = {
             name: document.getElementById('itemName').value,
             price: document.getElementById('itemPrice').value,
-            quantity: parseInt(document.getElementById('itemQuantity').value, 10), // Captura a quantidade
+            quantity: parseInt(document.getElementById('itemQuantity').value, 10),
             image: document.getElementById('itemImage').value,
             link: document.getElementById('itemLink').value,
             priority: document.getElementById('itemPriority').value
@@ -219,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- EVENTOS DA WISHLIST (COM CONTROLE DE ESTOQUE) ---
+    // --- EVENTOS DA WISHLIST ---
     wishlistGrid.addEventListener('click', (e) => {
         const target = e.target;
         const index = parseInt(target.getAttribute('data-index'), 10);
@@ -246,13 +300,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveData();
                 renderCart();
+                // Feedback visual opcional: abrir carrinho
+                // shoppingCartModal.classList.add('active'); 
             } else {
                 alert('Você não pode adicionar mais deste item. Limite de estoque atingido no carrinho.');
             }
         }
     });
     
-    // --- EVENTOS DO CARRINHO (COM CONTROLE DE ESTOQUE) ---
+    // --- EVENTOS DO CARRINHO ---
     cartGrid.addEventListener('click', (e) => {
         const target = e.target;
         const index = parseInt(target.getAttribute('data-index'), 10);
@@ -281,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCart();
     });
 
-    // --- ESVAZIAR CARRINHO (NÃO EXCLUI ITENS) ---
     clearCartBtn.addEventListener('click', () => {
         if (cartItems.length > 0 && confirm('Tem certeza que deseja esvaziar o carrinho? Os itens não serão excluídos da sua lista.')) {
             cartItems = [];
@@ -290,12 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- FINALIZAR COMPRA (DEDUZ DO ESTOQUE) ---
     checkoutBtn.addEventListener('click', () => {
         if (cartItems.length > 0 && confirm(`Deseja finalizar a compra no valor de ${cartTotalElement.textContent}?`)) {
             const now = new Date().toISOString();
     
-            // Deduz a quantidade do estoque da wishlist
             cartItems.forEach(cartItem => {
                 const wishlistItem = wishlistItems.find(item => item.name === cartItem.name);
                 if (wishlistItem) {
@@ -305,10 +358,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
             const purchased = cartItems.map(item => ({...item, purchaseDate: now }));
             purchasedItems.push(...purchased);
-            cartItems = []; // Esvazia o carrinho
+            cartItems = [];
             
             saveData();
-            renderAll(); // Atualiza todas as exibições
+            renderAll();
             shoppingCartModal.classList.remove('active');
             alert('Compra realizada com sucesso!');
         } else if (cartItems.length === 0) {
@@ -316,10 +369,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- EVENTOS DOS FILTROS ---
     searchInput.addEventListener('input', renderWishlist);
     filterSelect.addEventListener('change', renderWishlist);
 
-    // Renderiza tudo na inicialização
     renderAll();
 });

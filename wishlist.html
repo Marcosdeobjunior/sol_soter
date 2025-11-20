@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minha Wishlist - Sol de Sóter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/financas.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style_viagens.css">
-  <link rel="stylesheet" href="css/wishlist.css"> </head>
-  <link rel="stylesheet" href="css/notificacoes.css">
-  <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
-<body>
-  <header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Sol de Sóter</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <link
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
+    />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/wishlist.css" />
+    <link rel="stylesheet" href="css/notificacoes.css" />
+  </head>
+  <body>
+    <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
           <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
@@ -95,20 +111,115 @@
             </ul>
           </div>
         </div>
+
+        <div class="saldo-display">
+          <span class="saldo-header-label">Saldo Atual</span>
+          <div id="saldo-do-dia">R$ 0,00</div>
+        </div>
+
         <div class="dropdown profile-dropdown">
-          <div class="profile">
-            <span>Marcos</span>
-            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+          <div class="profile rpg-profile-trigger">
+            <div class="profile-info">
+              <span class="profile-name">Marcos</span>
+              <div class="rpg-mini-bar-container" title="Progresso Geral">
+                <div
+                  class="rpg-mini-bar-fill"
+                  id="header-xp-bar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="profile-avatar-wrapper">
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <span class="level-badge" id="header-level-badge">1</span>
+            </div>
           </div>
-          <ul class="dropdown-menu profile-menu">
-            <li class="saldo-menu-item">
-              <div id="saldo-header">
-                <span class="saldo-header-label">Saldo Atual</span>
-                <div id="saldo-do-dia">R$ 0,00</div>
+
+          <ul class="dropdown-menu profile-menu rpg-extended-menu">
+            <li class="rpg-stats-panel">
+              <div class="rpg-stat-row">
+                <span class="stat-icon strength"
+                  ><i class="fas fa-dumbbell"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill strength-fill"
+                      id="bar-str"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon intelligence"
+                  ><i class="fas fa-brain"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Intelecto (Lvl <span id="lvl-int">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill intelligence-fill"
+                      id="bar-int"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon wisdom"
+                  ><i class="fas fa-scroll"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Sabedoria (Lvl <span id="lvl-wis">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill wisdom-fill"
+                      id="bar-wis"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon productivity"
+                  ><i class="fas fa-briefcase"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Produtividade (Lvl <span id="lvl-prod">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill productivity-fill"
+                      id="bar-prod"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
               </div>
             </li>
+            <li class="divider"></li>
+
             <li>
-              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+              <a href="#" class="corinthians-item">
+                <img
+                  src="img/Corinthians_simbolo.png"
+                  alt="Escudo do Corinthians"
+                  class="corinthians-shield"
+                />
+                Corinthians
+              </a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
             </li>
             <li>
               <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
@@ -118,106 +229,157 @@
       </div>
     </header>
 
-  <main>
-    <div class="wishlist-container">
-      <h2>Minha Lista de Desejos</h2>
+    <main>
+      <div class="wishlist-container">
+        <h2>Minha Lista de Desejos</h2>
 
-      <div class="controls-container">
-        <div class="search-wrapper">
-          <input type="search" id="searchInput" placeholder="Pesquisar por nome...">
-          <i class="fas fa-search search-icon"></i>
+        <div class="controls-container">
+          <div class="search-wrapper">
+            <input
+              type="search"
+              id="searchInput"
+              placeholder="Pesquisar por nome..."
+            />
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <div class="filter-wrapper">
+            <select id="filterSelect">
+              <option value="default">Ordenar por...</option>
+              <option value="priority">Prioridade</option>
+              <option value="price-desc">Maior Valor</option>
+              <option value="price-asc">Menor Valor</option>
+              <option value="name-asc">A a Z</option>
+              <option value="name-desc">Z a A</option>
+            </select>
+          </div>
         </div>
-        <div class="filter-wrapper">
-          <select id="filterSelect">
-            <option value="default">Ordenar por...</option>
-            <option value="priority">Prioridade</option>
-            <option value="price-desc">Maior Valor</option>
-            <option value="price-asc">Menor Valor</option>
-            <option value="name-asc">A a Z</option>
-            <option value="name-desc">Z a A</option>
-          </select>
+
+        <div id="wishlistGrid" class="wishlist-grid"></div>
+      </div>
+
+      <div class="hamburger-menu">
+        <div class="action-buttons" id="actionButtons">
+          <div class="action-btn-wrapper">
+            <span class="action-label">Novo Item</span>
+            <button id="openModalBtn" class="action-btn" title="Adicionar Novo Item">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+          <div class="action-btn-wrapper">
+            <span class="action-label">Carrinho</span>
+            <button id="shoppingCartBtn" class="action-btn" title="Carrinho de Compras">
+              <i class="fas fa-shopping-cart"></i>
+              <span id="cartItemCount" class="cart-badge hidden">0</span>
+            </button>
+          </div>
+
+          <div class="action-btn-wrapper">
+            <span class="action-label">Histórico</span>
+            <button id="openHistoryModalBtn" class="action-btn" title="Ver Histórico de Compras">
+              <i class="fas fa-history"></i>
+            </button>
+          </div>
+        </div>
+        <button id="hamburgerBtn" class="hamburger-btn">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+
+      <div id="addItemModal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn">&times;</span>
+          <div class="add-item-form">
+            <h3>Adicionar Novo Item</h3>
+            <p>
+              Preencha os dados abaixo para adicionar um novo produto à sua
+              lista de desejos.
+            </p>
+            <form id="addItemForm">
+              <input
+                type="text"
+                id="itemName"
+                placeholder="Nome do Produto"
+                required
+              />
+              <input
+                type="number"
+                id="itemPrice"
+                placeholder="Preço (R$)"
+                step="0.01"
+                required
+              />
+              <input
+                type="number"
+                id="itemQuantity"
+                placeholder="Quantidade em Estoque"
+                min="1"
+                value="1"
+                required
+              />
+              <input type="url" id="itemImage" placeholder="URL da Imagem" />
+              <input
+                type="url"
+                id="itemLink"
+                placeholder="Link do Produto (Opcional)"
+              />
+
+              <select id="itemPriority" required>
+                <option value="" disabled selected>
+                  Selecione a prioridade
+                </option>
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+                <option value="urgente">Urgente</option>
+              </select>
+
+              <button type="submit" class="btn-add-item">
+                Adicionar à Lista
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
-      <div id="wishlistGrid" class="wishlist-grid">
+      <div id="historyModal" class="modal">
+        <div class="modal-content history-modal-content">
+          <span class="close-btn">&times;</span>
+          <h2>Histórico de Compras</h2>
+          <div id="purchaseHistoryGrid" class="purchase-history-grid"></div>
         </div>
-    </div>
-  </main>
-
-  <button id="openHistoryModalBtn" class="floating-btn floating-btn-left" title="Ver Histórico de Compras">
-    <i class="fas fa-history"></i>
-  </button>
-
-  <div class="floating-btn-container-right">
-      <button id="shoppingCartBtn" class="floating-btn" title="Carrinho de Compras">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cartItemCount" class="cart-badge hidden">0</span>
-      </button>
-      <button id="openModalBtn" class="floating-btn" title="Adicionar Novo Item">+</button>
-  </div>
-
-
-  <div id="addItemModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn">&times;</span>
-      <div class="add-item-form">
-        <h3>Adicionar Novo Item</h3>
-        <p>Preencha os dados abaixo para adicionar um novo produto à sua lista de desejos.</p>
-        <form id="addItemForm">
-          <input type="text" id="itemName" placeholder="Nome do Produto" required>
-          <input type="number" id="itemPrice" placeholder="Preço (R$)" step="0.01" required>
-          <input type="number" id="itemQuantity" placeholder="Quantidade em Estoque" min="1" value="1" required>
-          <input type="url" id="itemImage" placeholder="URL da Imagem">
-          <input type="url" id="itemLink" placeholder="Link do Produto (Opcional)">
-
-          <select id="itemPriority" required>
-            <option value="" disabled selected>Selecione a prioridade</option>
-            <option value="baixa">Baixa</option>
-            <option value="media">Média</option>
-            <option value="alta">Alta</option>
-            <option value="urgente">Urgente</option>
-          </select>
-
-          <button type="submit" class="btn-add-item">Adicionar à Lista</button>
-        </form>
       </div>
-    </div>
-  </div>
 
-  <div id="historyModal" class="modal">
-    <div class="modal-content history-modal-content">
-      <span class="close-btn">&times;</span>
-      <h2>Histórico de Compras</h2>
-      <div id="purchaseHistoryGrid" class="purchase-history-grid">
+      <div id="shoppingCartModal" class="modal">
+        <div class="modal-content cart-modal-content">
+          <span class="close-btn">&times;</span>
+          <h2>Carrinho de Compras</h2>
+          <div id="cartGrid" class="cart-grid"></div>
+          <div class="cart-summary">
+            <p class="cart-total-text">
+              Total: <span id="cartTotal">R$ 0,00</span>
+            </p>
+            <div class="cart-actions-buttons">
+              <button id="checkoutBtn" class="btn-checkout">
+                Finalizar Compra
+              </button>
+              <button id="clearCartBtn" class="btn-clear-cart">
+                Esvaziar Carrinho
+              </button>
+            </div>
           </div>
-    </div>
-  </div>
-
-  <div id="shoppingCartModal" class="modal">
-    <div class="modal-content cart-modal-content">
-      <span class="close-btn">&times;</span>
-      <h2>Carrinho de Compras</h2>
-      <div id="cartGrid" class="cart-grid">
-          </div>
-      <div class="cart-summary">
-          <p class="cart-total-text">Total: <span id="cartTotal">R$ 0,00</span></p>
-          <div class="cart-actions-buttons">
-              <button id="checkoutBtn" class="btn-checkout">Finalizar Compra</button>
-              <button id="clearCartBtn" class="btn-clear-cart">Esvaziar Carrinho</button>
-          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </main>
 
+    <footer>
+      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+    </footer>
 
-  <footer>
-    <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
-  </footer>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/saldo-global.js"></script>
-  <script src="js/script.js"></script>
-  <script src="js/script_viagens.js"></script>
-  <script src="js/wishlist.js"></script> </body>
-  <script src="js/notificacoes.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/saldo-global.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/rpg.js"></script>
+  </body>
 </html>

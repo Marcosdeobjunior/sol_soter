@@ -14,14 +14,26 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
 
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
-    <link href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.1/dist/cal-heatmap.min.css" />
+    <link
+      href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/@yaireo/tagify/dist/tagify.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.1/dist/cal-heatmap.min.css"
+    />
 
+    <link
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
+    />
 
-    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
-
-    <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/diario.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
   </head>
@@ -35,7 +47,7 @@
       </div>
 
       <div class="menu-profile">
-       <nav class="navbar">
+        <nav class="navbar">
           <ul class="nav-menu">
             <li class="dropdown">
               <div class="dropdown-header">
@@ -109,20 +121,114 @@
           </div>
         </div>
 
+        <div class="saldo-display">
+          <span class="saldo-header-label">Saldo Atual</span>
+          <div id="saldo-do-dia">R$ 0,00</div>
+        </div>
+
         <div class="dropdown profile-dropdown">
-          <div class="profile">
-            <span>Marcos</span>
-            <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+          <div class="profile rpg-profile-trigger">
+            <div class="profile-info">
+              <span class="profile-name">Marcos</span>
+              <div class="rpg-mini-bar-container" title="Progresso Geral">
+                <div
+                  class="rpg-mini-bar-fill"
+                  id="header-xp-bar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="profile-avatar-wrapper">
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <span class="level-badge" id="header-level-badge">1</span>
+            </div>
           </div>
-          <ul class="dropdown-menu profile-menu">
-            <li class="saldo-menu-item">
-              <div id="saldo-header">
-                <span class="saldo-header-label">Saldo Atual</span>
-                <div id="saldo-do-dia">R$ 0,00</div>
+
+          <ul class="dropdown-menu profile-menu rpg-extended-menu">
+            <li class="rpg-stats-panel">
+              <div class="rpg-stat-row">
+                <span class="stat-icon strength"
+                  ><i class="fas fa-dumbbell"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill strength-fill"
+                      id="bar-str"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon intelligence"
+                  ><i class="fas fa-brain"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Intelecto (Lvl <span id="lvl-int">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill intelligence-fill"
+                      id="bar-int"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon wisdom"
+                  ><i class="fas fa-scroll"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Sabedoria (Lvl <span id="lvl-wis">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill wisdom-fill"
+                      id="bar-wis"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon productivity"
+                  ><i class="fas fa-briefcase"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Produtividade (Lvl <span id="lvl-prod">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill productivity-fill"
+                      id="bar-prod"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
               </div>
             </li>
+            <li class="divider"></li>
+
             <li>
-              <a href="#"><i class="fas fa-cog"></i> Configurações</a>
+              <a href="#" class="corinthians-item">
+                <img
+                  src="img/Corinthians_simbolo.png"
+                  alt="Escudo do Corinthians"
+                  class="corinthians-shield"
+                />
+                Corinthians
+              </a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
             </li>
             <li>
               <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
@@ -141,137 +247,14 @@
       </div>
 
       <div class="diario-content">
-        <section class="entrada-form-section">
-          <div class="form-container">
-            <h2>Nova Entrada</h2>
-            <form id="diario-form">
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="diario-titulo">Título</label>
-                  <input
-                    type="text"
-                    id="diario-titulo"
-                    placeholder="Título da entrada..."
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="diario-data">Data</label>
-                  <input type="date" id="diario-data" required />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label>Templates (Opcional)</label>
-                <div class="template-actions">
-                  <button type="button" class="btn-template" data-template="gratidao">
-                    <i class="fas fa-pray"></i> Gratidão
-                  </button>
-                  <button type="button" class="btn-template" data-template="sonho">
-                    <i class="fas fa-moon"></i> Sonho
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="diario-conteudo">Conteúdo</label>
-                <div id="diario-conteudo-editor" style="height: 250px;"></div>
-                <textarea id="diario-conteudo" style="display:none;" required></textarea>
-              </div>
-
-              <div class="form-group">
-                <label for="diario-imagens">Anexar Imagens (Opcional)</label>
-                <input
-                  type="file"
-                  id="diario-imagens-input"
-                  class="file-input"
-                  accept="image/*"
-                  multiple
-                />
-                <label for="diario-imagens-input" class="file-input-label">
-                  <i class="fas fa-paperclip"></i> Escolher imagens...
-                </label>
-                <div id="diario-imagens-preview" class="imagens-preview"></div>
-              </div>
-
-              <div class="form-group">
-                <label for="diario-tags">Tags</label>
-                <input
-                  type="text"
-                  id="diario-tags"
-                  placeholder="Tags separadas por vírgula..."
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Como você está se sentindo hoje?</label>
-                <div id="diario-humor-selector" class="humor-selector">
-                  <button
-                    type="button"
-                    class="humor-btn"
-                    data-humor="feliz"
-                    title="Feliz"
-                  >
-                    <i class="fas fa-smile-beam"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="humor-btn"
-                    data-humor="normal"
-                    title="Normal"
-                  >
-                    <i class="fas fa-smile"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="humor-btn"
-                    data-humor="neutro"
-                    title="Neutro"
-                  >
-                    <i class="fas fa-meh"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="humor-btn"
-                    data-humor="triste"
-                    title="Triste"
-                  >
-                    <i class="fas fa-sad-tear"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="humor-btn"
-                    data-humor="irritado"
-                    title="Irritado"
-                  >
-                    <i class="fas fa-angry"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" id="salvar-entrada" class="btn-primary">
-                  <i class="fas fa-save"></i> Salvar Entrada
-                </button>
-                <button
-                  type="button"
-                  id="cancelar-edicao"
-                  class="btn-secondary"
-                  style="display: none"
-                >
-                  <i class="fas fa-times"></i> Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-        
-        <section id="recordacoes-section" class="recordacoes-section" style="display: none;">
+        <section
+          id="recordacoes-section"
+          class="recordacoes-section"
+          style="display: none"
+        >
           <h2><i class="fas fa-history"></i> Recordações deste Dia...</h2>
-          <div id="recordacoes-lista" class="recordacoes-grid">
-            </div>
+          <div id="recordacoes-lista" class="recordacoes-grid"></div>
         </section>
-
 
         <section class="busca-section">
           <div class="busca-container">
@@ -298,24 +281,57 @@
               <div class="busca-group-filtros">
                 <label>Filtros Rápidos</label>
                 <div class="filtro-rapido-container">
-                  <div id="filtro-humor-container" class="filtro-humor-container">
-                    <button type="button" class="btn-filter-humor" data-humor="feliz" title="Feliz">
+                  <div
+                    id="filtro-humor-container"
+                    class="filtro-humor-container"
+                  >
+                    <button
+                      type="button"
+                      class="btn-filter-humor"
+                      data-humor="feliz"
+                      title="Feliz"
+                    >
                       <i class="fas fa-smile-beam"></i>
                     </button>
-                    <button type="button" class="btn-filter-humor" data-humor="normal" title="Normal">
+                    <button
+                      type="button"
+                      class="btn-filter-humor"
+                      data-humor="normal"
+                      title="Normal"
+                    >
                       <i class="fas fa-smile"></i>
                     </button>
-                    <button type="button" class="btn-filter-humor" data-humor="neutro" title="Neutro">
+                    <button
+                      type="button"
+                      class="btn-filter-humor"
+                      data-humor="neutro"
+                      title="Neutro"
+                    >
                       <i class="fas fa-meh"></i>
                     </button>
-                    <button type="button" class="btn-filter-humor" data-humor="triste" title="Triste">
+                    <button
+                      type="button"
+                      class="btn-filter-humor"
+                      data-humor="triste"
+                      title="Triste"
+                    >
                       <i class="fas fa-sad-tear"></i>
                     </button>
-                    <button type="button" class="btn-filter-humor" data-humor="irritado" title="Irritado">
+                    <button
+                      type="button"
+                      class="btn-filter-humor"
+                      data-humor="irritado"
+                      title="Irritado"
+                    >
                       <i class="fas fa-angry"></i>
                     </button>
                   </div>
-                  <button type="button" id="filtro-favorito-btn" class="btn-filter-favorito" title="Favoritos">
+                  <button
+                    type="button"
+                    id="filtro-favorito-btn"
+                    class="btn-filter-favorito"
+                    title="Favoritos"
+                  >
                     <i class="fas fa-star"></i>
                   </button>
                 </div>
@@ -326,16 +342,12 @@
 
         <section class="entradas-section">
           <div class="entradas-header">
-            <h2>Minhas Entradas</h2>
+            <h2>Linha do Tempo</h2>
             <div class="entradas-actions">
               <div class="entradas-count">
-                <span id="total-entradas">0 entradas</span>
+                <span id="total-entradas">0 momentos</span>
               </div>
-              <button
-                id="stats-btn"
-                class="btn-stats"
-                title="Ver estatísticas"
-              >
+              <button id="stats-btn" class="btn-stats" title="Ver estatísticas">
                 <i class="fas fa-chart-pie"></i> Stats
               </button>
               <button
@@ -345,29 +357,14 @@
               >
                 <i class="fas fa-clock"></i> Lembrete
               </button>
-              <button
-                id="import-entradas"
-                class="btn-import"
-                title="Importar entradas de um arquivo JSON"
-              >
-                <i class="fas fa-upload"></i> Importar
-              </button>
-              <input
-                type="file"
-                id="import-file-input"
-                accept=".json"
-                style="display: none"
-              />
-              <button
-                id="download-entradas"
-                class="btn-download"
-                title="Baixar todas as entradas"
-              >
-                <i class="fas fa-download"></i> Download
-              </button>
             </div>
           </div>
-          <div id="lista-entradas" class="entradas-grid"></div>
+
+          <!-- Mudança aqui: Container para Timeline -->
+          <div id="lista-entradas" class="timeline-container"></div>
+
+          <div id="paginacao-container" class="paginacao-container"></div>
+
           <div id="sem-entradas" class="empty-state" style="display: none">
             <i class="fas fa-book-open"></i>
             <h3>Nenhuma entrada encontrada</h3>
@@ -377,12 +374,170 @@
       </div>
     </main>
 
-    <div id="leitura-modal" class="modal-overlay" style="display: none;">
+    <button id="fab-nova-entrada" class="fab-btn" title="Nova Entrada">
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <div
+      id="form-modal"
+      class="modal-overlay full-screen-modal"
+      style="display: none"
+    >
+      <div class="modal-container full-screen-container">
+        <div class="modal-header">
+          <h2>
+            <i class="fas fa-pen-fancy"></i>
+            <span id="form-modal-title">Nova Entrada</span>
+          </h2>
+          <div class="header-actions">
+            <div class="template-actions">
+              <button
+                type="button"
+                class="btn-template"
+                data-template="gratidao"
+              >
+                <i class="fas fa-pray"></i> Gratidão
+              </button>
+              <button type="button" class="btn-template" data-template="sonho">
+                <i class="fas fa-moon"></i> Sonho
+              </button>
+            </div>
+            <button id="fechar-form-modal" class="modal-close-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-body form-modal-body">
+          <form id="diario-form" class="full-screen-form">
+            <div class="form-top-row">
+              <div class="form-group title-group">
+                <label for="diario-titulo">Título</label>
+                <input
+                  type="text"
+                  id="diario-titulo"
+                  placeholder="Sobre o que vamos escrever hoje?"
+                  required
+                />
+              </div>
+              <div class="form-group date-group">
+                <label for="diario-data">Data</label>
+                <input type="date" id="diario-data" required />
+              </div>
+            </div>
+
+            <div class="form-group editor-group">
+              <div id="diario-conteudo-editor"></div>
+              <textarea
+                id="diario-conteudo"
+                style="display: none"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-bottom-row">
+              <div class="form-column">
+                <div class="form-group">
+                  <label for="diario-tags">Tags</label>
+                  <input
+                    type="text"
+                    id="diario-tags"
+                    placeholder="Tags (ex: reflexão, trabalho)..."
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Imagens</label>
+                  <div class="upload-wrapper">
+                    <input
+                      type="file"
+                      id="diario-imagens-input"
+                      class="file-input"
+                      accept="image/*"
+                      multiple
+                    />
+                    <label for="diario-imagens-input" class="file-input-label"
+                      ><i class="fas fa-paperclip"></i> Anexar</label
+                    >
+                    <div
+                      id="diario-imagens-preview"
+                      class="imagens-preview"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-column">
+                <div class="form-group">
+                  <label>Humor</label>
+                  <div id="diario-humor-selector" class="humor-selector">
+                    <button
+                      type="button"
+                      class="humor-btn"
+                      data-humor="feliz"
+                      title="Feliz"
+                    >
+                      <i class="fas fa-smile-beam"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="humor-btn"
+                      data-humor="normal"
+                      title="Normal"
+                    >
+                      <i class="fas fa-smile"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="humor-btn"
+                      data-humor="neutro"
+                      title="Neutro"
+                    >
+                      <i class="fas fa-meh"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="humor-btn"
+                      data-humor="triste"
+                      title="Triste"
+                    >
+                      <i class="fas fa-sad-tear"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="humor-btn"
+                      data-humor="irritado"
+                      title="Irritado"
+                    >
+                      <i class="fas fa-angry"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="form-actions-modal">
+                  <button
+                    type="submit"
+                    id="salvar-entrada"
+                    class="btn-primary btn-lg"
+                  >
+                    <i class="fas fa-save"></i> Salvar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="leitura-modal" class="modal-overlay" style="display: none">
       <div class="modal-container">
         <div class="modal-header">
           <h3 id="leitura-titulo"></h3>
           <div>
-            <button id="leitura-export-pdf-btn" class="btn-pdf" title="Exportar para PDF">
+            <button
+              id="leitura-export-pdf-btn"
+              class="btn-pdf"
+              title="Exportar para PDF"
+            >
               <i class="fas fa-file-pdf"></i>
             </button>
             <button id="leitura-fechar" class="modal-close-btn">&times;</button>
@@ -395,14 +550,14 @@
           </div>
           <div id="leitura-imagens" class="leitura-imagens-container"></div>
           <div id="leitura-conteudo" class="leitura-conteudo ql-snow">
-             <div class="ql-editor"></div>
+            <div class="ql-editor"></div>
           </div>
           <div id="leitura-tags" class="leitura-tags-container"></div>
         </div>
       </div>
     </div>
 
-    <div id="stats-modal" class="modal-overlay" style="display: none;">
+    <div id="stats-modal" class="modal-overlay" style="display: none">
       <div class="modal-container">
         <div class="modal-header">
           <h3><i class="fas fa-chart-pie"></i> Estatísticas do Diário</h3>
@@ -413,7 +568,7 @@
             <div class="stats-card">
               <h4>Distribuição de Humor</h4>
               <div class="chart-container">
-                  <canvas id="humor-chart"></canvas>
+                <canvas id="humor-chart"></canvas>
               </div>
             </div>
             <div class="stats-card">
@@ -427,11 +582,8 @@
       </div>
     </div>
 
+    <footer><p>© 2025 Sol de Sóter. Todos os direitos reservados.</p></footer>
 
-    <footer>
-      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
-    </footer>
-    
     <div id="pin-lock-overlay">
       <div class="pin-lock-container">
         <div class="pin-lock-logo">
@@ -440,21 +592,19 @@
         </div>
         <p id="pin-message">Digite seu PIN de 4 dígitos</p>
         <div id="pin-display">
-          <span class="pin-dot"></span>
-          <span class="pin-dot"></span>
-          <span class="pin-dot"></span>
-          <span class="pin-dot"></span>
+          <span class="pin-dot"></span><span class="pin-dot"></span
+          ><span class="pin-dot"></span><span class="pin-dot"></span>
         </div>
         <div id="pin-keypad" class="pin-keypad">
-          <button class="pin-key" data-key="1">1</button>
-          <button class="pin-key" data-key="2">2</button>
-          <button class="pin-key" data-key="3">3</button>
-          <button class="pin-key" data-key="4">4</button>
-          <button class="pin-key" data-key="5">5</button>
-          <button class="pin-key" data-key="6">6</button>
-          <button class="pin-key" data-key="7">7</button>
-          <button class="pin-key" data-key="8">8</button>
-          <button class="pin-key" data-key="9">9</button>
+          <button class="pin-key" data-key="1">1</button
+          ><button class="pin-key" data-key="2">2</button
+          ><button class="pin-key" data-key="3">3</button>
+          <button class="pin-key" data-key="4">4</button
+          ><button class="pin-key" data-key="5">5</button
+          ><button class="pin-key" data-key="6">6</button>
+          <button class="pin-key" data-key="7">7</button
+          ><button class="pin-key" data-key="8">8</button
+          ><button class="pin-key" data-key="9">9</button>
           <button class="pin-key pin-key-util" data-key="clear">
             <i class="fas fa-backspace"></i>
           </button>
@@ -466,21 +616,16 @@
       </div>
     </div>
 
-
     <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script>
     <script src="js/notificacoes.js"></script>
-
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script src="https://unpkg.com/@yaireo/tagify"></script>
-    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.1/dist/cal-heatmap.min.js"></script>
-
     <script src="js/diario.js"></script>
+    <script src="js/rpg.js"></script>
   </body>
 </html>

@@ -1,59 +1,645 @@
+/* ===== PALETA DE CORES (CSS Variables) ===== */
+:root {
+  --fundo-base: #181818;
+  --fundo-superficie: #282828;
+  --fundo-overlay: #3a3a3a;
+  --fundo-hover: #454545;
+
+  --texto-principal: #e0e0e0;
+  --texto-secundario: #a0a0a0;
+  --texto-sutil: #707070;
+  --borda: #3a3a3a;
+
+  --acento-azul: #89b4fa;
+  --acento-amarelo: #f9e2af;
+  --acento-verde: #a6e3a1;
+  --acento-vermelho: #f38ba8;
+  --acento-roxo: #cba6f7;
+  --acento-laranja: #fab387;
+
+  /* Cores de Categoria */
+  --cat-trabalho: #89b4fa; /* Azul */
+  --cat-pessoal: #a6e3a1; /* Verde */
+  --cat-saude: #f38ba8; /* Vermelho/Rosa */
+  --cat-estudo: #cba6f7; /* Roxo */
+  --cat-financeiro: #f9e2af; /* Amarelo */
+  --cat-outros: #a6adc8; /* Cinza */
+
+  /* Cores RPG (Atributos) */
+  --rpg-str: #f38ba8; /* Força (Red) */
+  --rpg-int: #89b4fa; /* Intelecto (Blue) */
+  --rpg-wis: #f9e2af; /* Sabedoria (Yellow) */
+  --rpg-prod: #a6e3a1; /* Produtividade (Green) */
+
+  --sombra-header: 0 3px 10px rgba(0, 0, 0, 0.4);
+  --sombra-card: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--fundo-base);
+  color: var(--texto-principal);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: var(--fundo-superficie);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  box-shadow: var(--sombra-header);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-container a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-container img {
+  height: 42px;
+  width: 42px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--borda);
+}
+.logo-container h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--acento-amarelo);
+  letter-spacing: 1px;
+}
+
+/* MENU & DROPDOWN */
+.menu-profile {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+.navbar {
+  margin-right: 10px;
+}
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+.nav-menu a {
+  color: var(--texto-principal);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+.nav-menu a:hover {
+  background: var(--fundo-overlay);
+  color: var(--acento-azul);
+}
+
+/* Dropdowns */
+.dropdown {
+  position: relative;
+}
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.dropdown-toggle {
+  background: none;
+  border: none;
+  color: var(--texto-secundario);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 5px;
+  transition: color 0.3s;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: var(--fundo-superficie);
+  border-radius: 6px;
+  box-shadow: var(--sombra-header);
+  min-width: 170px;
+  padding: 8px 0;
+  list-style: none;
+  border: 1px solid var(--borda);
+  z-index: 200;
+}
+.dropdown-menu li a {
+  padding: 10px 15px;
+  display: block;
+  transition: background 0.2s;
+  color: var(--texto-principal);
+}
+.dropdown-menu li a:hover {
+  background: var(--fundo-overlay);
+  color: var(--acento-amarelo);
+}
+.dropdown.active > .dropdown-menu {
+  display: block;
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.profile-dropdown .dropdown-menu {
+  left: auto;
+  right: 0;
+  width: 250px; /* Mais largo para os stats RPG */
+}
+
+/* Notification & Saldo */
+.saldo-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 5px;
+}
+.saldo-display .saldo-header-label {
+  font-size: 0.8rem;
+  color: var(--texto-secundario);
+  line-height: 1.1;
+}
+.saldo-display #saldo-do-dia {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--acento-amarelo);
+  line-height: 1.1;
+}
+.notification-bell i {
+  color: var(--texto-secundario);
+  transition: color 0.2s;
+}
+.notification-bell:hover i {
+  color: var(--acento-azul);
+}
+
+/* ===== PROFILE HEADER COM RPG ===== */
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  background: var(--fundo-overlay);
+  padding: 6px 14px;
+  border-radius: 30px; /* Arredondado */
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  position: relative;
+}
+.profile:hover {
+  background: var(--fundo-hover);
+  border-color: var(--acento-azul);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.profile-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-principal);
+  line-height: 1.2;
+}
+
+/* Mini Barra XP no Header */
+.rpg-mini-bar-container {
+  width: 60px;
+  height: 4px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.rpg-mini-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--acento-azul), var(--acento-roxo));
+  transition: width 0.5s ease;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+}
+.profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--acento-azul);
+}
+
+/* Level Badge */
+.level-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -5px;
+  background: var(--acento-amarelo);
+  color: #121212;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--fundo-base);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* MENU RPG EXPANDIDO */
+.rpg-stats-panel {
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--borda);
+}
+.rpg-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.rpg-stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.stat-icon {
+  width: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.stat-icon.strength {
+  color: var(--rpg-str);
+}
+.stat-icon.intelligence {
+  color: var(--rpg-int);
+}
+.stat-icon.wisdom {
+  color: var(--rpg-wis);
+}
+.stat-icon.productivity {
+  color: var(--rpg-prod);
+}
+
+.stat-details {
+  flex: 1;
+}
+.stat-name {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--texto-secundario);
+  margin-bottom: 3px;
+}
+.stat-name span {
+  color: var(--texto-principal);
+  font-weight: 600;
+}
+
+.stat-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #222;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s;
+}
+.strength-fill {
+  background: var(--rpg-str);
+}
+.intelligence-fill {
+  background: var(--rpg-int);
+}
+.wisdom-fill {
+  background: var(--rpg-wis);
+}
+.productivity-fill {
+  background: var(--rpg-prod);
+}
+
+.divider {
+  height: 1px;
+  background: var(--borda);
+  margin: 5px 0;
+}
+
+.profile-menu .corinthians-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.profile-menu .corinthians-shield {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* ===== RPG TOAST NOTIFICATIONS ===== */
+.rpg-toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none; /* Permite clicar através */
+}
+
+.rpg-toast {
+  background: var(--fundo-superficie);
+  border-left: 4px solid var(--acento-azul);
+  color: var(--texto-principal);
+  padding: 12px 20px;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+    toastOut 0.4s ease 4s forwards;
+  min-width: 200px;
+  border: 1px solid var(--borda);
+}
+
+.rpg-toast i {
+  font-size: 1.2rem;
+}
+.rpg-toast-xp {
+  color: var(--acento-amarelo);
+  font-weight: 700;
+}
+
+.toast-levelup {
+  border-left-color: var(--acento-amarelo);
+  background: #333;
+}
+.toast-str {
+  border-left-color: var(--rpg-str);
+}
+.toast-int {
+  border-left-color: var(--rpg-int);
+}
+.toast-wis {
+  border-left-color: var(--rpg-wis);
+}
+.toast-prod {
+  border-left-color: var(--rpg-prod);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+}
+
+/* Footer */
+footer {
+  background: var(--fundo-superficie);
+  color: var(--texto-sutil);
+  text-align: center;
+  padding: 18px;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--borda);
+  margin-top: auto;
+}
+
+/* ===== MEDIA QUERIES (Responsividade) ===== */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 20px;
+    }
+    .logo-container h1 {
+        font-size: 1.2rem;
+    }
+    .nav-menu {
+        gap: 10px;
+    }
+    .nav-menu a {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+    .profile span {
+        display: none;
+    }
+    .profile img {
+        width: 32px;
+        height: 32px;
+    }
+    /* Esconde o saldo em telas menores para focar na navegação */
+    .saldo-display {
+        display: none; 
+    }
+    /* ... (restante do seu media query) ... */
+}
+
+@media (max-width: 480px) {
+    header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    .menu-profile {
+        width: 100%;
+        justify-content: space-around;
+        gap: 10px;
+    }
+    .navbar {
+        margin-right: 0;
+    }
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .dropdown-menu {
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: unset;
+      width: 150px;
+    }
+    /* ... (restante do seu media query) ... */
+}
+
+/* ===== MEDIA QUERIES HEADER (Manter) ===== */
+@media (max-width: 768px) {
+  header {
+    padding: 15px 20px;
+  }
+  .logo-container h1 {
+    font-size: 1.2rem;
+  }
+  .nav-menu {
+    gap: 10px;
+  }
+  .nav-menu a {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  .profile span {
+    display: none;
+  }
+  .profile img {
+    width: 32px;
+    height: 32px;
+  }
+  .saldo-display {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  .menu-profile {
+    width: 100%;
+    justify-content: space-around;
+    gap: 10px;
+  }
+  .navbar {
+    margin-right: 0;
+  }
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .dropdown-menu {
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: unset;
+    width: 150px;
+  }
+}
+
+/* =============================================
+   PÁGINA DE PLANEJAMENTO DE VIAGENS
+   ============================================= */
+
 /* Estilos para a página de planejamento de viagens */
 #travel-planner {
-  padding: 20px;
+  padding: 40px 20px; /* Mantido padding vertical, horizontal reduzido se necessário */
   width: 100%;
   margin: 0;
-  background: transparent;
+  background: var(--fundo-base); 
   border-radius: 0;
   box-shadow: none;
 }
 
 #travel-planner h2 {
-  color: #007bff; /* Cor similar aos links do menu */
+  color: var(--acento-azul);
   text-align: center;
   margin-bottom: 30px;
 }
 
-/* Layout principal - mapa à esquerda, cards à direita */
+/* Layout principal - Ajustado para ocupar largura total */
 .planner-layout {
   display: flex;
-  gap: 20px;
+  gap: 25px;
   min-height: 600px;
   width: 100%;
+  /* ALTERAÇÃO: Mudado de 1600px para 100% para ocupar as laterais */
+  max-width: 100%; 
+  /* Padding lateral pequeno para não colar na borda da tela */
+  padding: 0 10px;
+  margin: 0 auto;
 }
 
 /* Seção do mapa - canto superior esquerdo */
 .map-section {
-  flex: 0 0 400px;
+  /* ALTERAÇÃO: Aumentado de 350px para 550px */
+  flex: 0 0 550px; 
   min-height: 650px;
+  background: var(--fundo-superficie);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--borda);
+  box-shadow: var(--sombra-card);
 }
 
 /* Seção dos cards - lado direito */
 .cards-section {
   flex: 1;
   min-height: 650px;
+  background: var(--fundo-superficie);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--borda);
+  box-shadow: var(--sombra-card);
 }
 
 /* Estilos do mapa */
 #map-container {
   padding: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   background: transparent;
   height: 100%;
 }
 
 #map-container h3 {
-  color: #007bff; /* Cor similar aos links do menu */
+  color: var(--texto-principal);
   text-align: center;
   margin-bottom: 20px;
+  font-size: 1.4rem;
 }
 
 #map {
   height: 650px;
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--borda);
 }
 
 /* Container dos cards */
@@ -66,50 +652,61 @@
 }
 
 #travel-cards-container h3 {
-  color: #007bff; /* Cor similar aos links do menu */
+  color: var(--texto-principal);
   text-align: center;
   margin-bottom: 20px;
+  font-size: 1.4rem;
 }
 
-/* Grid de cards 3x5 */
+/* Grid de cards */
 #travel-cards {
   display: grid;
+  /* Grid manterá 3 colunas, mas agora se espalhará pela largura total */
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  gap: 20px;
+  /* Align items stretch é padrão no grid, mas reforça altura igual */
+  align-items: stretch;
 }
 
 /* Estilos dos cards */
 .travel-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--fundo-overlay);
   border-radius: 12px;
   padding: 20px;
-  color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  color: var(--texto-principal);
+  box-shadow: var(--sombra-card);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: auto;
+  /* ALTERAÇÃO: Altura fixa para garantir uniformidade visual no grid */
+  height: 100%;
+  /* Aumentado min-height para padronizar cards com pouco conteúdo */
+  min-height: 280px; 
   cursor: pointer;
+  border: 1px solid var(--borda);
 }
 
 .travel-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  border-color: var(--acento-azul);
 }
 
 .travel-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(137, 180, 250, 0.1);
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .travel-card:hover::before {
@@ -121,95 +718,121 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 .travel-card h4 {
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.2em;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: var(--texto-principal);
   line-height: 1.2;
 }
 
 .travel-card-icon {
-  font-size: 1.2em;
-  opacity: 0.8;
+  font-size: 1.5em;
+  color: var(--acento-amarelo);
+  opacity: 1;
 }
 
 .travel-card-details {
   margin-bottom: 10px;
   flex: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .travel-card-details p {
-  margin: 3px 0;
-  font-size: 0.8em;
-  opacity: 0.9;
+  margin: 5px 0;
+  font-size: 0.9em;
+  opacity: 1;
+  color: var(--texto-secundario);
   display: flex;
   align-items: center;
-  gap: 5px;
-  line-height: 1.2;
+  gap: 8px;
+  line-height: 1.4;
 }
 
 .travel-card-details i {
-  width: 12px;
+  width: 16px;
   text-align: center;
-  font-size: 0.9em;
+  font-size: 1em;
+  color: var(--acento-azul);
 }
 
 .travel-card-budget {
-  font-size: 1em;
+  font-size: 1.1em;
   font-weight: 600;
   text-align: center;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 5px;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  background: var(--translucido-bg);
+  color: var(--acento-amarelo);
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid var(--borda);
+  position: relative;
+  z-index: 2;
 }
 
 .travel-card-actions {
   display: flex;
-  gap: 5px;
-  justify-content: center;
+  gap: 10px;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 2;
+  margin-top: auto; /* Garante que fique sempre no rodapé do card */
 }
 
 .travel-card-actions button {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 5px 10px;
-  border-radius: 15px;
+  background: var(--translucido-bg);
+  color: var(--texto-principal);
+  border: 1px solid var(--borda-clara);
+  padding: 6px 15px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.75em;
+  font-size: 0.85em;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
 
 .travel-card-actions button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--translucido-hover);
   transform: scale(1.05);
 }
 
-.travel-card-actions button.delete {
-  background: rgba(220, 53, 69, 0.8);
-  border-color: rgba(220, 53, 69, 1);
+.travel-card-actions button.edit {
+  color: var(--texto-invertido);
+  background: var(--acento-azul);
+  border-color: var(--acento-azul);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+.travel-card-actions button.edit:hover {
+  background: #6aa0f8;
+}
+
+.travel-card-actions button.delete {
+  background: var(--cor-perigo);
+  color: var(--texto-invertido);
+  border-color: var(--cor-perigo);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
 .travel-card-actions button.delete:hover {
-  background: rgba(220, 53, 69, 1);
-  border-color: rgba(255, 255, 255, 0.8);
+  background: #c0392b;
+  border-color: #c0392b;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5);
 }
 
 /* Categoria "Desejo" */
 .travel-card.wish-category .travel-card-header h4:after {
-    content: " (Desejo)";
-    font-size: 0.8em;
-    font-weight: 400;
-    opacity: 0.8;
+  content: " (Desejo)";
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--texto-secundario);
+  opacity: 1;
 }
 
 /* Controles de paginação */
@@ -218,39 +841,49 @@
   justify-content: center;
   align-items: center;
   gap: 20px;
-  margin-top: 20px;
+  margin-top: 30px;
   padding: 15px;
+  background: var(--fundo-superficie);
+  border-radius: 12px;
 }
 
 .pagination-btn {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--acento-azul);
+  color: var(--texto-invertido);
   border: none;
   padding: 10px 15px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9em;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
 .pagination-btn:hover {
-  background-color: #0056b3;
+  background-color: #6aa0f8;
+  transform: translateY(-2px);
 }
 
 .pagination-btn:disabled {
-  background-color: #ccc;
+  background-color: var(--fundo-overlay);
+  color: var(--texto-sutil);
   cursor: not-allowed;
+  transform: none;
 }
 
 #page-info {
   font-weight: 600;
-  color: #007bff; /* Cor similar aos links do menu */
+  color: var(--texto-principal);
+  background: var(--translucido-bg);
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--borda);
 }
 
-/* Menu hambúrguer */
+/* Menu hambúrguer (Floating Action Button - FAB) */
 .hamburger-menu {
   position: fixed;
   bottom: 30px;
@@ -265,9 +898,9 @@
   border: none;
   cursor: pointer;
   font-size: 1.5em;
-  color: white;
-  background: linear-gradient(135deg, #6c757d, #495057);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: var(--texto-invertido);
+  background: var(--acento-azul);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -276,15 +909,16 @@
 
 .hamburger-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background: #6aa0f8;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .hamburger-btn.active {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  transform: rotate(90deg);
+  background: var(--cor-perigo);
+  transform: rotate(45deg);
 }
 
-/* Botões de ação que aparecem quando o hambúrguer é clicado */
+/* Botões de ação */
 .action-buttons {
   position: absolute;
   bottom: 80px;
@@ -295,23 +929,24 @@
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
+  pointer-events: none;
 }
 
 .action-buttons.show {
   opacity: 1;
   transform: translateY(0);
-  display: flex;
+  pointer-events: auto;
 }
 
 .action-btn {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  font-size: 1.5em;
-  color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-size: 1.2em;
+  color: var(--texto-invertido);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -320,55 +955,57 @@
 
 .action-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: var(--cor-sucesso);
 }
 
 .data-btn {
-  background: linear-gradient(135deg, #17a2b8, #007bff);
+  background: var(--acento-azul);
 }
 
-/* Estilos dos popups */
+/* Estilos dos popups (Modais) */
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  backdrop-filter: blur(5px);
 }
 
 .popup-content {
-  background: white;
+  background: var(--fundo-superficie);
   border-radius: 12px;
   padding: 0;
-  max-width: 500px;
+  max-width: 550px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--borda);
 }
 
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-  background: #f8f9fa;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--borda);
+  background: var(--fundo-overlay);
   border-radius: 12px 12px 0 0;
 }
 
 .popup-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--texto-principal);
 }
 
 .close-popup {
@@ -376,40 +1013,53 @@
   border: none;
   font-size: 1.5em;
   cursor: pointer;
-  color: #666;
+  color: var(--texto-secundario);
   padding: 5px;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
 
 .close-popup:hover {
-  background: #e9ecef;
-  color: #333;
+  background: var(--translucido-hover);
+  color: var(--cor-perigo);
 }
 
 /* Estilos do formulário no popup */
 #travel-form {
-  padding: 20px;
+  padding: 25px;
 }
 
 #travel-form label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 600;
-  color: #555;
+  font-weight: 500;
+  color: var(--texto-principal);
 }
 
 #travel-form input[type="text"],
 #travel-form input[type="date"],
 #travel-form input[type="number"],
-#travel-form select { /* ATUALIZADO */
+#travel-form select,
+#travel-form textarea {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--borda);
   border-radius: 6px;
   box-sizing: border-box;
   font-size: 1em;
+  background: var(--translucido-bg);
+  color: var(--texto-principal);
+  transition: all 0.3s ease;
+}
+
+#travel-form input:focus,
+#travel-form select:focus,
+#travel-form textarea:focus {
+  outline: none;
+  border-color: var(--acento-azul);
+  box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+  background-color: var(--translucido-hover);
 }
 
 .popup-actions {
@@ -417,6 +1067,8 @@
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--borda);
 }
 
 .popup-actions button {
@@ -425,40 +1077,41 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 1em;
+  font-weight: 600;
   transition: all 0.3s ease;
+  color: var(--texto-invertido);
 }
 
 .popup-actions button[type="submit"] {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--acento-azul);
 }
 
 .popup-actions button[type="submit"]:hover {
-  background-color: #0056b3;
+  background-color: #6aa0f8;
 }
 
 .cancel-btn {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--fundo-overlay);
+  color: var(--texto-principal);
+  border: 1px solid var(--borda);
 }
 
 .cancel-btn:hover {
-  background-color: #545b62;
+  background-color: var(--fundo-hover);
 }
 
 .delete-btn {
-    background-color: #dc3545;
-    color: white;
-    display: none; /* Ocultar por padrão, será exibido no modo de edição */
+  background-color: var(--cor-perigo);
+  display: none;
 }
 
 .delete-btn:hover {
-    background-color: #c82333;
+  background-color: #c0392b;
 }
 
 /* Opções de gerenciamento de dados */
 .data-management-options {
-  padding: 20px;
+  padding: 25px;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -469,95 +1122,98 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  border: 2px solid #e9ecef;
+  border: 2px solid var(--borda);
   border-radius: 8px;
-  background: white;
+  background: var(--fundo-overlay);
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
 }
 
 .data-option-btn:hover {
-  border-color: #007bff;
-  background: #f8f9fa;
+  border-color: var(--acento-azul);
+  background: var(--fundo-hover);
 }
 
 .data-option-btn i {
   font-size: 2em;
   margin-bottom: 10px;
-  color: #007bff;
+  color: var(--acento-azul);
 }
 
 .data-option-btn span {
   font-weight: 600;
-  color: #333;
+  color: var(--texto-principal);
   margin-bottom: 5px;
 }
 
 .data-option-btn small {
-  color: #666;
+  color: var(--texto-secundario);
   font-size: 0.9em;
 }
 
 .export-btn i {
-  color: #28a745;
+  color: var(--cor-sucesso);
 }
 
 .import-btn i {
-  color: #17a2b8;
+  color: var(--acento-azul);
 }
 
 /* Estado vazio */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #666;
+  padding: 60px 20px;
+  color: var(--texto-secundario);
   grid-column: 1 / -1;
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: var(--fundo-overlay);
+  border-radius: 8px;
 }
 
 .empty-state i {
   font-size: 3em;
   margin-bottom: 15px;
-  opacity: 0.5;
+  color: var(--acento-azul);
+  opacity: 0.8;
 }
 
 .empty-state h4 {
   margin: 0 0 10px 0;
-  font-size: 1.2em;
-  color: #007bff; /* Cor similar aos links do menu */
+  font-size: 1.4em;
+  color: var(--texto-principal);
 }
 
 .empty-state p {
   margin: 0;
-  font-size: 0.9em;
-  opacity: 0.8;
-  color: #007bff; /* Cor similar aos links do menu */
+  font-size: 1em;
+  opacity: 0.9;
+  color: var(--texto-secundario);
 }
 
 /* Responsividade */
 @media (max-width: 1200px) {
   .planner-layout {
     flex-direction: column;
+    gap: 30px;
   }
-  
-  .map-section {
-    flex: none;
-  }
-  
+
+  .map-section,
   .cards-section {
     flex: none;
+    width: 100%;
+    padding: 20px;
   }
-  
+
   #travel-cards {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(6, 1fr);
+    gap: 20px;
   }
-  
+
   #map {
     height: 400px;
   }
@@ -565,41 +1221,52 @@
 
 @media (max-width: 768px) {
   #travel-planner {
-    padding: 15px;
+    padding: 20px 15px;
   }
-  
+
   .planner-layout {
-    gap: 15px;
+    gap: 20px;
   }
-  
+
   #travel-cards {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(5, 1fr);
-    height: auto;
+    gap: 15px;
   }
-  
+
   .travel-card {
-    height: auto;
+    min-height: auto;
   }
-  
+
   #map {
     height: 300px;
   }
-  
+
   .hamburger-menu {
     bottom: 20px;
     right: 20px;
   }
-  
-  .hamburger-btn,
+
+  .hamburger-btn {
+    width: 55px;
+    height: 55px;
+    font-size: 1.3em;
+  }
+
   .action-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2em;
+    width: 45px;
+    height: 45px;
+    font-size: 1em;
+  }
+  .action-buttons {
+    bottom: 70px;
+  }
+
+  .popup-header h3 {
+    font-size: 1.2rem;
   }
 }
 
-/* Animações */
+/* Animações (Mantidas) */
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -668,7 +1335,6 @@
 .action-buttons.show .action-btn:nth-child(1) {
   animation-delay: 0.1s;
 }
-
 .action-buttons.show .action-btn:nth-child(2) {
   animation-delay: 0.2s;
 }

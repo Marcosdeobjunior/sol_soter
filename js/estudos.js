@@ -32,7 +32,7 @@ document.addEventListener('click', e => {
 });
 
 
-// --- ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
+// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
 document.addEventListener('DOMContentLoaded', () => {
     // Chama a função do script global para mostrar o saldo
     if (typeof atualizarSaldoGlobal === 'function') {
@@ -45,12 +45,6 @@ window.addEventListener('storage', (event) => {
     if (event.key === 'financeiro-widget') {
         if (typeof atualizarSaldoGlobal === 'function') {
             atualizarSaldoGlobal();
-        }
-    }
-    // Recarrega os estudos se o storage for alterado por outra aba
-    if (event.key === 'studyPlannerTopics') {
-        if (typeof renderPlanner === 'function') { // Garante que a função exista
-            renderPlanner();
         }
     }
 });
