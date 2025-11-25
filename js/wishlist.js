@@ -202,6 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- RENDERIZAÇÃO DA WISHLIST ---
+    const orderKey = 'wishlist-order-wishlist-v1';
+    const loadOrder = () => { try { return JSON.parse(localStorage.getItem(orderKey) || '[]'); } catch { return []; } };
+    const saveOrder = (keys) => localStorage.setItem(orderKey, JSON.stringify(keys));
+    const sortPrefKey = 'wishlist-sort-pref-v1';
+    const loadSortPref = () => { try { return localStorage.getItem(sortPrefKey) || 'default'; } catch { return 'default'; } };
+    const saveSortPref = (val) => { try { localStorage.setItem(sortPrefKey, val); } catch {} };
+    const announce = (msg) => { const el = document.getElementById('sr-live'); if (el) el.textContent = msg; };
+
     const renderWishlist = () => {
         const searchTerm = searchInput.value.toLowerCase();
         let filteredItems = wishlistItems.filter(item => item.name.toLowerCase().includes(searchTerm));
@@ -219,6 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+        // Reorganiza pela ordenação personalizada APENAS quando estiver na opção padrão
+        const savedOrder = loadOrder();
+        if (filterValue === 'default' && savedOrder.length) {
+            const byKey = new Map(filteredItems.map(it => [it.name, it]));
+            const inOrder = savedOrder.filter(k => byKey.has(k)).map(k => byKey.get(k));
+            const notInOrder = filteredItems.filter(it => !savedOrder.includes(it.name));
+            filteredItems = [...inOrder, ...notInOrder];
+        }
         wishlistGrid.innerHTML = '';
         if (filteredItems.length === 0) {
             wishlistGrid.innerHTML = `<p style="text-align: center; color: var(--texto-secundario); grid-column: 1 / -1;">Nenhum item encontrado.</p>`;
@@ -226,6 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredItems.forEach((item, itemIndex) => {
                 const itemElement = document.createElement('div');
                 itemElement.classList.add('wishlist-item');
+                itemElement.setAttribute('draggable', 'true');
+                itemElement.setAttribute('data-key', item.name);
+                itemElement.setAttribute('aria-label', 'Item da wishlist');
                 
                 const isOutOfStock = item.quantity <= 0;
                 const disabledAttribute = isOutOfStock ? 'disabled' : '';
@@ -248,6 +267,109 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 wishlistGrid.appendChild(itemElement);
             });
+            // Drag & Drop nativo
+            let dragEl = null;
+            let lastTarget = null;
+            wishlistGrid.setAttribute('aria-dropeffect', 'move');
+            wishlistGrid.addEventListener('dragstart', (e) => {
+                const card = e.target.closest('.wishlist-item');
+                if (!card) return;
+                dragEl = card;
+                card.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', card.dataset.key || 'drag');
+            });
+            wishlistGrid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const target = e.target.closest('.wishlist-item');
+                if (!dragEl || !target || target === dragEl) return;
+                if (lastTarget && lastTarget !== target) lastTarget.classList.remove('drop-target');
+                target.classList.add('drop-target');
+                lastTarget = target;
+                const rect = target.getBoundingClientRect();
+                const insertBefore = e.clientX < rect.left + rect.width / 2;
+                wishlistGrid.insertBefore(dragEl, insertBefore ? target : target.nextSibling);
+            });
+            const persistOrder = () => {
+                const keys = [...wishlistGrid.querySelectorAll('.wishlist-item')].map(el => el.dataset.key);
+                saveOrder(keys);
+                announce('Ordem atualizada.');
+            };
+            wishlistGrid.addEventListener('drop', (e) => { e.preventDefault(); if (lastTarget) lastTarget.classList.remove('drop-target'); if (dragEl) { dragEl.classList.remove('dragging'); dragEl.classList.add('drop-confirm'); setTimeout(()=>dragEl && dragEl.classList.remove('drop-confirm'), 260); } persistOrder(); renderWishlist(); });
+            wishlistGrid.addEventListener('dragend', () => { if (lastTarget) lastTarget.classList.remove('drop-target'); if (dragEl) { dragEl.classList.remove('dragging'); dragEl.classList.add('drop-confirm'); setTimeout(()=>dragEl && dragEl.classList.remove('drop-confirm'), 260); } dragEl = null; persistOrder(); renderWishlist(); });
+
+            const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            const supportsDnD = 'draggable' in document.createElement('div');
+            if (coarse || !supportsDnD) setupPointerDnD();
+
+            function setupPointerDnD() {
+                let proxy = null, ph = null, startX = 0, startY = 0;
+                wishlistGrid.addEventListener('pointerdown', onPointerDown, { passive: true });
+                function onPointerDown(ev) {
+                    const card = ev.target.closest('.wishlist-item');
+                    if (!card) return;
+                    dragEl = card;
+                    const rect = card.getBoundingClientRect();
+                    ph = document.createElement('div');
+                    ph.className = 'drop-placeholder';
+                    ph.style.height = rect.height + 'px';
+                    card.parentNode.insertBefore(ph, card.nextSibling);
+                    card.classList.add('dragging');
+                    card.style.visibility = 'hidden';
+                    proxy = card.cloneNode(true);
+                    proxy.classList.add('drag-proxy');
+                    document.body.appendChild(proxy);
+                    startX = ev.clientX - rect.left;
+                    startY = ev.clientY - rect.top;
+                    moveProxy(ev.clientX, ev.clientY);
+                    document.addEventListener('pointermove', onPointerMove, { passive: true });
+                    document.addEventListener('pointerup', onPointerUp, { passive: true });
+                }
+                function moveProxy(x, y) {
+                    proxy.style.transform = `translate3d(${x - startX}px, ${y - startY}px, 0) scale(1.03)`;
+                }
+                function onPointerMove(ev) {
+                    if (!proxy || !dragEl) return;
+                    moveProxy(ev.clientX, ev.clientY);
+                    const cards = [...wishlistGrid.querySelectorAll('.wishlist-item')].filter(el => el !== dragEl);
+                    let best = null, bestDist = Infinity;
+                    for (const el of cards) {
+                        const r = el.getBoundingClientRect();
+                        const cx = r.left + r.width / 2;
+                        const cy = r.top + r.height / 2;
+                        const dx = ev.clientX - cx;
+                        const dy = ev.clientY - cy;
+                        const d = dx*dx + dy*dy;
+                        if (d < bestDist) { bestDist = d; best = el; }
+                    }
+                    if (best) {
+                        if (lastTarget && lastTarget !== best) lastTarget.classList.remove('drop-target');
+                        best.classList.add('drop-target');
+                        lastTarget = best;
+                        const r = best.getBoundingClientRect();
+                        const before = ev.clientX < r.left + r.width / 2;
+                        wishlistGrid.insertBefore(ph, before ? best : best.nextSibling);
+                    }
+                }
+                function onPointerUp() {
+                    document.removeEventListener('pointermove', onPointerMove);
+                    document.removeEventListener('pointerup', onPointerUp);
+                    if (lastTarget) lastTarget.classList.remove('drop-target');
+                    if (ph && ph.parentNode) ph.parentNode.insertBefore(dragEl, ph);
+                    if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
+                    if (proxy && proxy.parentNode) proxy.parentNode.removeChild(proxy);
+                    if (dragEl) {
+                        dragEl.style.visibility = '';
+                        dragEl.classList.remove('dragging');
+                        dragEl.classList.add('drop-confirm');
+                        setTimeout(()=>dragEl && dragEl.classList.remove('drop-confirm'), 260);
+                    }
+                    persistOrder();
+                    renderWishlist();
+                    dragEl = null; proxy = null; ph = null;
+                }
+            }
         }
     };
 
@@ -370,7 +492,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     searchInput.addEventListener('input', renderWishlist);
-    filterSelect.addEventListener('change', renderWishlist);
+    // Persistir preferência ao trocar ordenação
+    filterSelect.addEventListener('change', () => { saveSortPref(filterSelect.value); renderWishlist(); });
+
+    // Aplicar preferência ao abrir a página
+    const initialSort = loadSortPref();
+    if (filterSelect && initialSort) {
+        filterSelect.value = initialSort;
+    }
 
     renderAll();
 });
