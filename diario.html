@@ -347,6 +347,9 @@
               <div class="entradas-count">
                 <span id="total-entradas">0 momentos</span>
               </div>
+              <select id="mes-selector" class="mes-selector" title="Filtrar por mês">
+                <option value="">Todos os meses</option>
+              </select>
               <button id="stats-btn" class="btn-stats" title="Ver estatísticas">
                 <i class="fas fa-chart-pie"></i> Stats
               </button>
@@ -357,11 +360,14 @@
               >
                 <i class="fas fa-clock"></i> Lembrete
               </button>
+              <button id="modo-compacto-btn" class="btn-stats" title="Modo compacto">
+                <i class="fas fa-compress"></i> Compacto
+              </button>
             </div>
           </div>
 
           <!-- Mudança aqui: Container para Timeline -->
-          <div id="lista-entradas" class="timeline-container"></div>
+          <div id="lista-entradas" class="lista-container"></div>
 
           <div id="paginacao-container" class="paginacao-container"></div>
 
@@ -625,7 +631,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.1/dist/cal-heatmap.min.js"></script>
-    <script src="js/diario.js"></script>
     <script src="js/rpg.js"></script>
+    <script src="js/diario.js"></script>
   </body>
 </html>

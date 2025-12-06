@@ -1,53 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
-document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
-  // O gatilho pode ser o cabeçalho do dropdown ou o perfil
-  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
-
-  if (toggle) {
-    toggle.addEventListener('click', (event) => {
-      // Impede que o clique no link dentro do dropdown feche o menu imediatamente
-      if (event.target.tagName === 'A') return;
-
-      // Fecha outros menus abertos
-      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
-        if (activeDropdown !== dropdownContainer) {
-          activeDropdown.classList.remove('active');
-        }
-      });
-
-      // Abre/fecha o menu atual
-      dropdownContainer.classList.toggle('active');
-    });
-  }
-});
-
-// Fecha todos os dropdowns ao clicar fora
-document.addEventListener('click', e => {
-  // Se o clique não foi dentro de um dropdown, fecha todos
-  if (!e.target.closest('.dropdown')) {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  }
-});
-
-
-// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Chama a função do script global para mostrar o saldo
-    if (typeof atualizarSaldoGlobal === 'function') {
-        atualizarSaldoGlobal();
-    }
-});
-
-// Opcional: Atualiza o saldo na index.html se outra aba alterar os dados
-window.addEventListener('storage', (event) => {
-    if (event.key === 'financeiro-widget') {
-        if (typeof atualizarSaldoGlobal === 'function') {
-            atualizarSaldoGlobal();
-        }
-    }
-});
+ 
 
 // ===== GERENCIAMENTO AVANÇADO DE SONHOS E OBJETIVOS =====
 
@@ -105,6 +56,11 @@ class SonhosManager {
         this.inicializarCharts();
         this.verificarNotificacoes();
         this.iniciarVerificacaoPeriodicaNotificacoes();
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'sol-de-soter-rpg') {
+                this.renderizarGamificacao();
+            }
+        });
     }
 
     // ===== GERENCIAMENTO DE DADOS =====
@@ -1332,16 +1288,11 @@ class SonhosManager {
     // ===== SISTEMA DE GAMIFICAÇÃO =====
     adicionarXP(quantidade, motivo) {
         this.gamificacao.xp += quantidade;
-        
-        // Verificar se subiu de nível
         const nivelAnterior = this.gamificacao.nivel;
         const novoNivel = this.calcularNivel(this.gamificacao.xp);
-        
         if (novoNivel > nivelAnterior) {
             this.gamificacao.nivel = novoNivel;
             this.mostrarNotificacao(`🎉 Parabéns! Você subiu para o nível ${novoNivel}!`, 'sucesso');
-            
-            // Adicionar conquista de nível
             this.adicionarConquista({
                 tipo: 'nivel',
                 titulo: `Nível ${novoNivel} Alcançado!`,
@@ -1350,11 +1301,15 @@ class SonhosManager {
                 icone: 'trophy'
             });
         }
-        
-        // Atualizar sequência de dias
         this.atualizarSequenciaDias();
-        
         this.salvarGamificacao();
+        if (window.rpgSystem && typeof window.rpgSystem.gainCustomXP === 'function') {
+            let tipo = 'general';
+            const m = (motivo || '').toLowerCase();
+            if (m.includes('meta')) tipo = 'meta';
+            else if (m.includes('sonho')) tipo = 'sonho';
+            window.rpgSystem.gainCustomXP(quantidade, tipo);
+        }
     }
 
     calcularNivel(xp) {
@@ -1486,10 +1441,7 @@ class SonhosManager {
     }
 
     renderizarGamificacao() {
-        // Segurança: garante que gamificacao está normalizada antes de renderizar
         this.normalizarGamificacao();
-
-        // Atualizar informações de nível
         const nivelBadgeEl = document.getElementById('nivel-badge');
         const xpAtualEl = document.getElementById('xp-atual');
         const xpProximoEl = document.getElementById('xp-proximo');
@@ -1498,23 +1450,137 @@ class SonhosManager {
         const pontosMetasEl = document.getElementById('pontos-metas');
         const sequenciaDiasEl = document.getElementById('sequencia-dias');
 
-        if (nivelBadgeEl) nivelBadgeEl.textContent = this.gamificacao.nivel;
-        if (xpAtualEl) xpAtualEl.textContent = this.gamificacao.xp;
-        
-        const xpProximoNivel = this.calcularXPProximoNivel(this.gamificacao.nivel);
-        if (xpProximoEl) xpProximoEl.textContent = xpProximoNivel;
-        
-        const xpAtualNivel = this.gamificacao.xp - ((this.gamificacao.nivel - 1) * 100);
-        const porcentagemXP = (xpAtualNivel / 100) * 100;
+        let rpgLevel = this.gamificacao.nivel;
+        let rpgXP = this.gamificacao.xp;
+        let rpgNext = this.calcularXPProximoNivel(this.gamificacao.nivel);
+        if (window.rpgSystem && window.rpgSystem.data) {
+            rpgLevel = window.rpgSystem.data.level;
+            rpgXP = window.rpgSystem.data.xp;
+            rpgNext = window.rpgSystem.data.xpToNextLevel;
+        }
+
+        if (nivelBadgeEl) nivelBadgeEl.textContent = rpgLevel;
+        if (xpAtualEl) xpAtualEl.textContent = rpgXP;
+        if (xpProximoEl) xpProximoEl.textContent = rpgNext;
+        const porcentagemXP = rpgNext > 0 ? (rpgXP / rpgNext) * 100 : 0;
         if (xpFillEl) xpFillEl.style.width = `${porcentagemXP}%`;
-        
-        // Atualizar pontuação
+
         if (pontosSonhosEl) pontosSonhosEl.textContent = this.gamificacao.pontosSonhos;
         if (pontosMetasEl) pontosMetasEl.textContent = this.gamificacao.pontosMetas;
         if (sequenciaDiasEl) sequenciaDiasEl.textContent = this.gamificacao.sequenciaDias;
-        
-        // Renderizar badges
         this.renderizarBadges();
+        this.renderizarRPGSection();
+    }
+
+    renderizarRPGSection() {
+        const strEl = document.getElementById('gam-lvl-str');
+        const intEl = document.getElementById('gam-lvl-int');
+        const wisEl = document.getElementById('gam-lvl-wis');
+        const prodEl = document.getElementById('gam-lvl-prod');
+
+        if (!window.rpgSystem || !window.rpgSystem.data) {
+            if (strEl) strEl.textContent = '';
+            if (intEl) intEl.textContent = '';
+            if (wisEl) wisEl.textContent = '';
+            if (prodEl) prodEl.textContent = '';
+            return;
+        }
+
+        const d = window.rpgSystem.data;
+        if (strEl) strEl.textContent = d.stats.strength.lvl;
+        if (intEl) intEl.textContent = d.stats.intelligence.lvl;
+        if (wisEl) wisEl.textContent = d.stats.wisdom.lvl;
+        if (prodEl) prodEl.textContent = d.stats.productivity.lvl;
+        this.criarChartRPGRadar();
+    }
+
+    criarChartRPGRadar() {
+        const el = document.getElementById('rpg-radar-chart');
+        if (!el || !window.rpgSystem || !window.rpgSystem.data) return;
+        const ctx = el.getContext('2d');
+        if (this.charts.rpgRadar) {
+            this.charts.rpgRadar.destroy();
+        }
+        const d = window.rpgSystem.data;
+        const labels = ['Força', 'Intelecto', 'Sabedoria', 'Produtividade'];
+
+        const atual = [
+            d.stats.strength.lvl,
+            d.stats.intelligence.lvl,
+            d.stats.wisdom.lvl,
+            d.stats.productivity.lvl
+        ];
+        const meta = atual.map(v => v + 1);
+
+        const gradPurple = ctx.createLinearGradient(0, 0, 0, el.height);
+        gradPurple.addColorStop(0, 'rgba(168, 121, 243, 0.45)');
+        gradPurple.addColorStop(1, 'rgba(98, 68, 200, 0.25)');
+
+        const gradOrange = ctx.createLinearGradient(0, 0, el.width, 0);
+        gradOrange.addColorStop(0, 'rgba(250, 179, 135, 0.45)');
+        gradOrange.addColorStop(1, 'rgba(255, 140, 66, 0.25)');
+
+        this.charts.rpgRadar = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Atual',
+                        data: atual,
+                        backgroundColor: gradPurple,
+                        borderColor: '#a78bfa',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#a78bfa',
+                        pointBorderWidth: 2,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Meta',
+                        data: meta,
+                        backgroundColor: gradOrange,
+                        borderColor: '#f59e0b',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#f59e0b',
+                        pointBorderWidth: 2,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                    line: { tension: 0, borderJoinStyle: 'round' }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        suggestedMax: Math.max(...meta) + 1,
+                        ticks: { display: false, stepSize: 1 },
+                        angleLines: { color: '#d9dee6' },
+                        grid: { color: '#d9dee6' },
+                        pointLabels: {
+                            color: '#cbd5e1',
+                            font: { size: 12, weight: '600' }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: '#e0e0e0' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${ctx.formattedValue}`
+                        }
+                    }
+                }
+            }
+        });
     }
 
     renderizarBadges() {

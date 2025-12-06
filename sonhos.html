@@ -477,6 +477,31 @@
                   </div>
                 </div>
 
+                <div class="rpg-stats-section">
+                  <h4>Estatísticas RPG</h4>
+                  <div class="rpg-stats-grid">
+                    <div class="rpg-stat-card">
+                      <span>Força</span>
+                      <span id="gam-lvl-str">1</span>
+                    </div>
+                    <div class="rpg-stat-card">
+                      <span>Intelecto</span>
+                      <span id="gam-lvl-int">1</span>
+                    </div>
+                    <div class="rpg-stat-card">
+                      <span>Sabedoria</span>
+                      <span id="gam-lvl-wis">1</span>
+                    </div>
+                    <div class="rpg-stat-card">
+                      <span>Produtividade</span>
+                      <span id="gam-lvl-prod">1</span>
+                    </div>
+                  </div>
+                  <div class="chart-card" style="max-height:260px;">
+                    <canvas id="rpg-radar-chart" width="300" height="220"></canvas>
+                  </div>
+                </div>
+
                 <div class="badges-section">
                   <h4>Distintivos Conquistados</h4>
                   <div class="badges-grid" id="badges-grid"></div>
@@ -732,9 +757,10 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/sonhos.js"></script>
     <script src="js/saldo-global.js"></script>
+    <script src="js/script.js"></script>
     <script src="js/notificacoes.js"></script>
+    <script src="js/sonhos.js"></script>
     <script src="js/rpg.js"></script>
   </body>
 </html>

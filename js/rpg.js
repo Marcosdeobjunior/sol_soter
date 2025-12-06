@@ -73,6 +73,40 @@ class RPGSystem {
     this.showToast(xpAmount, statKey || category, statLeveledUp, charLeveledUp);
   }
 
+  gainDiaryXP(entry) {
+    const text = entry && entry.conteudoTexto ? entry.conteudoTexto : "";
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    let xpAmount = 10;
+    if (words >= 50) xpAmount += 5;
+    if (words >= 150) xpAmount += 10;
+    if (entry && Array.isArray(entry.tags)) {
+      xpAmount += Math.min(10, entry.tags.length * 2);
+    }
+    if (entry && entry.favorito) xpAmount += 5;
+
+    let statLeveledUp = false;
+    const stat = this.data.stats.wisdom;
+    stat.xp += xpAmount;
+    const statNextLvl = stat.lvl * 50;
+    if (stat.xp >= statNextLvl) {
+      stat.lvl++;
+      stat.xp -= statNextLvl;
+      statLeveledUp = true;
+    }
+
+    this.data.xp += xpAmount;
+    let charLeveledUp = false;
+    if (this.data.xp >= this.data.xpToNextLevel) {
+      this.data.level++;
+      this.data.xp -= this.data.xpToNextLevel;
+      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
+      charLeveledUp = true;
+    }
+
+    this.saveData();
+    this.showToast(xpAmount, "wisdom", statLeveledUp, charLeveledUp);
+  }
+
   updateUI() {
     // Header Elements
     const headerBar = document.getElementById("header-xp-bar");
@@ -101,6 +135,22 @@ class RPGSystem {
 
     if (lvlEl) lvlEl.textContent = stat.lvl;
     if (barEl) barEl.style.width = `${percent}%`;
+  }
+
+  gainCustomXP(amount, type) {
+    let statLeveledUp = false;
+    let charLeveledUp = false;
+
+    this.data.xp += amount;
+    while (this.data.xp >= this.data.xpToNextLevel) {
+      this.data.level++;
+      this.data.xp -= this.data.xpToNextLevel;
+      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
+      charLeveledUp = true;
+    }
+
+    this.saveData();
+    this.showToast(amount, type || "general", statLeveledUp, charLeveledUp);
   }
 
   showToast(xp, type, statLevelUp, charLevelUp) {

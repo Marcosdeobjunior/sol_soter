@@ -30,6 +30,10 @@ class DiarioPessoal {
         this.itensPorPagina = 10;
         this.paginaAtual = 1;
         this.storageKey = 'diario_entradas_v1'; // Chave do LocalStorage (Mantida)
+        this.compactMode = false;
+        this.selectedMonth = null;
+        this.entriesByMonth = new Map();
+        this.monthsSorted = [];
 
         // Filtros e Estado
         this.filtroHumorAtivo = null;
@@ -37,6 +41,8 @@ class DiarioPessoal {
         this.currentPin = "";
         this.pinStorageKey = 'diario-pin-lock';
         this.pinLocked = true;
+        this.draftKey = 'diario_draft_v1';
+        this.leituraAtualId = null;
 
         this.humorIconMap = {
             feliz: 'fa-smile-beam', normal: 'fa-smile', neutro: 'fa-meh', triste: 'fa-sad-tear', irritado: 'fa-angry'
@@ -77,6 +83,8 @@ class DiarioPessoal {
         this.totalEntradas = document.getElementById('total-entradas');
         this.semEntradas = document.getElementById('sem-entradas');
         this.paginacaoContainer = document.getElementById('paginacao-container');
+        this.compactBtn = document.getElementById('modo-compacto-btn');
+        this.monthSelector = document.getElementById('mes-selector');
 
         // Recordações
         this.recordacoesSection = document.getElementById('recordacoes-section');
@@ -119,6 +127,7 @@ class DiarioPessoal {
 
         this.quill.on('text-change', () => {
             this.conteudoTextarea.value = this.quill.getText().trim().length > 0 ? this.quill.root.innerHTML : '';
+            this.saveDraft();
         });
     }
 
@@ -138,6 +147,25 @@ class DiarioPessoal {
         this.imagensInput.addEventListener('change', (e) => this.handleImageUpload(e));
         this.statsBtn.addEventListener('click', () => this.showStatsModal());
         this.lembreteBtn.addEventListener('click', () => alert("Lembrete definido para 20:00 todo dia!"));
+        this.tituloInput.addEventListener('input', () => this.saveDraft());
+        this.dataInput.addEventListener('change', () => this.saveDraft());
+        this.tagsInput.addEventListener('change', () => this.saveDraft());
+        if (this.compactBtn) {
+            this.compactBtn.addEventListener('click', () => {
+                this.compactMode = !this.compactMode;
+                this.listaEntradas.classList.toggle('compact', this.compactMode);
+                this.compactBtn.classList.toggle('active', this.compactMode);
+                this.renderEntradas();
+            });
+        }
+        if (this.monthSelector) {
+            this.monthSelector.addEventListener('change', () => {
+                const val = this.monthSelector.value;
+                this.selectedMonth = val || null;
+                this.paginaAtual = 1;
+                this.renderEntradas();
+            });
+        }
         
         this.imagensPreview.addEventListener('click', (e) => {
             if (e.target.closest('.remover-imagem-btn')) {
@@ -159,7 +187,27 @@ class DiarioPessoal {
         this.statsFecharBtn.addEventListener('click', () => this.statsModal.style.display = 'none');
         
         // Clique nos cards (Delegação)
-        this.listaEntradas.addEventListener('click', (e) => this.handleCardClick(e));
+        this.listaEntradas.addEventListener('click', (e) => {
+            const hdr = e.target.closest('.lista-group-header');
+            if (hdr) {
+                const monthKey = hdr.dataset.month;
+                const group = hdr.closest('.lista-group');
+                const body = group.querySelector('.lista-group-body');
+                const expanded = group.classList.toggle('expanded');
+                if (expanded) {
+                    if (!body.innerHTML) {
+                        const arr = this.entriesByMonth.get(monthKey) || [];
+                        const capped = arr.slice(0, 31);
+                        const gridHtml = `<div class="entradas-grid">${capped.map((entrada, index) => this.criarHTMLTile(entrada, index)).join('')}</div>`;
+                        body.innerHTML = gridHtml;
+                    }
+                } else {
+                    body.innerHTML = '';
+                }
+                return;
+            }
+            this.handleCardClick(e);
+        });
         
         // Humor Selector
         this.humorSelector.addEventListener('click', (e) => {
@@ -179,6 +227,9 @@ class DiarioPessoal {
         try {
             const data = localStorage.getItem(this.storageKey);
             this.entradas = data ? JSON.parse(data) : [];
+            this.buildMonthIndex(this.entradas);
+            this.updateMonthSelector();
+            if (this.monthsSorted.length && !this.selectedMonth) this.selectedMonth = this.monthsSorted[0];
             this.filtrarEntradas(); // Renderiza
             this.buscarRecordacoes();
         } catch (e) {
@@ -281,6 +332,8 @@ class DiarioPessoal {
         }
 
         this.saveEntradas();
+        try { if (window.rpgSystem && typeof window.rpgSystem.gainDiaryXP === 'function') window.rpgSystem.gainDiaryXP(novaEntrada); } catch(e) {}
+        try { localStorage.removeItem(this.draftKey); } catch(e) {}
         this.closeFormModal();
         this.filtrarEntradas();
         this.buscarRecordacoes();
@@ -339,35 +392,106 @@ class DiarioPessoal {
         this.semEntradas.style.display = 'none';
         this.listaEntradas.style.display = 'flex'; // Flex column para timeline
 
-        // Paginação
-        const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
-        const fim = inicio + this.itensPorPagina;
-        const paginaItems = lista.slice(inicio, fim);
-
-        this.listaEntradas.innerHTML = paginaItems.map((entrada, index) => this.criarHTMLTimeline(entrada, index)).join('');
-        this.renderPaginacao(lista.length);
+        this.listaEntradas.classList.toggle('compact', this.compactMode);
+        if (this.selectedMonth) {
+            const monthItems = lista.filter(e => this.formatMonthKey(e.data) === this.selectedMonth);
+            const capped = monthItems.slice(0, 31);
+            this.listaEntradas.innerHTML = `<div class="entradas-grid">${capped.map((entrada, index) => this.criarHTMLTile(entrada, index)).join('')}</div>`;
+            this.paginacaoContainer.style.display = 'none';
+        } else {
+            this.buildMonthIndex(lista);
+            const groupsHtml = this.monthsSorted.map(mk => {
+                const title = this.formatMonthLabel(mk);
+                return `
+                <div class="lista-group">
+                  <div class="lista-group-header" data-month="${mk}">
+                    <span class="lista-group-title">${title}</span>
+                    <span><i class="fas fa-chevron-down"></i></span>
+                  </div>
+                  <div class="lista-group-body"></div>
+                </div>`;
+            }).join('');
+            this.listaEntradas.innerHTML = groupsHtml;
+            this.paginacaoContainer.style.display = 'none';
+        }
     }
 
-    criarHTMLTimeline(entrada, index) {
+    criarHTMLTile(entrada, index) {
+        const dateObj = new Date(entrada.data + 'T12:00:00');
+        const dia = dateObj.getDate().toString().padStart(2, '0');
+        const humorIcon = this.humorIconMap[entrada.humor] || 'fa-smile';
+        const humorClass = `mood-${entrada.humor}`;
+        const title = this.escapeHtml(entrada.titulo);
+        const short = title.length > 24 ? (title.substring(0, 24) + '…') : title;
+        return `
+            <div class="entrada-card tile ${humorClass}" data-id="${entrada.id}" data-humor="${entrada.humor}">
+                <div class="tile-top">
+                    <span class="tile-day">${dia}</span>
+                    <i class="fas ${humorIcon}"></i>
+                    <button class="btn-icon favorite ${entrada.favorito ? 'favorited' : ''}" data-action="favoritar" title="Favoritar">
+                        <i class="${entrada.favorito ? 'fas' : 'far'} fa-star"></i>
+                    </button>
+                </div>
+                <div class="tile-title">${short}</div>
+            </div>
+        `;
+    }
+
+    buildMonthIndex(lista) {
+        const map = new Map();
+        lista.forEach(e => {
+            const mk = this.formatMonthKey(e.data);
+            if (!map.has(mk)) map.set(mk, []);
+            map.get(mk).push(e);
+        });
+        const months = Array.from(map.keys()).sort((a, b) => a < b ? 1 : -1);
+        this.entriesByMonth = map;
+        this.monthsSorted = months;
+    }
+
+    updateMonthSelector() {
+        if (!this.monthSelector) return;
+        const current = this.monthSelector.value;
+        const options = [''].concat(this.monthsSorted);
+        this.monthSelector.innerHTML = options.map(v => {
+            const label = v ? this.formatMonthLabel(v) : 'Todos os meses';
+            const sel = current === v ? 'selected' : '';
+            return `<option value="${v}" ${sel}>${label}</option>`;
+        }).join('');
+    }
+
+    formatMonthKey(dateStr) {
+        const d = new Date(dateStr + 'T12:00:00');
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,'0');
+        return `${y}-${m}`;
+    }
+
+    formatMonthLabel(monthKey) {
+        const [y,m] = monthKey.split('-');
+        const d = new Date(`${y}-${m}-01T12:00:00`);
+        const label = d.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+        return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    criarHTMLLista(entrada, index) {
         const dateObj = new Date(entrada.data + 'T12:00:00');
         const dia = dateObj.getDate().toString().padStart(2, '0');
         const mes = dateObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
         const ano = dateObj.getFullYear();
         
         const humorIcon = this.humorIconMap[entrada.humor] || 'fa-smile';
-        const imagensHtml = (entrada.imagens && entrada.imagens.length) 
-            ? `<div class="card-imagens-row">${entrada.imagens.map(src => `<img src="${src}" class="card-img-thumb">`).join('')}</div>` 
+        const isCompact = this.compactMode;
+        const imagensHtml = !isCompact && entrada.imagens && entrada.imagens.length
+            ? `<div class="card-imagens-row">${entrada.imagens.map(src => `<img src="${src}" class="card-img-thumb">`).join('')}</div>`
             : '';
         
-        // Classes de humor para o CSS "Vivo"
         const humorClass = `mood-${entrada.humor}`;
+        const previewLimit = isCompact ? 80 : 200;
+        const previewText = entrada.conteudoTexto.substring(0, previewLimit) + (entrada.conteudoTexto.length > previewLimit ? '...' : '');
 
         return `
             <div class="entrada-item-wrapper">
-                <!-- Timeline Center Dot -->
-                <div class="entrada-timeline-dot ${humorClass}" title="${entrada.humor}">
-                    <span>${dia}</span>
-                </div>
                 
                 <div class="entrada-card ${humorClass}" data-id="${entrada.id}" data-humor="${entrada.humor}">
                     <div class="entrada-header">
@@ -380,14 +504,12 @@ class DiarioPessoal {
                     ${imagensHtml}
                     
                     <div class="entrada-conteudo-preview">
-                        ${entrada.conteudoTexto.substring(0, 200)}${entrada.conteudoTexto.length > 200 ? '...' : ''}
+                        ${previewText}
                     </div>
                     
                     <div class="entrada-footer">
                         <span class="entrada-date-display">${dia} de ${mes}, ${ano}</span>
-                        <div class="entrada-tags">
-                            ${(entrada.tags || []).slice(0, 3).map(tag => `<span class="tag">#${tag}</span>`).join('')}
-                        </div>
+                        ${isCompact ? '' : `<div class="entrada-tags">${(entrada.tags || []).slice(0, 3).map(tag => `<span class=\"tag\">#${tag}</span>`).join('')}</div>`}
                         <div class="entrada-card-actions">
                             <button class="btn-icon favorite ${entrada.favorito ? 'favorited' : ''}" data-action="favoritar" title="Favoritar">
                                 <i class="${entrada.favorito ? 'fas' : 'far'} fa-star"></i>
@@ -423,6 +545,7 @@ class DiarioPessoal {
         const entrada = this.entradas.find(e => e.id === id);
         if (!entrada) return;
         
+        this.leituraAtualId = id;
         this.leituraModal.style.display = 'flex';
         document.getElementById('leitura-titulo').textContent = entrada.titulo;
         document.getElementById('leitura-data').textContent = new Date(entrada.data + 'T12:00:00').toLocaleDateString('pt-BR');
@@ -439,7 +562,8 @@ class DiarioPessoal {
     // ===== FUNCOES UTILITARIAS =====
     
     renderPaginacao(total) {
-        const totalPaginas = Math.ceil(total / this.itensPorPagina);
+        const itensPagina = this.compactMode ? 15 : this.itensPorPagina;
+        const totalPaginas = Math.ceil(total / itensPagina);
         if (totalPaginas <= 1) { this.paginacaoContainer.style.display = 'none'; return; }
         
         this.paginacaoContainer.style.display = 'flex';
@@ -463,6 +587,7 @@ class DiarioPessoal {
         this.humorSelector.querySelectorAll('.humor-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.humor === humor);
         });
+        this.saveDraft();
     }
 
     handleImageUpload(e) {
@@ -505,7 +630,7 @@ class DiarioPessoal {
     }
 
     openFormModal(editar = false) {
-        if (!editar) this.resetForm();
+        if (!editar) { this.resetForm(); this.loadDraft(); }
         else this.formModalTitle.textContent = "Editar Entrada";
         this.formModal.style.display = 'flex';
     }
@@ -631,7 +756,53 @@ class DiarioPessoal {
     exportarPDF() {
         alert("Funcionalidade de exportação simplificada para demonstração.");
     }
+
+    saveDraft() {
+        try {
+            const draft = {
+                titulo: this.tituloInput.value.trim(),
+                data: this.dataInput.value,
+                conteudoHtml: this.quill.root.innerHTML,
+                humor: this.humorSelecionado,
+                tags: this.tagify.value.map(t => t.value),
+                imagens: this.imagensSelecionadas
+            };
+            localStorage.setItem(this.draftKey, JSON.stringify(draft));
+        } catch(e) {}
+    }
+
+    loadDraft() {
+        try {
+            const raw = localStorage.getItem(this.draftKey);
+            if (!raw) return;
+            const d = JSON.parse(raw);
+            if (d.titulo) this.tituloInput.value = d.titulo;
+            if (d.data) this.dataInput.value = d.data;
+            if (d.conteudoHtml) this.quill.clipboard.dangerouslyPasteHTML(d.conteudoHtml);
+            if (Array.isArray(d.tags)) { this.tagify.removeAllTags(); this.tagify.addTags(d.tags); }
+            if (Array.isArray(d.imagens)) { this.imagensSelecionadas = d.imagens; this.renderizarPreviewImagens(); }
+            if (d.humor) this.selecionarHumor(d.humor);
+        } catch(e) {}
+    }
+
+    navegarLeitura(delta) {
+        const base = this.selectedMonth
+            ? this.entradas.filter(e => this.formatMonthKey(e.data) === this.selectedMonth)
+            : this.entradas;
+        base.sort((a, b) => new Date(a.data) - new Date(b.data));
+        const idx = base.findIndex(e => e.id === this.leituraAtualId);
+        if (idx === -1) return;
+        const next = base[idx + delta];
+        if (!next) return;
+        this.mostrarLeitura(next.id);
+    }
 }
 
 // Inicializa
 window.diario = new DiarioPessoal();
+        document.addEventListener('keydown', (e) => {
+            if (this.leituraModal.style.display === 'flex') {
+                if (e.key === 'ArrowLeft') this.navegarLeitura(-1);
+                if (e.key === 'ArrowRight') this.navegarLeitura(1);
+            }
+        });

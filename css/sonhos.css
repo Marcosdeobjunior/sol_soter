@@ -33,20 +33,6 @@
 
   --sombra-header: 0 3px 10px rgba(0, 0, 0, 0.4);
   --sombra-card: 0 4px 15px rgba(0, 0, 0, 0.5);
-
-  :root {
-    /* ... (suas variáveis existentes) ... */
-
-    /* ADICIONE ESTAS VARIÁVEIS QUE ESTAVAM FALTANDO */
-    --cor-sucesso: #a6e3a1;
-    --cor-sucesso-escuro: #6ec968;
-    --cor-aviso: #fab387;
-    --cor-perigo: #f38ba8;
-
-    /* Fundo mais sólido para inputs */
-    --input-bg: #1e1e1e;
-    --translucido-bg: rgba(255, 255, 255, 0.05);
-  }
 }
 
 /* ===== RESET & BASE ===== */
@@ -1448,6 +1434,30 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 30px;
+}
+
+.rpg-stats-section {
+  background: var(--fundo-overlay);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.rpg-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.rpg-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
 }
 
 .nivel-usuario {
