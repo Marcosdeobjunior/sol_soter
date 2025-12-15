@@ -192,27 +192,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const cw = data.current_weather || {};
       const dly = data.daily || {};
       const code = cw.weathercode;
-      const todayMax = (dly.temperature_2m_max && dly.temperature_2m_max[0] !== undefined) ? dly.temperature_2m_max[0] : cw.temperature;
-      const todayMin = (dly.temperature_2m_min && dly.temperature_2m_min[0] !== undefined) ? dly.temperature_2m_min[0] : cw.temperature;
+      const times = Array.isArray(dly.time) ? dly.time : [];
+      const todayStrBR = new Date().toLocaleDateString('pt-BR');
+      const timesBR = times.map(t => new Date(t).toLocaleDateString('pt-BR'));
+      let todayIdx = timesBR.indexOf(todayStrBR);
+      if (todayIdx < 0) todayIdx = 0;
+      const todayMax = (dly.temperature_2m_max && dly.temperature_2m_max[todayIdx] !== undefined) ? dly.temperature_2m_max[todayIdx] : cw.temperature;
+      const todayMin = (dly.temperature_2m_min && dly.temperature_2m_min[todayIdx] !== undefined) ? dly.temperature_2m_min[todayIdx] : cw.temperature;
       currentEl.innerHTML = `
         <div class="wc-today">
-          <div><i class="${getWeatherIcon(code)}"></i> ${getWeatherDesc(code)}</div>
+          <div class="wc-meta"><i class="${getWeatherIcon(code)}"></i> ${getWeatherDesc(code)} • <span class="wc-date">${todayStrBR}</span></div>
           <div class="wc-temp">${Math.round(todayMax)}° / ${Math.round(todayMin)}°</div>
         </div>
       `;
       const items = [];
-      const times = dly.time || [];
       for (let i = 0; i < Math.min(7, times.length); i++) {
         const dayName = new Date(times[i]).toLocaleDateString('pt-BR', { weekday: 'long' });
         const dCode = (dly.weathercode && dly.weathercode[i] !== undefined) ? dly.weathercode[i] : code;
         const tmax = dly.temperature_2m_max ? Math.round(dly.temperature_2m_max[i]) : '';
         const tmin = dly.temperature_2m_min ? Math.round(dly.temperature_2m_min[i]) : '';
-        const tempNow = i === 0 && cw.temperature !== undefined ? `<span class="tcurr">${Math.round(cw.temperature)}°</span>` : '';
+        const tempNow = i === todayIdx && cw.temperature !== undefined ? `<span class="tcurr">${Math.round(cw.temperature)}°</span>` : '';
         items.push(`
           <div class="hf">
             <div class="day">${dayName} ${tempNow}</div>
             <div class="icon"><i class="${getWeatherIcon(dCode)}"></i></div>
-            <div><span class="tmax">${tmax}°</span> / <span class="tmin">${tmin}°</span></div>
+            <div class="temps"><span class="tmax">${tmax}°</span> / <span class="tmin">${tmin}°</span></div>
           </div>
         `);
       }
@@ -448,6 +452,23 @@ document.addEventListener('DOMContentLoaded', () => {
         openDreamOverlay(s);
       });
     });
+
+    ['count-1','count-2','count-3','count-4','count-5','count-6'].forEach(c => grid.classList.remove(c));
+    grid.classList.add(`count-${Math.min((sonhos||[]).length, 6)}`);
+    grid.classList.toggle('scrollable', sonhos.length > 6);
+    const updateIndicators = () => {
+      const maxScroll = grid.scrollWidth - grid.clientWidth;
+      const atStart = grid.scrollLeft <= 1;
+      const atEnd = grid.scrollLeft >= (maxScroll - 1);
+      grid.classList.toggle('at-start', atStart);
+      grid.classList.toggle('at-end', atEnd);
+    };
+    if (sonhos.length > 6) {
+      updateIndicators();
+      grid.addEventListener('scroll', updateIndicators, { passive: true });
+    } else {
+      grid.classList.remove('at-start', 'at-end');
+    }
 
     // Upload de imagem com validação
     const input = document.querySelector('#dream-image-input');
