@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h4 class="item-name">${item.name}</h4>
                         <p class="item-price">R$ ${parseFloat(item.price).toFixed(2)}</p>
                         <div class="item-actions">
-                            <button class="btn-add-to-cart" data-index="${itemIndex}" ${disabledAttribute}>${buttonText}</button>
-                            <button class="btn-remove" data-index="${itemIndex}">Remover</button>
+                            <button class="btn-add-to-cart" data-key="${item.name}" ${disabledAttribute}>${buttonText}</button>
+                            <button class="btn-remove" data-key="${item.name}">Remover</button>
                         </div>
                     </div>
                 `;
@@ -398,12 +398,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- EVENTOS DA WISHLIST ---
     wishlistGrid.addEventListener('click', (e) => {
         const target = e.target;
-        const index = parseInt(target.getAttribute('data-index'), 10);
-        if (isNaN(index)) return;
+        const key = target.getAttribute('data-key') || target.closest('.wishlist-item')?.dataset.key;
+        if (!key) return;
+        const index = wishlistItems.findIndex(it => it.name === key);
+        if (index < 0) return;
 
         if (target.classList.contains('btn-remove')) {
             if (confirm('Tem certeza que deseja remover este item permanentemente?')) {
                 wishlistItems.splice(index, 1);
+                try {
+                    const order = JSON.parse(localStorage.getItem('wishlist-order-wishlist-v1') || '[]');
+                    const nextOrder = Array.isArray(order) ? order.filter(k => k !== key) : [];
+                    localStorage.setItem('wishlist-order-wishlist-v1', JSON.stringify(nextOrder));
+                } catch {}
                 saveData();
                 renderAll();
             }

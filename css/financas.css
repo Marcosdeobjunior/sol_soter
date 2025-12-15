@@ -17,6 +17,16 @@
   --acento-roxo: #cba6f7;
   --acento-laranja: #fab387;
 
+  --cor-entrada: #a6e3a1;
+  --cor-saida: #f38ba8;
+  --cor-reserva: #89b4fa;
+  --fundo-entrada-sutil: rgba(166, 227, 161, 0.12);
+  --fundo-saida-sutil: rgba(243, 139, 168, 0.12);
+  --fundo-reserva-sutil: rgba(137, 180, 250, 0.12);
+  --cor-aviso: #fab387;
+  --cor-provisionada: #cba6f7;
+  --fundo-provisionada-sutil: rgba(203, 166, 247, 0.12);
+
   /* Cores de Categoria */
   --cat-trabalho: #89b4fa; /* Azul */
   --cat-pessoal: #a6e3a1; /* Verde */

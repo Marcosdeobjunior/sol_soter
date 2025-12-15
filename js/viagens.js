@@ -54,10 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const travelCards = document.getElementById("travel-cards");
   const addTravelPopup = document.getElementById("add-travel-popup");
   const dataManagementPopup = document.getElementById("data-management-popup");
-  const hamburgerBtn = document.getElementById("hamburger-btn");
-  const actionButtons = document.getElementById("action-buttons");
   const addTravelBtn = document.getElementById("add-travel-btn");
-  const dataManagementBtn = document.getElementById("data-management-btn");
   const exportDataBtn = document.getElementById("export-data");
   const importDataBtn = document.getElementById("import-data");
   const fileInput = document.getElementById("file-input");
@@ -156,6 +153,52 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (weatherCode >= 71 && weatherCode <= 75) return "fas fa-snowflake";
     else if (weatherCode >= 95 && weatherCode <= 99) return "fas fa-bolt";
     else return "fas fa-cloud";
+  }
+
+  function getCategoryClass(category) {
+    const c = (category || "").toLowerCase();
+    if (c.includes("parque")) return "travel-card--park";
+    if (c.includes("restaurante")) return "travel-card--restaurant";
+    if (c.includes("hotel")) return "travel-card--hotel";
+    if (c.includes("ponto turístico") || c.includes("museu")) return "travel-card--landmark";
+    return "";
+  }
+
+  function getCategoryIcon(category) {
+    const c = (category || "").toLowerCase();
+    if (c.includes("parque")) return "fas fa-tree";
+    if (c.includes("restaurante")) return "fas fa-utensils";
+    if (c.includes("hotel")) return "fas fa-bed";
+    if (c.includes("ponto turístico") || c.includes("museu")) return "fas fa-landmark";
+    return "";
+  }
+
+  function getCountryFlag(destination) {
+    const parts = destination.split(",").map(s => s.trim());
+    const country = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
+    const map = {
+      "brasil": { emoji: "🇧🇷", label: "Bandeira do Brasil" },
+      "portugal": { emoji: "🇵🇹", label: "Bandeira de Portugal" },
+      "frança": { emoji: "🇫🇷", label: "Bandeira da França" },
+      "italia": { emoji: "🇮🇹", label: "Bandeira da Itália" },
+      "itália": { emoji: "🇮🇹", label: "Bandeira da Itália" },
+      "espanha": { emoji: "🇪🇸", label: "Bandeira da Espanha" },
+      "alemanha": { emoji: "🇩🇪", label: "Bandeira da Alemanha" },
+      "reino unido": { emoji: "🇬🇧", label: "Bandeira do Reino Unido" },
+      "inglaterra": { emoji: "🇬🇧", label: "Bandeira do Reino Unido" },
+      "estados unidos": { emoji: "🇺🇸", label: "Bandeira dos Estados Unidos" },
+      "eua": { emoji: "🇺🇸", label: "Bandeira dos Estados Unidos" },
+      "canadá": { emoji: "🇨🇦", label: "Bandeira do Canadá" },
+      "argentina": { emoji: "🇦🇷", label: "Bandeira da Argentina" },
+      "chile": { emoji: "🇨🇱", label: "Bandeira do Chile" },
+      "méxico": { emoji: "🇲🇽", label: "Bandeira do México" },
+      "japão": { emoji: "🇯🇵", label: "Bandeira do Japão" },
+      "japao": { emoji: "🇯🇵", label: "Bandeira do Japão" },
+      "china": { emoji: "🇨🇳", label: "Bandeira da China" },
+      "austrália": { emoji: "🇦🇺", label: "Bandeira da Austrália" },
+      "australia": { emoji: "🇦🇺", label: "Bandeira da Austrália" }
+    };
+    return map[country] || null;
   }
 
   // Função para obter informações de eventos (simulado por enquanto)
@@ -460,17 +503,24 @@ document.addEventListener("DOMContentLoaded", () => {
     currentTravels.forEach((travel, pageIndex) => {
       const globalIndex = (currentPage - 1) * CARDS_PER_PAGE + pageIndex;
       const duration = calculateDuration(travel.startDate, travel.endDate);
-      const icon = getDestinationIcon(travel.destination);
+      const categoryIcon = getCategoryIcon(travel.category);
+      const icon = categoryIcon || getDestinationIcon(travel.destination);
+      const categoryClass = getCategoryClass(travel.category);
       const gradient = getCardGradient(globalIndex);
       const isWish = travel.category === 'Desejo';
+      const country = getCountryFlag(travel.destination);
 
       const card = document.createElement("div");
       card.className = "travel-card";
+      if (categoryClass) {
+        card.classList.add(categoryClass);
+      }
       if (isWish) {
           card.classList.add("wish-category");
       }
       card.style.background = gradient;
       card.dataset.index = globalIndex;
+      card.setAttribute("role", "listitem");
 
       let weatherHtml = "";
       if (travel.weather) {
@@ -487,6 +537,8 @@ document.addEventListener("DOMContentLoaded", () => {
             .join(", ")}</p>
         `;
       }
+
+      const flagHtml = country ? `<span class="flag-badge" role="img" aria-label="${country.label}">${country.emoji}</span>` : "";
 
       const budgetHtml = travel.budget
         ? `<div class="travel-card-budget"><i class="fas fa-dollar-sign"></i> R$ ${parseFloat(travel.budget).toFixed(2)}</div>`
@@ -506,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       card.innerHTML = `
         <div class="travel-card-header">
-          <h4>${travel.destination}</h4>
+          <h4>${travel.destination}${flagHtml}</h4>
           <i class="${icon} travel-card-icon"></i>
         </div>
         
@@ -553,38 +605,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Função para controlar o menu hambúrguer
-  function toggleHamburgerMenu() {
-    const isOpen = actionButtons.classList.contains("show");
-
-    if (isOpen) {
-      actionButtons.classList.remove("show");
-      hamburgerBtn.classList.remove("active");
-      setTimeout(() => {
-        actionButtons.style.display = "none";
-      }, 300);
-    } else {
-      actionButtons.style.display = "flex";
-      setTimeout(() => {
-        actionButtons.classList.add("show");
-        hamburgerBtn.classList.add("active");
-      }, 10);
-    }
-  }
-
-  // Event listener para o botão hambúrguer
-  hamburgerBtn.addEventListener("click", toggleHamburgerMenu);
-
   // Event listeners para os botões de ação
   addTravelBtn.addEventListener("click", () => {
     resetFormToAddMode();
     openPopup("add-travel-popup");
-    toggleHamburgerMenu(); // Fechar o menu hambúrguer
-  });
-
-  dataManagementBtn.addEventListener("click", () => {
-    openPopup("data-management-popup");
-    toggleHamburgerMenu(); // Fechar o menu hambúrguer
   });
 
   // Event listeners para fechar popups

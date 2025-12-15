@@ -567,9 +567,8 @@ function salvarRecorrencia(e) {
   renderizarRecorrencias();
   renderizarCalendario(); // Atualiza provisões
   calcularMelhorDia(); // Recalcula com base nas novas recorrências
-  if (estado.abaAtiva === 'planejamento') {
-    renderizarOrcamento(); // Atualiza Renda Prevista
-  }
+  renderizarOrcamento();
+  renderizarGraficoCategorias();
   elementos.formRecorrencia.reset();
   elementos.recorrenciaId.value = '';
 }
@@ -580,9 +579,8 @@ function removerRecorrencia(id) {
   renderizarRecorrencias();
   renderizarCalendario();
   calcularMelhorDia();
-  if (estado.abaAtiva === 'planejamento') {
-    renderizarOrcamento();
-  }
+  renderizarOrcamento();
+  renderizarGraficoCategorias();
 }
 
 function abrirModalRecorrencias() {
@@ -977,6 +975,18 @@ function renderizarOrcamento() {
     `;
 
     container.appendChild(orcamentoItem);
+  });
+
+  const inputs = document.querySelectorAll('.orcamento-input');
+  inputs.forEach(input => {
+    input.addEventListener('change', () => {
+      const categoriaId = input.dataset.categoria;
+      const valor = parseFloat(input.value) || 0;
+      estado.limites[categoriaId] = valor;
+      salvarDados();
+      renderizarOrcamento();
+      renderizarGraficoCategorias();
+    });
   });
 }
 
