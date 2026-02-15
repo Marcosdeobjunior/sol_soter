@@ -224,3 +224,4 @@ class RPGSystem {
 // Inicializa globalmente
 const rpgSystem = new RPGSystem();
 window.rpgSystem = rpgSystem; // Disponível no console e outros scripts
+

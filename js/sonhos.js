@@ -1840,3 +1840,4 @@ window.addEventListener('storage', (event) => {
         atualizarSaldoGlobal();
     }
 });
+

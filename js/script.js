@@ -88,10 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasks = ls('sol-de-soter-tasks', []);
     const todayStr = new Date().toISOString().slice(0,10);
     const todayTasks = (tasks||[]).filter(t => t.date === todayStr).sort((a,b)=> (a.time||'') < (b.time||'') ? -1 : 1);
+
+    if (!todayTasks.length) {
+      list.innerHTML = `
+        <li class="planner-empty-state">
+          <img src="img/gato.png" alt="Gato dormindo" class="planner-empty-image" />
+          <p>Sem tarefas para hoje.</p>
+        </li>
+      `;
+      return;
+    }
+
     list.innerHTML = todayTasks.map(t => `
       <li class="planner-item">
         <span class="title">${t.title}</span>
-        <span class="meta">${t.time||''} ${t.category? '• '+t.category: ''}</span>
+                  <span class="meta">${t.time||''} ${t.category? '• '+t.category: ''}</span>
       </li>
     `).join('');
   };
@@ -157,12 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'fas fa-cloud';
   };
   const getWeatherDesc = (code) => {
-    if (code === 0) return 'Céu limpo';
+    if (code === 0) return 'Ceu limpo';
     if (code > 0 && code < 4) return 'Parcialmente nublado';
     if (code >= 51 && code <= 67) return 'Chuva';
     if (code >= 71 && code <= 75) return 'Neve';
     if (code >= 95 && code <= 99) return 'Tempestade';
-    return 'Condições variadas';
+    return 'Condicoes variadas';
   };
   const getCoordsPirapora = async () => {
     try {
@@ -201,8 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const todayMin = (dly.temperature_2m_min && dly.temperature_2m_min[todayIdx] !== undefined) ? dly.temperature_2m_min[todayIdx] : cw.temperature;
       currentEl.innerHTML = `
         <div class="wc-today">
-          <div class="wc-meta"><i class="${getWeatherIcon(code)}"></i> ${getWeatherDesc(code)} • <span class="wc-date">${todayStrBR}</span></div>
-          <div class="wc-temp">${Math.round(todayMax)}° / ${Math.round(todayMin)}°</div>
+          <div class="wc-meta"><i class="${getWeatherIcon(code)}"></i> ${getWeatherDesc(code)} &bull; <span class="wc-date">${todayStrBR}</span></div>
+          <div class="wc-temp">${Math.round(todayMax)}&deg; / ${Math.round(todayMin)}&deg;</div>
         </div>
       `;
       const items = [];
@@ -211,12 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dCode = (dly.weathercode && dly.weathercode[i] !== undefined) ? dly.weathercode[i] : code;
         const tmax = dly.temperature_2m_max ? Math.round(dly.temperature_2m_max[i]) : '';
         const tmin = dly.temperature_2m_min ? Math.round(dly.temperature_2m_min[i]) : '';
-        const tempNow = i === todayIdx && cw.temperature !== undefined ? `<span class="tcurr">${Math.round(cw.temperature)}°</span>` : '';
+        const tempNow = i === todayIdx && cw.temperature !== undefined ? `<span class="tcurr">${Math.round(cw.temperature)}&deg;</span>` : '';
         items.push(`
           <div class="hf">
             <div class="day">${dayName} ${tempNow}</div>
             <div class="icon"><i class="${getWeatherIcon(dCode)}"></i></div>
-            <div class="temps"><span class="tmax">${tmax}°</span> / <span class="tmin">${tmin}°</span></div>
+            <div class="temps"><span class="tmax">${tmax}&deg;</span> / <span class="tmin">${tmin}&deg;</span></div>
           </div>
         `);
       }
@@ -259,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = `
       <div class="dash-row">
         <div class="dash-main">${icon} ${upcoming.destination || 'Destino não informado'}</div>
-        <div class="dash-meta">${formatBRDate(start)} – ${formatBRDate(end)} • ${status}</div>
+        <div class="dash-meta">${formatBRDate(start)} – ${formatBRDate(end)} &bull; ${status}</div>
       </div>
     `;
   };
@@ -302,13 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const filmeHtml = ultimoFilme ? `
       <div class="dash-row">
         <div class="dash-main"><i class="fas fa-film"></i> ${ultimoFilme.titulo}</div>
-        <div class="dash-meta">Visto em ${formatBRDate(ultimoFilme.dataConclusao)} • Nota ${ultimoFilme.nota || 0}/5</div>
+        <div class="dash-meta">Visto em ${formatBRDate(ultimoFilme.dataConclusao)} &bull; Nota ${ultimoFilme.nota || 0}/5</div>
       </div>
     ` : '<p>Nenhum filme concluído.</p>';
     const serieHtml = serieAtual ? `
       <div class="dash-row">
         <div class="dash-main"><i class="fas fa-tv"></i> ${serieAtual.titulo}</div>
-        <div class="dash-meta">T${serieAtual.temporadaAtual || 1} • E${serieAtual.episodioAtual || 0} de ${serieAtual.totalEpisodios || 0} • Próxima data: N/A</div>
+        <div class="dash-meta">T${serieAtual.temporadaAtual || 1} &bull; E${serieAtual.episodioAtual || 0} de ${serieAtual.totalEpisodios || 0} &bull; Próxima data: N/A</div>
       </div>
     ` : '<p>Nenhuma série em acompanhamento.</p>';
     container.innerHTML = filmeHtml + serieHtml;
@@ -349,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ${items.sort((a,b)=> (a.time||'') < (b.time||'') ? -1 : 1).map(it => `
           <div class="dash-row">
             <div class="dash-main"><i class="far fa-check-circle"></i> ${it.title}</div>
-            <div class="dash-meta">${it.time||''} • ${it.category||'Geral'}</div>
+            <div class="dash-meta">${it.time||''} &bull; ${it.category||'Geral'}</div>
           </div>
         `).join('')}
       </div>
@@ -420,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="body">
             <div class="name">${it.name}</div>
             <div class="price">R$ ${parseFloat(it.price||0).toFixed(2)}</div>
-            <div class="status">${(it.priority||'').toUpperCase()} • ${loja}</div>
+            <div class="status">${(it.priority||'').toUpperCase()} &bull; ${loja}</div>
           </div>
         </div>
       `;
@@ -566,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const foto = v.imagem || v.capaUrl || 'img/default_trip.png';
         const periodo = v.dataIda && v.dataVolta ? `${formatBRDate(v.dataIda)} — ${formatBRDate(v.dataVolta)}` : 'Sem data definida';
         const custo = v.custo || v.orcamento || 'N/A';
-        const detalhes = [v.categoria, v.hospedagem, v.transporte].filter(Boolean).join(' • ');
+        const detalhes = [v.categoria, v.hospedagem, v.transporte].filter(Boolean).join(' &bull; ');
         return `
           <div class="trip-item fade-enter fade-enter-active">
             <div class="trip-photo" style="background-image:url('${foto}')"></div>
@@ -776,3 +787,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', renderAll);
   // Responsividade já aplicada via CSS Grid; não é necessário re-render no resize
 });
+
+
+

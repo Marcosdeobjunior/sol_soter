@@ -195,6 +195,26 @@ header {
   color: var(--acento-amarelo);
   line-height: 1.1;
 }
+.saldo-display .saldo-value-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.saldo-display .saldo-trend-indicator {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+.saldo-display .saldo-trend-indicator.up {
+  color: #22c55e !important;
+}
+.saldo-display .saldo-trend-indicator.down {
+  color: #ef4444 !important;
+}
+.saldo-display .saldo-trend-indicator.neutral {
+  color: var(--texto-secundario) !important;
+}
 .notification-bell i {
   color: var(--texto-secundario);
   transition: color 0.2s;
@@ -671,6 +691,9 @@ footer {
 .daily-planner .planner-item { display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.02); border:1px solid var(--borda); }
 .daily-planner .planner-item .title { flex:1; color: var(--texto-principal); font-weight:600; }
 .daily-planner .planner-item .meta { color: var(--texto-secundario); font-size:0.85rem; }
+.daily-planner .planner-empty-state { list-style:none; border:1px dashed var(--borda); border-radius:10px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background: rgba(255,255,255,0.02); padding:12px; }
+.daily-planner .planner-empty-image { width:110px; max-width:100%; height:auto; object-fit:contain; opacity:0.95; }
+.daily-planner .planner-empty-state p { color: var(--texto-secundario); font-size:0.9rem; text-align:center; }
 
 /* Compras - Cards (seção dedicada) */
 .current-shopping { padding: 24px; background: var(--fundo-base); }
@@ -773,3 +796,4 @@ footer {
 .current-entertainment-body .ce-stars i { color: var(--acento-amarelo); }
 .current-entertainment-body .ce-tags { display:flex; flex-wrap: wrap; gap:6px; margin-bottom: 10px; }
 .current-entertainment-body .ce-meta { margin-top: 4px; }
+

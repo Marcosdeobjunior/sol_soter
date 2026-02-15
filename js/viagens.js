@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let travels = [];
   let map;
   let markers = [];
+  const geocodeCache = new Map();
   let isEditing = false;
   let editingIndex = -1;
 
@@ -78,34 +79,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inicializar o mapa
   function initMap() {
-    map = L.map("map").setView([-14.235, -51.925], 4); // Centro do Brasil
+    map = L.map("map", {
+      worldCopyJump: true,
+      minZoom: 3,
+      maxZoom: 18,
+      zoomSnap: 1,
+    }).setView([-14.235, -51.925], 4); // Centro do Brasil
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
+      noWrap: false,
     }).addTo(map);
   }
 
   // Função para obter coordenadas de um destino
   async function getCoordinates(destination) {
+    if (!destination) return null;
+    if (geocodeCache.has(destination)) {
+      return geocodeCache.get(destination);
+    }
+
     try {
-      const response = await fetch(
+      // API principal: Open-Meteo Geocoding (mais estável para uso em navegador)
+      const geoResponse = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+          destination
+        )}&count=1&language=pt&format=json`
+      );
+      const geoData = await geoResponse.json();
+      if (geoData && Array.isArray(geoData.results) && geoData.results.length > 0) {
+        const coords = {
+          lat: parseFloat(geoData.results[0].latitude),
+          lng: parseFloat(geoData.results[0].longitude),
+        };
+        geocodeCache.set(destination, coords);
+        return coords;
+      }
+
+      // Fallback: Nominatim
+      const nominatimResponse = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           destination
         )}&limit=1`
       );
-      const data = await response.json();
-
-      if (data && data.length > 0) {
-        return {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
+      const nominatimData = await nominatimResponse.json();
+      if (nominatimData && nominatimData.length > 0) {
+        const coords = {
+          lat: parseFloat(nominatimData[0].lat),
+          lng: parseFloat(nominatimData[0].lon),
         };
+        geocodeCache.set(destination, coords);
+        return coords;
       }
-      return null;
     } catch (error) {
       console.error("Erro ao obter coordenadas:", error);
-      return null;
     }
+
+    geocodeCache.set(destination, null);
+    return null;
   }
 
   // Função para obter informações de clima (usando Open-Meteo)
@@ -173,6 +204,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return "";
   }
 
+  function getMapMarkerStyle(category, destination) {
+    const c = (category || "").toLowerCase();
+    const d = (destination || "").toLowerCase();
+
+    // Montanhas e trilhas podem vir no destino mesmo sem categoria formal.
+    if (d.includes("montanha") || d.includes("serra") || d.includes("trilha")) {
+      return { fillColor: "#cba6f7", radius: 9, label: "Montanha/Trilha" };
+    }
+    if (c.includes("restaurante")) {
+      return { fillColor: "#fab387", radius: 8, label: "Restaurante" };
+    }
+    if (c.includes("parque")) {
+      return { fillColor: "#a6e3a1", radius: 8, label: "Parque" };
+    }
+    if (c.includes("hotel")) {
+      return { fillColor: "#89b4fa", radius: 8, label: "Hotel" };
+    }
+    if (c.includes("ponto turístico") || c.includes("museu")) {
+      return { fillColor: "#f9e2af", radius: 8, label: "Ponto Turístico" };
+    }
+    if (c.includes("cidade/país")) {
+      return { fillColor: "#94e2d5", radius: 8, label: "Cidade/País" };
+    }
+    if (c.includes("desejo")) {
+      return { fillColor: "#f5c2e7", radius: 7, label: "Desejo" };
+    }
+    return { fillColor: "#89b4fa", radius: 8, label: "Outro" };
+  }
+
   function getCountryFlag(destination) {
     const parts = destination.split(",").map(s => s.trim());
     const country = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
@@ -216,14 +276,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Adicionar marcador no mapa
   async function addMarkerToMap(travel, index) {
-    const coords = await getCoordinates(travel.destination);
+    const coords = travel.coords || (await getCoordinates(travel.destination));
 
     if (coords) {
-      const marker = L.marker([coords.lat, coords.lng]).addTo(map);
+      const markerStyle = getMapMarkerStyle(travel.category, travel.destination);
+      const marker = L.circleMarker([coords.lat, coords.lng], {
+        radius: markerStyle.radius,
+        fillColor: markerStyle.fillColor,
+        color: "#0f172a",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.95,
+      }).addTo(map);
 
       const popupContent = `
         <div style="text-align: center; min-width: 200px;">
           <h4 style="margin: 0 0 10px 0; color: #333;">${travel.destination}</h4>
+          <p style="margin: 5px 0; color: #666;"><i class="fas fa-tag"></i> ${travel.category || markerStyle.label}</p>
           <p style="margin: 5px 0; color: #666;"><i class="fas fa-calendar"></i> ${formatDate(
             travel.startDate
           )} - ${formatDate(travel.endDate)}</p>
@@ -234,7 +303,14 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       marker.bindPopup(popupContent);
+      marker.bindTooltip(travel.category || markerStyle.label, {
+        direction: "top",
+        offset: [0, -8],
+      });
       markers.push({ marker, index });
+      if (!travel.coords) {
+        travel.coords = coords;
+      }
 
       // Ajustar visualização do mapa se for a primeira viagem
       if (travels.length === 1) {
@@ -258,6 +334,15 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < travels.length; i++) {
       await addMarkerToMap(travels[i], i);
     }
+
+    saveTravels();
+
+    if (markers.length > 1) {
+      const group = L.featureGroup(markers.map((m) => m.marker));
+      map.fitBounds(group.getBounds(), { padding: [20, 20], maxZoom: 6 });
+    } else if (markers.length === 1) {
+      map.setView(markers[0].marker.getLatLng(), 6);
+    }
   }
 
   // Formatar data para exibição
@@ -272,7 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!startDate || !endDate) return "N/A";
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const diffTime = Math.abs(end - start);
+    const diffTime = end - start;
+    if (diffTime < 0) return "N/A";
+    if (diffTime === 0) return 1;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   }
@@ -315,18 +402,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Obter gradiente baseado no índice
-  function getCardGradient(index) {
-    const gradients = [
-      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-      "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-      "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
-      "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+  function getCardAccent(index) {
+    const accents = [
+      "#89b4fa",
+      "#f38ba8",
+      "#a6e3a1",
+      "#f9e2af",
+      "#fab387",
+      "#cba6f7",
+      "#94e2d5",
+      "#f5c2e7",
     ];
-    return gradients[index % gradients.length];
+    return accents[index % accents.length];
   }
 
   // Funções de paginação
@@ -506,7 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const categoryIcon = getCategoryIcon(travel.category);
       const icon = categoryIcon || getDestinationIcon(travel.destination);
       const categoryClass = getCategoryClass(travel.category);
-      const gradient = getCardGradient(globalIndex);
+      const accent = getCardAccent(globalIndex);
       const isWish = travel.category === 'Desejo';
       const country = getCountryFlag(travel.destination);
 
@@ -518,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isWish) {
           card.classList.add("wish-category");
       }
-      card.style.background = gradient;
+      card.style.borderTopColor = accent;
       card.dataset.index = globalIndex;
       card.setAttribute("role", "listitem");
 
@@ -553,7 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
         : "";
       
       const categoryHtml = travel.category
-        ? `<p class="travel-category" style="font-weight: 600; opacity: 1; margin-top: 5px;">${travel.category}</p>`
+        ? `<p class="travel-category" style="font-weight: 600;">${travel.category}</p>`
         : "";
 
       card.innerHTML = `
@@ -666,8 +753,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     // Validação de datas se ambas forem preenchidas
-    if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
-        alert("A data de início deve ser anterior à data de término.");
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        alert("A data de início deve ser menor ou igual à data de término.");
         return;
     }
 
@@ -777,3 +864,4 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap();
   renderTravels();
 });
+

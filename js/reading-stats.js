@@ -306,3 +306,4 @@ document.addEventListener('DOMContentLoaded', () => {
   window.readingStats.refresh(); // Chamar refresh para garantir que tudo seja atualizado na carga inicial
 });
 
+

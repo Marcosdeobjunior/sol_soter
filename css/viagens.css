@@ -19,6 +19,13 @@
 
   --verde-add: #2ecc71;
   --verde-add-hover: #27ae60;
+  --translucido-bg: rgba(0, 0, 0, 0.32);
+  --translucido-hover: rgba(0, 0, 0, 0.45);
+  --borda-clara: rgba(255, 255, 255, 0.18);
+  --texto-invertido: #101010;
+  --modal-overlay: rgba(0, 0, 0, 0.65);
+  --cor-perigo: #e74c3c;
+  --cor-sucesso: #2ecc71;
 
   /* Cores de Categoria */
   --cat-trabalho: #89b4fa; /* Azul */
@@ -673,7 +680,12 @@ footer {
 
 /* Estilos dos cards */
 .travel-card {
-  background: var(--fundo-overlay);
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0.01)
+    ),
+    var(--fundo-overlay);
   border-radius: 12px;
   padding: 20px;
   color: var(--texto-principal);
@@ -690,6 +702,7 @@ footer {
   min-height: 280px; 
   cursor: pointer;
   border: 1px solid var(--borda);
+  border-top: 4px solid var(--acento-azul);
 }
 
 .travel-card:hover {
@@ -750,7 +763,7 @@ footer {
   margin: 5px 0;
   font-size: 0.9em;
   opacity: 1;
-  color: var(--texto-secundario);
+  color: var(--texto-principal);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -836,6 +849,16 @@ footer {
   font-weight: 400;
   color: var(--texto-secundario);
   opacity: 1;
+}
+
+.travel-category {
+  margin-top: 10px;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--borda-clara);
+  background: var(--translucido-bg);
+  color: var(--texto-principal);
 }
 
 /* Controles de paginação */
@@ -1277,3 +1300,4 @@ footer {
 .travel-card--landmark .travel-card-icon {
   color: #8e6e53;
 }
+

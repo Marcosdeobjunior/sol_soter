@@ -143,6 +143,7 @@ const elementos = {
   recorrenciaTipo: document.getElementById('recorrencia-tipo'),
   recorrenciaCategoria: document.getElementById('recorrencia-categoria'),
   recorrenciaValor: document.getElementById('recorrencia-valor'),
+  recorrenciaRegra: document.getElementById('recorrencia-regra'),
   recorrenciaDia: document.getElementById('recorrencia-dia'),
   recorrenciaId: document.getElementById('recorrencia-id'),
   recorrenciasLista: document.getElementById('recorrencias-lista'),
@@ -178,6 +179,51 @@ function obterNomeMes(data) {
     month: 'long',
     year: 'numeric'
   });
+}
+
+function obterDiaExecucaoRecorrenciaNoMes(rec, ano, mes) {
+  const ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
+  const regra = rec.regra || 'dia_fixo';
+
+  if (regra === 'quinto_dia_util_sabado') {
+    let contador = 0;
+    for (let dia = 1; dia <= ultimoDiaMes; dia++) {
+      const semana = new Date(ano, mes, dia).getDay();
+      if (semana !== 0) { // domingo nao conta
+        contador++;
+        if (contador === 5) return dia;
+      }
+    }
+    return ultimoDiaMes;
+  }
+
+  if (regra === 'adiantamento_dia_20') {
+    let dia = 20;
+    const semana = new Date(ano, mes, dia).getDay();
+    if (semana === 6) dia -= 1; // sabado -> sexta
+    if (semana === 0) dia -= 2; // domingo -> sexta
+    if (dia < 1) dia = 1;
+    return Math.min(dia, ultimoDiaMes);
+  }
+
+  const diaFixo = parseInt(rec.diaDoMes, 10);
+  if (!Number.isFinite(diaFixo)) return 1;
+  return Math.max(1, Math.min(diaFixo, ultimoDiaMes));
+}
+
+function obterDescricaoRecorrencia(rec, ano, mes) {
+  const regra = rec.regra || 'dia_fixo';
+  if (regra === 'quinto_dia_util_sabado') return '5º dia útil (sábado conta)';
+  if (regra === 'adiantamento_dia_20') return 'Adiantamento dia 20 (antecipa para sexta)';
+  return `Dia ${obterDiaExecucaoRecorrenciaNoMes(rec, ano, mes)}`;
+}
+
+function atualizarCampoDiaRecorrencia() {
+  if (!elementos.recorrenciaRegra || !elementos.recorrenciaDia) return;
+  const usaDiaFixo = elementos.recorrenciaRegra.value === 'dia_fixo';
+  elementos.recorrenciaDia.disabled = !usaDiaFixo;
+  elementos.recorrenciaDia.required = usaDiaFixo;
+  elementos.recorrenciaDia.style.opacity = usaDiaFixo ? '1' : '0.6';
 }
 
 // Funções de navegação de abas
@@ -275,7 +321,7 @@ function carregarDados() {
 
       // NOVO: Carregar recorrências
       if (Array.isArray(dados.recorrencias)) {
-        estado.recorrencias = dados.recorrencias;
+        estado.recorrencias = dados.recorrencias.map(r => ({ ...r, regra: r.regra || 'dia_fixo', diaDoMes: Number.isFinite(parseInt(r.diaDoMes, 10)) ? parseInt(r.diaDoMes, 10) : 1 }));
       }
 
       if (typeof dados.reservaEmergencia === 'number') {
@@ -360,12 +406,6 @@ function adicionarTransacao(transacao) {
 }
 
 function removerTransacao(id) {
-  const transacao = estado.transacoes.find(t => t.id === id);
-  if (transacao && transacao.tipo === 'reserva') {
-    estado.reservaEmergencia -= transacao.valor;
-    if (estado.reservaEmergencia < 0) estado.reservaEmergencia = 0;
-  }
-
   estado.transacoes = estado.transacoes.filter(t => t.id !== id);
   salvarDados();
   renderizarCalendario();
@@ -487,17 +527,24 @@ function renderizarRecorrencias() {
     return;
   }
 
-  estado.recorrencias.sort((a, b) => a.diaDoMes - b.diaDoMes).forEach(rec => {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth();
+
+  estado.recorrencias.sort((a, b) =>
+    obterDiaExecucaoRecorrenciaNoMes(a, ano, mes) - obterDiaExecucaoRecorrenciaNoMes(b, ano, mes)
+  ).forEach(rec => {
     const categoria = estado.categorias.find(c => c.id === rec.categoria);
     const nomeCategoria = categoria ? categoria.nome : 'N/A';
     const eRecorrencia = document.createElement('div');
     eRecorrencia.className = 'recorrencia-item';
 
     const valorClasse = rec.tipo === 'entrada' ? 'valor-entrada' : 'valor-despesa';
+    const descricao = obterDescricaoRecorrencia(rec, ano, mes);
 
     eRecorrencia.innerHTML = `
       <div class="recorrencia-detalhes">
-        Dia <strong>${rec.diaDoMes}</strong>: ${nomeCategoria}
+        ${descricao}: ${nomeCategoria}
         <span class="${valorClasse}">(${formatarMoeda(rec.valor)})</span>
       </div>
       <div class="recorrencia-acoes">
@@ -517,7 +564,9 @@ function renderizarRecorrencias() {
         elementos.recorrenciaTipo.value = rec.tipo;
         elementos.recorrenciaCategoria.value = rec.categoria;
         elementos.recorrenciaValor.value = rec.valor;
-        elementos.recorrenciaDia.value = rec.diaDoMes;
+        elementos.recorrenciaRegra.value = rec.regra || 'dia_fixo';
+        elementos.recorrenciaDia.value = rec.diaDoMes || 1;
+        atualizarCampoDiaRecorrencia();
       }
     });
   });
@@ -533,44 +582,47 @@ function renderizarRecorrencias() {
 function salvarRecorrencia(e) {
   e.preventDefault();
   const id = elementos.recorrenciaId.value;
+  const regra = elementos.recorrenciaRegra.value || 'dia_fixo';
+  const diaInformado = parseInt(elementos.recorrenciaDia.value, 10);
   const novaRecorrencia = {
     tipo: elementos.recorrenciaTipo.value,
     categoria: elementos.recorrenciaCategoria.value,
     valor: parseFloat(elementos.recorrenciaValor.value),
-    diaDoMes: parseInt(elementos.recorrenciaDia.value)
+    diaDoMes: regra === 'dia_fixo' ? diaInformado : 1,
+    regra
   };
 
   if (novaRecorrencia.valor <= 0 || isNaN(novaRecorrencia.valor)) {
-    alert('Valor inválido.');
+    alert('Valor invalido.');
     return;
   }
-  if (novaRecorrencia.diaDoMes < 1 || novaRecorrencia.diaDoMes > 31 || isNaN(novaRecorrencia.diaDoMes)) {
-    alert('Dia do mês inválido (deve ser entre 1 e 31).');
+  if (regra === 'dia_fixo' && (novaRecorrencia.diaDoMes < 1 || novaRecorrencia.diaDoMes > 31 || isNaN(novaRecorrencia.diaDoMes))) {
+    alert('Dia do mes invalido (deve ser entre 1 e 31).');
     return;
   }
 
   if (id) {
-    // Editar
     const index = estado.recorrencias.findIndex(r => r.id === id);
     if (index > -1) {
-      estado.recorrencias[index] = { ...estado.recorrencias[index],
-        ...novaRecorrencia
-      };
+      estado.recorrencias[index] = { ...estado.recorrencias[index], ...novaRecorrencia };
     }
   } else {
-    // Adicionar
     novaRecorrencia.id = gerarId();
     estado.recorrencias.push(novaRecorrencia);
   }
 
   salvarDados();
   renderizarRecorrencias();
-  renderizarCalendario(); // Atualiza provisões
-  calcularMelhorDia(); // Recalcula com base nas novas recorrências
+  renderizarCalendario();
+  calcularMelhorDia();
   renderizarOrcamento();
   renderizarGraficoCategorias();
   elementos.formRecorrencia.reset();
   elementos.recorrenciaId.value = '';
+  if (elementos.recorrenciaRegra) {
+    elementos.recorrenciaRegra.value = 'dia_fixo';
+  }
+  atualizarCampoDiaRecorrencia();
 }
 
 function removerRecorrencia(id) {
@@ -586,6 +638,10 @@ function removerRecorrencia(id) {
 function abrirModalRecorrencias() {
   elementos.formRecorrencia.reset();
   elementos.recorrenciaId.value = '';
+  if (elementos.recorrenciaRegra) {
+    elementos.recorrenciaRegra.value = 'dia_fixo';
+  }
+  atualizarCampoDiaRecorrencia();
   renderizarRecorrencias();
   elementos.modalRecorrencias.style.display = 'flex';
 }
@@ -1026,6 +1082,12 @@ function calcularSaldoDia(data) {
   return saldo;
 }
 
+function calcularReservaEmergenciaAtual() {
+  return estado.transacoes
+    .filter(t => t.tipo === 'reserva')
+    .reduce((total, t) => total + (Number(t.valor) || 0), 0);
+}
+
 // ATUALIZADO: Agora considera recorrências futuras
 function calcularMelhorDia() {
   const hoje = new Date();
@@ -1105,17 +1167,17 @@ function calcularMelhorDia() {
 
     // NOVO: Despesas RECORRENTES futuras no mês
     const despesasRecorrentesFuturas = estado.recorrencias
-      .filter(rec =>
-        rec.tipo === 'saida' &&
-        rec.diaDoMes > dia.getDate() &&
-        // Verifica se já não foi lançada uma transação real
-        !estado.transacoes.some(t =>
-          t.categoria === rec.categoria && // Aproximação. Ideal seria t.recorrenciaId
+      .filter(rec => {
+        if (rec.tipo !== 'saida') return false;
+        const diaExecucao = obterDiaExecucaoRecorrenciaNoMes(rec, ano, mes);
+        if (diaExecucao <= dia.getDate()) return false;
+        return !estado.transacoes.some(t =>
+          t.categoria === rec.categoria &&
           t.tipo === 'saida' &&
           t.data.getMonth() === mes &&
-          t.data.getDate() === rec.diaDoMes
-        )
-      )
+          t.data.getDate() === diaExecucao
+        );
+      })
       .reduce((total, rec) => total + rec.valor, 0);
 
     const despesasFuturas = despesasReaisFuturas + despesasRecorrentesFuturas;
@@ -1213,7 +1275,10 @@ function criarElementoDia(data, outroMes) {
   // Apenas se for o mês atual
   const hoje = new Date();
   if (data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()) {
-    const recorrenciasDia = estado.recorrencias.filter(rec => rec.diaDoMes === data.getDate());
+    const recorrenciasDia = estado.recorrencias.filter(rec => {
+      const diaExecucao = obterDiaExecucaoRecorrenciaNoMes(rec, data.getFullYear(), data.getMonth());
+      return diaExecucao === data.getDate();
+    });
     
     recorrenciasDia.forEach(rec => {
         // Ocultar se já existir uma transação real da mesma categoria no dia
@@ -1247,6 +1312,7 @@ function criarElementoDia(data, outroMes) {
 
 function renderizarReservaWidget() {
   if (!elementos.widgetReserva) return;
+  estado.reservaEmergencia = calcularReservaEmergenciaAtual();
   elementos.reservaValorAtual.textContent = formatarMoeda(estado.reservaEmergencia);
   elementos.reservaMetaInput.value = estado.metaReserva;
   let percentual = 0;
@@ -1417,7 +1483,7 @@ function importarDadosFinanceiros(dados) {
         tipoDespesa: c.tipoDespesa || 'variavel'
       }));
     }
-    if (Array.isArray(dados.recorrencias)) estado.recorrencias = dados.recorrencias; // NOVO
+    if (Array.isArray(dados.recorrencias)) estado.recorrencias = dados.recorrencias.map(r => ({ ...r, regra: r.regra || 'dia_fixo', diaDoMes: Number.isFinite(parseInt(r.diaDoMes, 10)) ? parseInt(r.diaDoMes, 10) : 1 })); // NOVO
     if (dados.limites && typeof dados.limites === 'object') estado.limites = dados.limites;
     if (typeof dados.reservaEmergencia === 'number') estado.reservaEmergencia = dados.reservaEmergencia;
     if (typeof dados.metaReserva === 'number') estado.metaReserva = dados.metaReserva;
@@ -1454,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', function() {
   renderizarCalendario();
   renderizarCategorias();
   atualizarSelectsCategorias();
+  atualizarCampoDiaRecorrencia();
   renderizarReservaWidget();
   calcularMelhorDia();
   calcularDespesasMes();
@@ -1517,6 +1584,13 @@ document.addEventListener('DOMContentLoaded', function() {
         renderizarReservaWidget();
       }
     });
+    elementos.reservaMetaInput.addEventListener('input', function() {
+      const novaMeta = parseFloat(this.value) || 0;
+      if (novaMeta >= 0) {
+        estado.metaReserva = novaMeta;
+        renderizarReservaWidget();
+      }
+    });
   }
 
   elementos.filtroCategoria.addEventListener('change', function() {
@@ -1549,7 +1623,6 @@ document.addEventListener('DOMContentLoaded', function() {
         alert(`Saldo insuficiente para transferir ${formatarMoeda(valor)}.\nSaldo disponível no dia ${estado.diaSelecionado.toLocaleDateString('pt-BR')}: ${formatarMoeda(saldoDisponivelDia)}`);
         return;
       }
-      estado.reservaEmergencia += valor;
     }
     const transacao = {
       id: gerarId(),
@@ -1618,6 +1691,9 @@ document.addEventListener('DOMContentLoaded', function() {
   elementos.gerenciarRecorrencias.addEventListener('click', abrirModalRecorrencias);
   elementos.recorrenciasModalClose.addEventListener('click', fecharModalRecorrencias);
   elementos.formRecorrencia.addEventListener('submit', salvarRecorrencia);
+  if (elementos.recorrenciaRegra) {
+    elementos.recorrenciaRegra.addEventListener('change', atualizarCampoDiaRecorrencia);
+  }
 
   // Fechar modais ao clicar fora
   window.addEventListener('click', function(e) {
@@ -1633,3 +1709,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+
+

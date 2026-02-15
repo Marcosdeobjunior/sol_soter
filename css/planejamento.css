@@ -638,6 +638,14 @@ footer {
   padding: 8px 12px;
   font-size: 1rem;
 }
+.filter-count {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+}
 .divider-vertical {
   width: 1px;
   height: 24px;
@@ -1024,6 +1032,23 @@ footer {
 .form-row .form-group {
   flex: 1;
 }
+.form-row.form-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.form-checkbox input[type="checkbox"] {
+  width: auto;
+}
+.recurring-options {
+  margin-top: 10px;
+}
 input,
 select,
 textarea {
@@ -1099,6 +1124,9 @@ textarea:focus {
   .search-bar {
     width: 100%;
   }
+  .form-row.form-row-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .calendar-day {
     min-height: 80px;
   } /* Diminui calendário no mobile */
@@ -1106,3 +1134,6 @@ textarea:focus {
     display: none; /* Oculta stats complexos no mobile se faltar espaço, ou ajusta */
   }
 }
+
+
+

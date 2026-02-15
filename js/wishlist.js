@@ -510,3 +510,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderAll();
 });
+

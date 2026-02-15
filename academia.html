@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Academia - Sol de Soter</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon" />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/notificacoes.css" />
+
+    <style>
+      .academia-main {
+        padding: 24px 40px;
+      }
+
+      .academia-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+      }
+
+      .academia-profile-card,
+      .academia-chart-card {
+        background: var(--fundo-superficie);
+        border: 1px solid var(--borda);
+        border-radius: 14px;
+        box-shadow: var(--sombra-card);
+      }
+
+      .academia-profile-card {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .academia-photo-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .academia-photo {
+        width: 190px;
+        height: 300px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid var(--acento-azul);
+        background: var(--fundo-overlay);
+      }
+
+      .academia-photo-label,
+      .academia-weight-btn {
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: var(--fundo-overlay);
+        color: var(--texto-principal);
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+
+      .academia-photo-label:hover,
+      .academia-weight-btn:hover {
+        background: var(--fundo-hover);
+        color: var(--acento-azul);
+      }
+
+      .academia-info-block {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .academia-info-block h2 {
+        font-size: 1.15rem;
+        margin-bottom: 12px;
+        color: var(--acento-amarelo);
+      }
+
+      .academia-info-list {
+        list-style: none;
+        display: grid;
+        gap: 12px;
+      }
+
+      .academia-info-item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.95rem;
+      }
+
+      .academia-info-label {
+        color: var(--texto-secundario);
+        min-width: 58px;
+      }
+
+      .academia-info-value {
+        color: var(--texto-principal);
+        font-weight: 600;
+      }
+
+      .academia-weight-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .academia-weight-input {
+        width: 110px;
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: #1f1f1f;
+        color: var(--texto-principal);
+        padding: 8px;
+        font-size: 0.92rem;
+      }
+
+      .academia-weight-feedback {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: var(--texto-secundario);
+        min-height: 18px;
+      }
+
+      .academia-days-wrap {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .academia-day-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--borda);
+        background: #1f1f1f;
+        color: var(--texto-secundario);
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .academia-day-btn:hover {
+        border-color: var(--acento-azul);
+        color: var(--texto-principal);
+      }
+
+      .academia-day-btn.active {
+        background: var(--acento-verde);
+        border-color: var(--acento-verde);
+        color: #132014;
+      }
+
+      .academia-chart-card {
+        flex: 1;
+        min-width: 320px;
+        padding: 18px;
+      }
+
+      .academia-chart-card h3 {
+        color: var(--acento-amarelo);
+        font-size: 1rem;
+        margin-bottom: 10px;
+      }
+
+      .academia-chart-wrap {
+        height: 320px;
+      }
+
+      .academia-dieta-section {
+        margin-top: 20px;
+        background: var(--fundo-superficie);
+        border: 1px solid var(--borda);
+        border-radius: 14px;
+        box-shadow: var(--sombra-card);
+        padding: 18px;
+      }
+
+      .academia-dieta-title {
+        color: var(--acento-amarelo);
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+
+      .academia-dieta-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .academia-refeicao-card {
+        background: #1f1f1f;
+        border: 1px solid var(--borda);
+        border-radius: 12px;
+        padding: 14px;
+        min-height: 120px;
+      }
+
+      .academia-refeicao-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--texto-principal);
+      }
+
+      .academia-refeicao-header i {
+        color: var(--acento-azul);
+      }
+
+      .academia-refeicao-nome {
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .academia-refeicao-texto {
+        color: var(--texto-secundario);
+        font-size: 0.85rem;
+        line-height: 1.4;
+      }
+
+      .academia-refeicao-list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--texto-principal);
+        display: grid;
+        gap: 6px;
+      }
+
+      .academia-refeicao-item {
+        display: list-item;
+      }
+
+      .academia-refeicao-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .academia-refeicao-edit {
+        flex: 1;
+        min-width: 0;
+        outline: none;
+        border-bottom: 1px dashed transparent;
+      }
+
+      .academia-refeicao-edit:focus {
+        border-bottom-color: var(--acento-azul);
+      }
+
+      .academia-refeicao-remove {
+        border: none;
+        background: transparent;
+        color: var(--texto-sutil);
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+
+      .academia-refeicao-remove:hover {
+        color: var(--acento-vermelho);
+      }
+
+      .academia-refeicao-add {
+        margin-top: 10px;
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--borda);
+        border-radius: 50%;
+        background: var(--fundo-overlay);
+        color: var(--texto-principal);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .academia-refeicao-add:hover {
+        background: var(--fundo-hover);
+        color: var(--acento-azul);
+      }
+
+      .academia-treino-section {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: 0.72fr 1.28fr;
+        gap: 14px;
+      }
+
+      .academia-treino-col {
+        background: var(--fundo-superficie);
+        border: 1px solid var(--borda);
+        border-radius: 14px;
+        box-shadow: var(--sombra-card);
+        padding: 16px;
+      }
+
+      .academia-treino-title {
+        color: var(--acento-amarelo);
+        font-size: 1rem;
+        margin-bottom: 10px;
+      }
+
+      .academia-treino-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .academia-mini-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid var(--borda);
+        background: transparent;
+        color: var(--texto-secundario);
+        font-size: 0.95rem;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .academia-mini-btn:hover {
+        color: var(--acento-azul);
+        border-color: var(--acento-azul);
+      }
+
+      .academia-tag-filter {
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: #171717;
+        color: var(--texto-principal);
+        padding: 5px 8px;
+        font-size: 0.8rem;
+        min-width: 130px;
+      }
+
+      .academia-treino-sub {
+        color: var(--texto-secundario);
+        font-size: 0.82rem;
+        margin-bottom: 10px;
+      }
+
+      .academia-ex-dia-empty {
+        color: var(--texto-secundario);
+        font-size: 0.9rem;
+      }
+
+      .academia-ex-dia-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .academia-ex-dia-card,
+      .academia-ex-all-card {
+        background: #1f1f1f;
+        border: 1px solid var(--borda);
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+
+      .academia-session-card {
+        background: #1f1f1f;
+        border: 1px solid var(--borda);
+        border-radius: 12px;
+        padding: 10px;
+      }
+
+      .academia-session-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .academia-session-title {
+        color: var(--texto-principal);
+        font-size: 0.88rem;
+        font-weight: 600;
+        outline: none;
+        border-bottom: 1px dashed transparent;
+      }
+
+      .academia-session-title:focus {
+        border-bottom-color: var(--acento-azul);
+      }
+
+      .academia-session-list {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 5px;
+      }
+
+      .academia-session-list li {
+        color: var(--texto-principal);
+        font-size: 0.83rem;
+        display: list-item;
+      }
+
+      .academia-session-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .academia-ex-dia-card:hover,
+      .academia-ex-all-card:hover {
+        border-color: var(--acento-azul);
+      }
+
+      .academia-ex-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid var(--borda);
+        flex-shrink: 0;
+      }
+
+      .academia-ex-meta {
+        min-width: 0;
+      }
+
+      .academia-ex-card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--texto-principal);
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .academia-ex-card-sub {
+        color: var(--texto-secundario);
+        font-size: 0.78rem;
+      }
+
+      .academia-ex-tags {
+        margin-top: 4px;
+        color: var(--acento-verde);
+        font-size: 0.72rem;
+      }
+
+      .academia-ex-all-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .academia-ex-delete {
+        margin-left: auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid var(--borda);
+        background: transparent;
+        color: var(--texto-sutil);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .academia-ex-delete:hover {
+        color: var(--acento-vermelho);
+        border-color: var(--acento-vermelho);
+      }
+
+      .academia-pagination {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .academia-page-info {
+        color: var(--texto-secundario);
+        font-size: 0.82rem;
+      }
+
+      .academia-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1200;
+        padding: 16px;
+      }
+
+      .academia-modal-overlay.active {
+        display: flex;
+      }
+
+      .academia-picker-list {
+        margin: 10px 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .academia-picker-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: #1f1f1f;
+      }
+
+      .academia-picker-item label {
+        color: var(--texto-principal);
+        font-size: 0.85rem;
+      }
+
+      .academia-modal {
+        width: min(860px, 100%);
+        max-height: 92vh;
+        overflow: auto;
+        background: var(--fundo-superficie);
+        border: 1px solid var(--borda);
+        border-radius: 16px;
+        box-shadow: var(--sombra-card);
+        padding: 16px;
+      }
+
+      .academia-modal-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .academia-modal-close {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid var(--borda);
+        background: #1f1f1f;
+        color: var(--texto-principal);
+        cursor: pointer;
+      }
+
+      .academia-modal-grid {
+        display: grid;
+        grid-template-columns: 230px 1fr;
+        gap: 14px;
+      }
+
+      .academia-modal-photo {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--borda);
+      }
+
+      .academia-modal-fields {
+        display: grid;
+        gap: 10px;
+      }
+
+      .academia-modal-row {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .academia-modal-row label {
+        color: var(--texto-secundario);
+        font-size: 0.85rem;
+      }
+
+      .academia-modal-input {
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: #171717;
+        color: var(--texto-principal);
+        padding: 8px;
+      }
+
+      .academia-modal-save {
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        background: var(--fundo-overlay);
+        color: var(--texto-principal);
+        font-weight: 600;
+        padding: 9px 12px;
+        width: max-content;
+        cursor: pointer;
+      }
+
+      .academia-modal-save:hover {
+        background: var(--fundo-hover);
+        color: var(--acento-azul);
+      }
+
+      .academia-modal-feedback {
+        color: var(--texto-secundario);
+        font-size: 0.82rem;
+        min-height: 16px;
+      }
+
+      .academia-modal-chart {
+        height: 220px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 960px) {
+        .academia-main {
+          padding: 16px;
+        }
+
+        .academia-layout {
+          flex-direction: column;
+        }
+
+        .academia-profile-card {
+          max-width: none;
+        }
+
+        .academia-chart-card {
+          width: 100%;
+        }
+
+        .academia-dieta-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .academia-treino-section {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .academia-profile-card {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .academia-info-block {
+          width: 100%;
+        }
+
+        .academia-dieta-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .academia-ex-all-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .academia-modal-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .academia-modal-photo {
+          height: 220px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo-container">
+        <a href="index.html" class="logo-link">
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Soter" />
+          <h1>Sol de Soter</h1>
+        </a>
+      </div>
+
+      <div class="menu-profile">
+        <nav class="navbar">
+          <ul class="nav-menu">
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Biblioteca</a>
+                <button class="dropdown-toggle">&#9660;</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="livraria.html">Livraria</a></li>
+                <li><a href="cinema.html">Cinema</a></li>
+                <li><a href="mangas.html">Mangas</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Pessoal</a>
+                <button class="dropdown-toggle">&#9660;</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="sonhos.html">Sonhos</a></li>
+                <li><a href="viagens.html">Viagens</a></li>
+                <li><a href="wishlist.html">Carrinho</a></li>
+                <li><a href="financas.html">Financas</a></li>
+                <li><a href="planejamento.html">Planejamento</a></li>
+                <li><a href="academia.html">Academia</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <div class="dropdown-header">
+                <a href="#">Estudos</a>
+                <button class="dropdown-toggle">&#9660;</button>
+              </div>
+              <ul class="dropdown-menu">
+                <li><a href="estudos.html">Planner</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="notification-center">
+          <button id="notification-bell" class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span
+              id="notification-count"
+              class="notification-count"
+              style="display: none"
+              >0</span
+            >
+          </button>
+          <div id="notification-panel" class="notification-panel">
+            <div class="notification-panel-header">
+              <h3>Notificacoes</h3>
+            </div>
+            <ul id="notification-list" class="notification-list">
+              <li class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Nenhuma notificacao nova</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="saldo-display">
+          <span class="saldo-header-label">Saldo Atual</span>
+          <div id="saldo-do-dia">R$ 0,00</div>
+        </div>
+
+        <div class="dropdown profile-dropdown">
+          <div class="profile rpg-profile-trigger">
+            <div class="profile-info">
+              <span class="profile-name">Marcos</span>
+              <div class="rpg-mini-bar-container" title="Progresso Geral">
+                <div
+                  class="rpg-mini-bar-fill"
+                  id="header-xp-bar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="profile-avatar-wrapper">
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuario" />
+              <span class="level-badge" id="header-level-badge">1</span>
+            </div>
+          </div>
+
+          <ul class="dropdown-menu profile-menu rpg-extended-menu">
+            <li class="rpg-stats-panel">
+              <div class="rpg-stat-row">
+                <span class="stat-icon strength"
+                  ><i class="fas fa-dumbbell"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Forca (Lvl <span id="lvl-str">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill strength-fill"
+                      id="bar-str"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon intelligence"
+                  ><i class="fas fa-brain"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Intelecto (Lvl <span id="lvl-int">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill intelligence-fill"
+                      id="bar-int"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon wisdom"
+                  ><i class="fas fa-scroll"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Sabedoria (Lvl <span id="lvl-wis">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill wisdom-fill"
+                      id="bar-wis"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="rpg-stat-row">
+                <span class="stat-icon productivity"
+                  ><i class="fas fa-briefcase"></i
+                ></span>
+                <div class="stat-details">
+                  <span class="stat-name"
+                    >Produtividade (Lvl <span id="lvl-prod">1</span>)</span
+                  >
+                  <div class="stat-bar-bg">
+                    <div
+                      class="stat-bar-fill productivity-fill"
+                      id="bar-prod"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="divider"></li>
+
+            <li>
+              <a href="#" class="corinthians-item">
+                <img
+                  src="img/Corinthians_simbolo.png"
+                  alt="Escudo do Corinthians"
+                  class="corinthians-shield"
+                />
+                Corinthians
+              </a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
+            </li>
+            <li>
+              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main class="academia-main">
+      <div class="academia-layout">
+        <section class="academia-profile-card" aria-label="Dados fisicos">
+          <div class="academia-photo-block">
+            <img
+              id="academia-foto-preview"
+              class="academia-photo"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='360' viewBox='0 0 240 360'%3E%3Crect width='240' height='360' fill='%233a3a3a'/%3E%3Ctext x='120' y='170' fill='%23a0a0a0' font-size='20' text-anchor='middle' font-family='Poppins,sans-serif'%3EFoto%3C/text%3E%3Ctext x='120' y='200' fill='%23a0a0a0' font-size='20' text-anchor='middle' font-family='Poppins,sans-serif'%3Ecorpo inteiro%3C/text%3E%3C/svg%3E"
+              alt="Foto de corpo inteiro"
+            />
+            <label class="academia-photo-label" for="academia-foto-input">Selecionar foto corpo inteiro</label>
+            <input id="academia-foto-input" type="file" accept="image/*" hidden />
+          </div>
+
+          <div class="academia-info-block">
+            <h2 id="academia-nome">Marcos</h2>
+            <ul class="academia-info-list">
+              <li class="academia-info-item">
+                <span class="academia-info-label">Nome:</span>
+                <span class="academia-info-value" id="academia-nome-valor">Marcos</span>
+              </li>
+              <li class="academia-info-item">
+                <span class="academia-info-label">Idade:</span>
+                <span class="academia-info-value" id="academia-idade-valor">30 anos</span>
+              </li>
+              <li class="academia-info-item">
+                <span class="academia-info-label">Peso:</span>
+                <div class="academia-weight-controls">
+                  <input
+                    id="academia-peso-input"
+                    class="academia-weight-input"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value="80"
+                    aria-label="Peso em kg"
+                  />
+                  <button id="academia-peso-btn" class="academia-weight-btn" type="button">Atualizar kg</button>
+                </div>
+              </li>
+              <li class="academia-info-item">
+                <span class="academia-info-label">Altura:</span>
+                <span class="academia-info-value" id="academia-altura-valor">1,75 m</span>
+              </li>
+              <li class="academia-info-item">
+                <span class="academia-info-label">Treino:</span>
+                <div class="academia-days-wrap" id="academia-days-wrap">
+                  <button class="academia-day-btn" type="button" data-day="seg">Seg</button>
+                  <button class="academia-day-btn" type="button" data-day="ter">Ter</button>
+                  <button class="academia-day-btn" type="button" data-day="qua">Quar</button>
+                  <button class="academia-day-btn" type="button" data-day="qui">Quin</button>
+                  <button class="academia-day-btn" type="button" data-day="sex">Sex</button>
+                  <button class="academia-day-btn" type="button" data-day="sab">Sab</button>
+                  <button class="academia-day-btn" type="button" data-day="dom">Dom</button>
+                </div>
+              </li>
+            </ul>
+            <p class="academia-weight-feedback" id="academia-weight-feedback"></p>
+          </div>
+        </section>
+
+        <section class="academia-chart-card" aria-label="Historico de peso">
+          <h3>Historico de peso</h3>
+          <div class="academia-chart-wrap">
+            <canvas id="academia-peso-chart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <section class="academia-dieta-section" aria-label="Sessao de dieta">
+        <h3 class="academia-dieta-title">Minha dieta</h3>
+        <div class="academia-dieta-grid">
+          <article class="academia-refeicao-card">
+            <div class="academia-refeicao-header">
+              <i class="fas fa-mug-hot"></i>
+              <span class="academia-refeicao-nome">Cafe da manha</span>
+            </div>
+            <ul class="academia-refeicao-list" id="dieta-list-cafe"></ul>
+            <button class="academia-refeicao-add" data-meal="cafe" type="button" aria-label="Adicionar item">+</button>
+          </article>
+
+          <article class="academia-refeicao-card">
+            <div class="academia-refeicao-header">
+              <i class="fas fa-utensils"></i>
+              <span class="academia-refeicao-nome">Almoco</span>
+            </div>
+            <ul class="academia-refeicao-list" id="dieta-list-almoco"></ul>
+            <button class="academia-refeicao-add" data-meal="almoco" type="button" aria-label="Adicionar item">+</button>
+          </article>
+
+          <article class="academia-refeicao-card">
+            <div class="academia-refeicao-header">
+              <i class="fas fa-cookie-bite"></i>
+              <span class="academia-refeicao-nome">Lanche</span>
+            </div>
+            <ul class="academia-refeicao-list" id="dieta-list-lanche"></ul>
+            <button class="academia-refeicao-add" data-meal="lanche" type="button" aria-label="Adicionar item">+</button>
+          </article>
+
+          <article class="academia-refeicao-card">
+            <div class="academia-refeicao-header">
+              <i class="fas fa-drumstick-bite"></i>
+              <span class="academia-refeicao-nome">Jantar</span>
+            </div>
+            <ul class="academia-refeicao-list" id="dieta-list-jantar"></ul>
+            <button class="academia-refeicao-add" data-meal="jantar" type="button" aria-label="Adicionar item">+</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="academia-treino-section" aria-label="Ficha de treino">
+        <div class="academia-treino-col">
+          <div class="academia-treino-head">
+            <h3 class="academia-treino-title">Exercicios do dia</h3>
+            <button id="academia-add-session-btn" class="academia-mini-btn" type="button" aria-label="Adicionar sessao">+</button>
+          </div>
+          <p class="academia-treino-sub" id="academia-dia-info"></p>
+          <div id="academia-ex-dia" class="academia-ex-dia-list"></div>
+        </div>
+
+        <div class="academia-treino-col">
+          <div class="academia-treino-head">
+            <h3 class="academia-treino-title">Ficha completa</h3>
+            <div>
+              <select id="academia-tag-filter-all" class="academia-tag-filter" aria-label="Filtrar por tag"></select>
+              <button id="academia-add-ex-btn" class="academia-mini-btn" type="button" aria-label="Adicionar exercicio">+</button>
+            </div>
+          </div>
+          <div class="academia-ex-all-grid" id="academia-ex-all"></div>
+          <div class="academia-pagination">
+            <button id="academia-page-prev" class="academia-mini-btn" type="button" aria-label="Pagina anterior"><</button>
+            <span id="academia-page-info" class="academia-page-info"></span>
+            <button id="academia-page-next" class="academia-mini-btn" type="button" aria-label="Proxima pagina">></button>
+          </div>
+        </div>
+      </section>
+
+      <div id="academia-ex-modal-overlay" class="academia-modal-overlay" aria-hidden="true">
+        <div class="academia-modal" role="dialog" aria-modal="true" aria-labelledby="academia-ex-modal-title">
+          <div class="academia-modal-head">
+            <h3 id="academia-ex-modal-title" class="academia-treino-title">Exercicio</h3>
+            <button id="academia-ex-modal-close" class="academia-modal-close" type="button" aria-label="Fechar">x</button>
+          </div>
+          <div class="academia-modal-grid">
+            <img id="academia-ex-modal-photo" class="academia-modal-photo" alt="Foto do exercicio" />
+            <div class="academia-modal-fields">
+              <div class="academia-modal-row">
+                <label for="academia-ex-modal-nome">Nome do exercicio</label>
+                <input id="academia-ex-modal-nome" class="academia-modal-input" type="text" />
+              </div>
+              <div class="academia-modal-row">
+                <label for="academia-ex-modal-foto-url">URL da foto</label>
+                <input id="academia-ex-modal-foto-url" class="academia-modal-input" type="text" />
+              </div>
+              <div class="academia-modal-row">
+                <label for="academia-ex-modal-tags">Tags (virgula)</label>
+                <input id="academia-ex-modal-tags" class="academia-modal-input" type="text" />
+              </div>
+              <div class="academia-modal-row">
+                <label for="academia-ex-modal-carga">Carga atual (kg)</label>
+                <input id="academia-ex-modal-carga" class="academia-modal-input" type="number" min="0" step="0.5" />
+              </div>
+              <div class="academia-modal-row">
+                <label for="academia-ex-modal-reps">Repeticoes</label>
+                <input id="academia-ex-modal-reps" class="academia-modal-input" type="number" min="1" step="1" />
+              </div>
+              <button id="academia-ex-modal-save" class="academia-modal-save" type="button">Salvar progresso</button>
+              <p id="academia-ex-modal-feedback" class="academia-modal-feedback"></p>
+              <div class="academia-modal-chart">
+                <canvas id="academia-ex-modal-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="academia-session-modal-overlay" class="academia-modal-overlay" aria-hidden="true">
+        <div class="academia-modal" role="dialog" aria-modal="true" aria-labelledby="academia-session-modal-title">
+          <div class="academia-modal-head">
+            <h3 id="academia-session-modal-title" class="academia-treino-title">Nova sessao de treino</h3>
+            <button id="academia-session-modal-close" class="academia-modal-close" type="button" aria-label="Fechar">x</button>
+          </div>
+          <select id="academia-tag-filter-session" class="academia-tag-filter" aria-label="Filtrar por tag na sessao"></select>
+          <p class="academia-treino-sub">Selecione os exercicios para esta sessao.</p>
+          <div id="academia-session-picker-list" class="academia-picker-list"></div>
+          <button id="academia-session-create-btn" class="academia-modal-save" type="button">Criar sessao</button>
+          <p id="academia-session-modal-feedback" class="academia-modal-feedback"></p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Sol de Soter. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="js/saldo-global.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/rpg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const STORAGE_KEYS = {
+        bodyPhoto: "academia-body-photo-v1",
+        profile: "academia-profile-v1",
+        history: "academia-weight-history-v1",
+        trainingDays: "academia-training-days-v1",
+        diet: "academia-diet-v1",
+        exerciseProgress: "academia-exercise-progress-v1",
+        exerciseLibrary: "academia-exercise-library-v1",
+        daySessions: "academia-day-sessions-v1",
+      };
+
+      const defaultProfile = {
+        nome: "Marcos",
+        idade: "30 anos",
+        altura: "1,75 m",
+        peso: 80,
+      };
+
+      const fotoInput = document.getElementById("academia-foto-input");
+      const fotoPreview = document.getElementById("academia-foto-preview");
+      const pesoInput = document.getElementById("academia-peso-input");
+      const pesoBtn = document.getElementById("academia-peso-btn");
+      const feedbackEl = document.getElementById("academia-weight-feedback");
+      const nomeTituloEl = document.getElementById("academia-nome");
+      const nomeValorEl = document.getElementById("academia-nome-valor");
+      const idadeValorEl = document.getElementById("academia-idade-valor");
+      const alturaValorEl = document.getElementById("academia-altura-valor");
+      const dayButtons = Array.from(document.querySelectorAll(".academia-day-btn"));
+      const dayInfoEl = document.getElementById("academia-dia-info");
+      const exerciciosDiaEl = document.getElementById("academia-ex-dia");
+      const exerciciosAllEl = document.getElementById("academia-ex-all");
+      const addSessionBtnEl = document.getElementById("academia-add-session-btn");
+      const addExerciseBtnEl = document.getElementById("academia-add-ex-btn");
+      const tagFilterAllEl = document.getElementById("academia-tag-filter-all");
+      const tagFilterSessionEl = document.getElementById("academia-tag-filter-session");
+      const pagePrevBtnEl = document.getElementById("academia-page-prev");
+      const pageNextBtnEl = document.getElementById("academia-page-next");
+      const pageInfoEl = document.getElementById("academia-page-info");
+      const exModalOverlayEl = document.getElementById("academia-ex-modal-overlay");
+      const sessionModalOverlayEl = document.getElementById("academia-session-modal-overlay");
+      const sessionModalCloseEl = document.getElementById("academia-session-modal-close");
+      const sessionCreateBtnEl = document.getElementById("academia-session-create-btn");
+      const sessionPickerListEl = document.getElementById("academia-session-picker-list");
+      const sessionModalFeedbackEl = document.getElementById("academia-session-modal-feedback");
+      const exModalCloseEl = document.getElementById("academia-ex-modal-close");
+      const exModalTitleEl = document.getElementById("academia-ex-modal-title");
+      const exModalPhotoEl = document.getElementById("academia-ex-modal-photo");
+      const exModalNomeEl = document.getElementById("academia-ex-modal-nome");
+      const exModalFotoUrlEl = document.getElementById("academia-ex-modal-foto-url");
+      const exModalTagsEl = document.getElementById("academia-ex-modal-tags");
+      const exModalCargaEl = document.getElementById("academia-ex-modal-carga");
+      const exModalRepsEl = document.getElementById("academia-ex-modal-reps");
+      const exModalSaveEl = document.getElementById("academia-ex-modal-save");
+      const exModalFeedbackEl = document.getElementById("academia-ex-modal-feedback");
+      const exModalChartCanvasEl = document.getElementById("academia-ex-modal-chart");
+      const dietLists = {
+        cafe: document.getElementById("dieta-list-cafe"),
+        almoco: document.getElementById("dieta-list-almoco"),
+        lanche: document.getElementById("dieta-list-lanche"),
+        jantar: document.getElementById("dieta-list-jantar"),
+      };
+      const dietAddButtons = Array.from(document.querySelectorAll(".academia-refeicao-add"));
+
+      let pesoChart = null;
+      let exerciseChart = null;
+      let dietData = null;
+      let exerciseLibraryData = null;
+      let exerciseProgressData = null;
+      let daySessionsData = null;
+      let currentExerciseId = null;
+      let currentTrainingDaysState = {};
+      let currentTodayExercises = [];
+      let currentExercisesPage = 1;
+      const EXERCISES_PER_PAGE = 15;
+      let currentTagFilterAll = "all";
+      let currentTagFilterSession = "all";
+
+      const WEEK_DAYS = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+      const DAY_LABELS = {
+        seg: "Segunda",
+        ter: "Terca",
+        qua: "Quarta",
+        qui: "Quinta",
+        sex: "Sexta",
+        sab: "Sabado",
+        dom: "Domingo",
+      };
+      const DEFAULT_EXERCISES = [
+        { id: "supino_reto", nome: "Supino reto", tags: ["peito"], foto: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=60" },
+        { id: "supino_inclinado", nome: "Supino inclinado", tags: ["peito"], foto: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=600&q=60" },
+        { id: "crucifixo", nome: "Crucifixo", tags: ["peito"], foto: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=60" },
+        { id: "triceps_pulley", nome: "Triceps pulley", tags: ["triceps"], foto: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&q=60" },
+        { id: "mergulho", nome: "Mergulho", tags: ["triceps"], foto: "https://images.unsplash.com/photo-1599058918144-1ffabb6ab9a0?auto=format&fit=crop&w=600&q=60" },
+        { id: "puxada_frontal", nome: "Puxada frontal", tags: ["costas"], foto: "https://images.unsplash.com/photo-1598971639058-99992f8f1b2d?auto=format&fit=crop&w=600&q=60" },
+        { id: "remada_curvada", nome: "Remada curvada", tags: ["costas"], foto: "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?auto=format&fit=crop&w=600&q=60" },
+        { id: "remada_baixa", nome: "Remada baixa", tags: ["costas"], foto: "https://images.unsplash.com/photo-1571019613914-85f342c55f6d?auto=format&fit=crop&w=600&q=60" },
+        { id: "rosca_direta", nome: "Rosca direta", tags: ["biceps"], foto: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=600&q=60" },
+        { id: "rosca_alternada", nome: "Rosca alternada", tags: ["biceps"], foto: "https://images.unsplash.com/photo-1517344884509-a0c97ec11bcc?auto=format&fit=crop&w=600&q=60" },
+        { id: "agachamento", nome: "Agachamento", tags: ["perna"], foto: "https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&w=600&q=60" },
+        { id: "leg_press", nome: "Leg press", tags: ["perna"], foto: "https://images.unsplash.com/photo-1584863231364-2edc166de576?auto=format&fit=crop&w=600&q=60" },
+        { id: "cadeira_extensora", nome: "Cadeira extensora", tags: ["perna"], foto: "https://images.unsplash.com/photo-1580261450046-d0a30080dc9b?auto=format&fit=crop&w=600&q=60" },
+        { id: "mesa_flexora", nome: "Mesa flexora", tags: ["perna"], foto: "https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=600&q=60" },
+        { id: "panturrilha", nome: "Panturrilha", tags: ["perna"], foto: "https://images.unsplash.com/photo-1598971639058-cb1cb5f2f4a9?auto=format&fit=crop&w=600&q=60" },
+        { id: "desenvolvimento", nome: "Desenvolvimento", tags: ["ombro"], foto: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?auto=format&fit=crop&w=600&q=60" },
+        { id: "elevacao_lateral", nome: "Elevacao lateral", tags: ["ombro"], foto: "https://images.unsplash.com/photo-1596357395217-80de13130e92?auto=format&fit=crop&w=600&q=60" },
+        { id: "elevacao_frontal", nome: "Elevacao frontal", tags: ["ombro"], foto: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=600&q=60" },
+        { id: "prancha", nome: "Prancha", tags: ["core"], foto: "https://images.unsplash.com/photo-1549570652-97324981a6fd?auto=format&fit=crop&w=600&q=60" },
+        { id: "abdominal", nome: "Abdominal", tags: ["core"], foto: "https://images.unsplash.com/photo-1577221084712-45b0445d2b00?auto=format&fit=crop&w=600&q=60" },
+      ];
+
+      function loadJson(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      }
+
+      function saveJson(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+
+      function loadProfile() {
+        return { ...defaultProfile, ...loadJson(STORAGE_KEYS.profile, {}) };
+      }
+
+      function saveProfile(profile) {
+        saveJson(STORAGE_KEYS.profile, profile);
+      }
+
+      function loadHistory(profile) {
+        const history = loadJson(STORAGE_KEYS.history, []);
+        if (Array.isArray(history) && history.length > 0) {
+          return history;
+        }
+        const firstPoint = [{ date: new Date().toISOString(), peso: Number(profile.peso) || 0 }];
+        saveJson(STORAGE_KEYS.history, firstPoint);
+        return firstPoint;
+      }
+
+      function loadBodyPhoto() {
+        return localStorage.getItem(STORAGE_KEYS.bodyPhoto);
+      }
+
+      function saveBodyPhoto(base64Image) {
+        try {
+          localStorage.setItem(STORAGE_KEYS.bodyPhoto, base64Image);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function loadTrainingDays() {
+        const saved = loadJson(STORAGE_KEYS.trainingDays, {});
+        return saved && typeof saved === "object" ? saved : {};
+      }
+
+      function saveTrainingDays(daysState) {
+        saveJson(STORAGE_KEYS.trainingDays, daysState);
+      }
+
+      function loadDiet() {
+        const saved = loadJson(STORAGE_KEYS.diet, {});
+        return {
+          cafe: Array.isArray(saved.cafe) ? saved.cafe : ["Ovos", "Fruta"],
+          almoco: Array.isArray(saved.almoco) ? saved.almoco : ["Arroz", "Feijao", "Frango"],
+          lanche: Array.isArray(saved.lanche) ? saved.lanche : ["Iogurte"],
+          jantar: Array.isArray(saved.jantar) ? saved.jantar : ["Salada", "Carne magra"],
+        };
+      }
+
+      function saveDiet() {
+        if (!dietData) return;
+        saveJson(STORAGE_KEYS.diet, dietData);
+      }
+
+      function loadExerciseProgress() {
+        const saved = loadJson(STORAGE_KEYS.exerciseProgress, {});
+        return saved && typeof saved === "object" ? saved : {};
+      }
+
+      function saveExerciseProgress() {
+        if (!exerciseProgressData) return;
+        saveJson(STORAGE_KEYS.exerciseProgress, exerciseProgressData);
+      }
+
+      function loadExerciseLibrary() {
+        const saved = loadJson(STORAGE_KEYS.exerciseLibrary, []);
+        const base = Array.isArray(saved) && saved.length > 0 ? saved : [...DEFAULT_EXERCISES];
+        return base.map((exercise, index) => ({
+          ...exercise,
+          id: exercise.id || ("exercise_" + index),
+          tags: normalizeTags(exercise.tags),
+        }));
+      }
+
+      function saveExerciseLibrary() {
+        if (!exerciseLibraryData) return;
+        saveJson(STORAGE_KEYS.exerciseLibrary, exerciseLibraryData);
+      }
+
+      function loadDaySessions() {
+        const saved = loadJson(STORAGE_KEYS.daySessions, {});
+        return saved && typeof saved === "object" ? saved : {};
+      }
+
+      function saveDaySessions() {
+        if (!daySessionsData) return;
+        saveJson(STORAGE_KEYS.daySessions, daySessionsData);
+      }
+
+      function getExerciseById(exerciseId) {
+        if (!exerciseLibraryData) return null;
+        return exerciseLibraryData.find((item) => item.id === exerciseId) || null;
+      }
+
+      function getExerciseProgress(exerciseId) {
+        if (!exerciseProgressData[exerciseId]) {
+          exerciseProgressData[exerciseId] = {
+            carga: 0,
+            repeticoes: 12,
+            historico: [],
+          };
+        }
+        return exerciseProgressData[exerciseId];
+      }
+
+      function getDateKey(date) {
+        return date.toISOString().slice(0, 10);
+      }
+
+      function normalizeTags(tagsValue) {
+        if (!tagsValue) return [];
+        if (Array.isArray(tagsValue)) {
+          return [...new Set(tagsValue.map((tag) => String(tag).trim().toLowerCase()).filter(Boolean))];
+        }
+        return [...new Set(String(tagsValue).split(",").map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
+      }
+
+      function getAllTags() {
+        if (!exerciseLibraryData) return [];
+        const bag = new Set();
+        exerciseLibraryData.forEach((exercise) => {
+          normalizeTags(exercise.tags).forEach((tag) => bag.add(tag));
+        });
+        return [...bag].sort((a, b) => a.localeCompare(b));
+      }
+
+      function populateTagFilters() {
+        const tags = getAllTags();
+        if (currentTagFilterAll !== "all" && !tags.includes(currentTagFilterAll)) currentTagFilterAll = "all";
+        if (currentTagFilterSession !== "all" && !tags.includes(currentTagFilterSession)) currentTagFilterSession = "all";
+        const options = ['<option value="all">Todas as tags</option>', ...tags.map((tag) => `<option value="${tag}">${tag}</option>`)].join("");
+        if (tagFilterAllEl) {
+          tagFilterAllEl.innerHTML = options;
+          tagFilterAllEl.value = currentTagFilterAll;
+        }
+        if (tagFilterSessionEl) {
+          tagFilterSessionEl.innerHTML = options;
+          tagFilterSessionEl.value = currentTagFilterSession;
+        }
+      }
+
+      function filterExercisesByTag(list, tag) {
+        if (tag === "all") return list;
+        return list.filter((exercise) => normalizeTags(exercise.tags).includes(tag));
+      }
+
+      function getTodayKey() {
+        const jsDay = new Date().getDay();
+        if (jsDay === 0) return "dom";
+        if (jsDay === 1) return "seg";
+        if (jsDay === 2) return "ter";
+        if (jsDay === 3) return "qua";
+        if (jsDay === 4) return "qui";
+        if (jsDay === 5) return "sex";
+        return "sab";
+      }
+
+      function getTodayExercises(trainingDaysState) {
+        const todayKey = getTodayKey();
+        const marked = WEEK_DAYS.filter((day) => Boolean(trainingDaysState[day]));
+        if (!marked.includes(todayKey) || !exerciseLibraryData || exerciseLibraryData.length === 0) {
+          return [];
+        }
+
+        const slot = marked.indexOf(todayKey);
+        const parts = marked.length;
+        return exerciseLibraryData.filter((_, index) => index % parts === slot);
+      }
+
+      function getTodaySessions() {
+        const dateKey = getDateKey(new Date());
+        if (!daySessionsData[dateKey]) {
+          daySessionsData[dateKey] = [];
+        }
+        return daySessionsData[dateKey];
+      }
+
+      function openSessionCreateModal() {
+        if (!sessionModalOverlayEl || !sessionPickerListEl) return;
+        if (!exerciseLibraryData || exerciseLibraryData.length === 0) {
+          if (sessionModalFeedbackEl) sessionModalFeedbackEl.textContent = "Nenhum exercicio cadastrado na ficha completa.";
+          return;
+        }
+
+        const filtered = filterExercisesByTag(exerciseLibraryData, currentTagFilterSession);
+        if (filtered.length === 0) {
+          sessionPickerListEl.innerHTML = '<p class="academia-ex-dia-empty">Nenhum exercicio para a tag selecionada.</p>';
+        } else {
+          sessionPickerListEl.innerHTML = filtered.map((exercise, index) => `
+          <div class="academia-picker-item">
+            <input id="session-ex-${index}" type="checkbox" value="${exercise.id}" checked />
+            <label for="session-ex-${index}">${exercise.nome} (${normalizeTags(exercise.tags).join(", ") || "sem tag"})</label>
+          </div>
+          `).join("");
+        }
+        if (sessionModalFeedbackEl) sessionModalFeedbackEl.textContent = "";
+        sessionModalOverlayEl.classList.add("active");
+        sessionModalOverlayEl.setAttribute("aria-hidden", "false");
+      }
+
+      function closeSessionCreateModal() {
+        if (!sessionModalOverlayEl) return;
+        sessionModalOverlayEl.classList.remove("active");
+        sessionModalOverlayEl.setAttribute("aria-hidden", "true");
+      }
+
+      function createSessionFromSelection() {
+        if (!sessionPickerListEl) return;
+        const selected = Array.from(sessionPickerListEl.querySelectorAll("input[type='checkbox']:checked"))
+          .map((el) => el.value)
+          .filter(Boolean);
+
+        if (selected.length === 0) {
+          if (sessionModalFeedbackEl) sessionModalFeedbackEl.textContent = "Selecione ao menos um exercicio.";
+          return;
+        }
+
+        const sessions = getTodaySessions();
+        sessions.push({
+          id: "sess_" + Date.now(),
+          title: "Sessao " + (sessions.length + 1),
+          items: selected,
+        });
+        saveDaySessions();
+        closeSessionCreateModal();
+        renderWorkoutDay(currentTrainingDaysState);
+      }
+
+      function addExerciseToSession(sessionId) {
+        const sessions = getTodaySessions();
+        const session = sessions.find((item) => item.id === sessionId);
+        if (!session) return;
+
+        if (currentTodayExercises.length === 0) {
+          return;
+        }
+
+        const nextExercise = currentTodayExercises[session.items.length % currentTodayExercises.length];
+        session.items.push(nextExercise.id);
+        saveDaySessions();
+        renderWorkoutDay(currentTrainingDaysState);
+      }
+
+      function removeSession(sessionId) {
+        const sessions = getTodaySessions();
+        const idx = sessions.findIndex((item) => item.id === sessionId);
+        if (idx < 0) return;
+        sessions.splice(idx, 1);
+        saveDaySessions();
+        renderWorkoutDay(currentTrainingDaysState);
+      }
+
+      function removeSessionItem(sessionId, itemIndex) {
+        const sessions = getTodaySessions();
+        const session = sessions.find((item) => item.id === sessionId);
+        if (!session) return;
+        session.items.splice(itemIndex, 1);
+        saveDaySessions();
+        renderWorkoutDay(currentTrainingDaysState);
+      }
+
+      function renderWorkoutDay(trainingDaysState) {
+        if (!dayInfoEl || !exerciciosDiaEl) return;
+
+        currentTrainingDaysState = trainingDaysState;
+        const todayKey = getTodayKey();
+        dayInfoEl.textContent = "Hoje: " + (DAY_LABELS[todayKey] || todayKey);
+
+        currentTodayExercises = getTodayExercises(trainingDaysState);
+        if (currentTodayExercises.length === 0) {
+          exerciciosDiaEl.innerHTML = '<p class="academia-ex-dia-empty">Dia sem treino. Marque este dia para montar sessoes.</p>';
+          return;
+        }
+
+        const sessions = getTodaySessions();
+        if (sessions.length === 0) {
+          exerciciosDiaEl.innerHTML = '<p class="academia-ex-dia-empty">Clique em + para criar sua primeira sessao do dia.</p>';
+          return;
+        }
+
+        exerciciosDiaEl.innerHTML = sessions.map((session) => `
+          <article class="academia-session-card" data-session-id="${session.id}">
+            <div class="academia-session-head">
+              <div class="academia-session-title" contenteditable="true">${session.title}</div>
+              <div>
+                <button class="academia-mini-btn" type="button" data-action="add-session-item">+</button>
+                <button class="academia-mini-btn" type="button" data-action="remove-session">x</button>
+              </div>
+            </div>
+            <ul class="academia-session-list">
+              ${session.items.map((exerciseId, idx) => {
+                const exercise = getExerciseById(exerciseId);
+                if (!exercise) return "";
+                return `<li><div class="academia-session-item-row"><span data-exercise-id="${exercise.id}" class="academia-open-ex">${exercise.nome}</span><button class="academia-mini-btn" type="button" data-action="remove-session-item" data-item-index="${idx}">x</button></div></li>`;
+              }).join("")}
+            </ul>
+          </article>
+        `).join("");
+      }
+
+      function renderWorkoutAll(trainingDaysState) {
+        if (!exerciciosAllEl) return;
+
+        const marked = WEEK_DAYS.filter((day) => Boolean(trainingDaysState[day]));
+        if (marked.length === 0) {
+          exerciciosAllEl.innerHTML = '<p class="academia-ex-dia-empty">Marque ao menos um dia de treino para ativar a ficha.</p>';
+          if (pageInfoEl) pageInfoEl.textContent = "0/0";
+          return;
+        }
+
+        const filteredList = filterExercisesByTag(exerciseLibraryData, currentTagFilterAll);
+        const total = filteredList.length;
+        const pageCount = Math.max(1, Math.ceil(total / EXERCISES_PER_PAGE));
+        if (currentExercisesPage > pageCount) currentExercisesPage = pageCount;
+        const start = (currentExercisesPage - 1) * EXERCISES_PER_PAGE;
+        const pageItems = filteredList.slice(start, start + EXERCISES_PER_PAGE);
+
+        if (pageItems.length === 0) {
+          exerciciosAllEl.innerHTML = '<p class="academia-ex-dia-empty">Nenhum exercicio para a tag selecionada.</p>';
+          if (pageInfoEl) pageInfoEl.textContent = "0/0";
+          return;
+        }
+
+        exerciciosAllEl.innerHTML = pageItems.map((exercise) => `
+          <article class="academia-ex-all-card" data-exercise-id="${exercise.id}">
+            <img class="academia-ex-thumb" src="${exercise.foto}" alt="${exercise.nome}" />
+            <div class="academia-ex-meta">
+              <div class="academia-ex-card-title">${exercise.nome}</div>
+              <div class="academia-ex-tags">${normalizeTags(exercise.tags).join(", ") || "sem tag"}</div>
+            </div>
+            <button class="academia-ex-delete" type="button" data-action="delete-exercise" aria-label="Excluir exercicio">x</button>
+          </article>
+        `).join("");
+
+        if (pageInfoEl) pageInfoEl.textContent = currentExercisesPage + "/" + pageCount;
+      }
+
+      function addExerciseToLibrary() {
+        const exercise = {
+          id: "custom_" + Date.now(),
+          nome: "Novo exercicio",
+          tags: ["geral"],
+          foto: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=600&q=60",
+        };
+        exerciseLibraryData.push(exercise);
+        saveExerciseLibrary();
+        populateTagFilters();
+        const pageCount = Math.max(1, Math.ceil(exerciseLibraryData.length / EXERCISES_PER_PAGE));
+        currentExercisesPage = pageCount;
+        renderWorkoutAll(currentTrainingDaysState);
+        renderWorkoutDay(currentTrainingDaysState);
+        openExerciseModal(exercise.id);
+      }
+
+      function deleteExerciseFromLibrary(exerciseId) {
+        const idx = exerciseLibraryData.findIndex((item) => item.id === exerciseId);
+        if (idx < 0) return;
+        exerciseLibraryData.splice(idx, 1);
+        delete exerciseProgressData[exerciseId];
+
+        Object.keys(daySessionsData).forEach((dateKey) => {
+          daySessionsData[dateKey] = daySessionsData[dateKey].map((session) => ({
+            ...session,
+            items: session.items.filter((id) => id !== exerciseId),
+          }));
+        });
+
+        saveExerciseLibrary();
+        saveExerciseProgress();
+        saveDaySessions();
+        populateTagFilters();
+        renderWorkoutAll(currentTrainingDaysState);
+        renderWorkoutDay(currentTrainingDaysState);
+      }
+
+      function buildExerciseModalChart(history) {
+        if (!exModalChartCanvasEl || typeof Chart === "undefined") return;
+        const labels = history.map((item) => formatLabel(item.date));
+        const values = history.map((item) => Number(item.carga));
+
+        if (exerciseChart) {
+          exerciseChart.destroy();
+        }
+
+        exerciseChart = new Chart(exModalChartCanvasEl, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Carga (kg)",
+                data: values,
+                borderColor: "#a6e3a1",
+                backgroundColor: "rgba(166, 227, 161, 0.15)",
+                fill: true,
+                tension: 0.24,
+                pointRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: "#e0e0e0" },
+              },
+            },
+            scales: {
+              x: {
+                ticks: { color: "#a0a0a0" },
+                grid: { color: "rgba(160,160,160,0.15)" },
+              },
+              y: {
+                ticks: { color: "#a0a0a0" },
+                grid: { color: "rgba(160,160,160,0.15)" },
+              },
+            },
+          },
+        });
+      }
+
+      function openExerciseModal(exerciseId) {
+        const exercise = getExerciseById(exerciseId);
+        if (!exercise || !exModalOverlayEl) return;
+
+        currentExerciseId = exerciseId;
+        const progress = getExerciseProgress(exerciseId);
+        const history = Array.isArray(progress.historico) ? progress.historico : [];
+
+        if (exModalTitleEl) exModalTitleEl.textContent = exercise.nome;
+        if (exModalPhotoEl) {
+          exModalPhotoEl.src = exercise.foto;
+          exModalPhotoEl.alt = exercise.nome;
+        }
+        if (exModalNomeEl) exModalNomeEl.value = exercise.nome;
+        if (exModalFotoUrlEl) exModalFotoUrlEl.value = exercise.foto;
+        if (exModalTagsEl) exModalTagsEl.value = normalizeTags(exercise.tags).join(", ");
+        if (exModalCargaEl) exModalCargaEl.value = Number(progress.carga) || 0;
+        if (exModalRepsEl) exModalRepsEl.value = Number(progress.repeticoes) || 12;
+        if (exModalFeedbackEl) exModalFeedbackEl.textContent = "";
+
+        buildExerciseModalChart(history);
+        exModalOverlayEl.classList.add("active");
+        exModalOverlayEl.setAttribute("aria-hidden", "false");
+      }
+
+      function closeExerciseModal() {
+        if (!exModalOverlayEl) return;
+        exModalOverlayEl.classList.remove("active");
+        exModalOverlayEl.setAttribute("aria-hidden", "true");
+      }
+
+      function saveExerciseModalProgress() {
+        if (!currentExerciseId) return;
+
+        const exercise = getExerciseById(currentExerciseId);
+        if (!exercise) return;
+
+        const progress = getExerciseProgress(currentExerciseId);
+        const cargaAnterior = Number(progress.carga) || 0;
+        const novoNome = exModalNomeEl ? exModalNomeEl.value.trim() : exercise.nome;
+        const novaFoto = exModalFotoUrlEl ? exModalFotoUrlEl.value.trim() : exercise.foto;
+        const novasTags = normalizeTags(exModalTagsEl ? exModalTagsEl.value : exercise.tags);
+        const novaCarga = exModalCargaEl ? Number(exModalCargaEl.value) : cargaAnterior;
+        const novasReps = exModalRepsEl ? Number(exModalRepsEl.value) : progress.repeticoes;
+
+        if (!novoNome || !Number.isFinite(novaCarga) || novaCarga < 0 || !Number.isFinite(novasReps) || novasReps <= 0) {
+          if (exModalFeedbackEl) exModalFeedbackEl.textContent = "Valores invalidos.";
+          return;
+        }
+
+        exercise.nome = novoNome;
+        if (novaFoto) exercise.foto = novaFoto;
+        exercise.tags = novasTags;
+
+        progress.carga = novaCarga;
+        progress.repeticoes = Math.round(novasReps);
+        if (!Array.isArray(progress.historico)) {
+          progress.historico = [];
+        }
+
+        const last = progress.historico[progress.historico.length - 1];
+        const lastCarga = last ? Number(last.carga) : null;
+        if (lastCarga === null || novaCarga !== lastCarga) {
+          progress.historico.push({ date: new Date().toISOString(), carga: novaCarga });
+          if (progress.historico.length > 400) {
+            progress.historico = progress.historico.slice(progress.historico.length - 400);
+          }
+        }
+
+        if (novaCarga > cargaAnterior && window.rpgSystem && typeof window.rpgSystem.gainXP === "function") {
+          window.rpgSystem.gainXP("academia");
+        }
+
+        saveExerciseLibrary();
+        saveExerciseProgress();
+        populateTagFilters();
+        buildExerciseModalChart(progress.historico);
+        renderWorkoutAll(currentTrainingDaysState);
+        renderWorkoutDay(currentTrainingDaysState);
+        if (exModalFeedbackEl) exModalFeedbackEl.textContent = "Progresso salvo.";
+      }
+
+      function renderDietMeal(meal, focusLast = false) {
+        const listEl = dietLists[meal];
+        if (!listEl || !dietData) return;
+
+        listEl.innerHTML = "";
+
+        const items = dietData[meal];
+        items.forEach((text, index) => {
+          const li = document.createElement("li");
+          li.className = "academia-refeicao-item";
+
+          const row = document.createElement("div");
+          row.className = "academia-refeicao-item-row";
+
+          const editable = document.createElement("span");
+          editable.className = "academia-refeicao-edit";
+          editable.contentEditable = "true";
+          editable.spellcheck = true;
+          editable.textContent = text;
+          editable.addEventListener("blur", () => {
+            const next = editable.textContent ? editable.textContent.trim() : "";
+            if (!next) {
+              dietData[meal].splice(index, 1);
+              saveDiet();
+              renderDietMeal(meal);
+              return;
+            }
+            dietData[meal][index] = next;
+            saveDiet();
+          });
+
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "academia-refeicao-remove";
+          removeBtn.type = "button";
+          removeBtn.setAttribute("aria-label", "Remover item");
+          removeBtn.textContent = "x";
+          removeBtn.addEventListener("click", () => {
+            dietData[meal].splice(index, 1);
+            saveDiet();
+            renderDietMeal(meal);
+          });
+
+          row.appendChild(editable);
+          row.appendChild(removeBtn);
+          li.appendChild(row);
+          listEl.appendChild(li);
+
+          if (focusLast && index === items.length - 1) {
+            editable.focus();
+          }
+        });
+      }
+
+      function renderDietAll() {
+        renderDietMeal("cafe");
+        renderDietMeal("almoco");
+        renderDietMeal("lanche");
+        renderDietMeal("jantar");
+      }
+
+      function addDietItem(meal) {
+        if (!dietData) return;
+        dietData[meal].push("Novo item");
+        saveDiet();
+        renderDietMeal(meal, true);
+      }
+
+      function setFeedback(message) {
+        if (!feedbackEl) return;
+        feedbackEl.textContent = message;
+      }
+
+      function formatLabel(isoDate) {
+        const dt = new Date(isoDate);
+        return dt.toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function fileToCompressedDataUrl(file, maxWidth = 720, maxHeight = 1080, quality = 0.82) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onerror = () => reject(new Error("Falha ao ler arquivo."));
+          reader.onload = (event) => {
+            const image = new Image();
+            image.onerror = () => reject(new Error("Falha ao carregar imagem."));
+            image.onload = () => {
+              const ratio = Math.min(maxWidth / image.width, maxHeight / image.height, 1);
+              const width = Math.round(image.width * ratio);
+              const height = Math.round(image.height * ratio);
+
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+
+              const ctx = canvas.getContext("2d");
+              if (!ctx) {
+                reject(new Error("Falha ao preparar imagem."));
+                return;
+              }
+
+              ctx.drawImage(image, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+
+            image.src = event.target && event.target.result ? String(event.target.result) : "";
+          };
+
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function buildChart(history) {
+        const chartCanvas = document.getElementById("academia-peso-chart");
+        if (!chartCanvas || typeof Chart === "undefined") return;
+
+        const labels = history.map((item) => formatLabel(item.date));
+        const values = history.map((item) => Number(item.peso));
+
+        if (pesoChart) {
+          pesoChart.destroy();
+        }
+
+        pesoChart = new Chart(chartCanvas, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Peso (kg)",
+                data: values,
+                borderColor: "#89b4fa",
+                backgroundColor: "rgba(137, 180, 250, 0.18)",
+                fill: true,
+                tension: 0.22,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: "#e0e0e0" },
+              },
+            },
+            scales: {
+              x: {
+                ticks: { color: "#a0a0a0" },
+                grid: { color: "rgba(160,160,160,0.15)" },
+              },
+              y: {
+                ticks: { color: "#a0a0a0" },
+                grid: { color: "rgba(160,160,160,0.15)" },
+              },
+            },
+          },
+        });
+      }
+
+      function initAcademia() {
+        const profile = loadProfile();
+        let history = loadHistory(profile);
+        dietData = loadDiet();
+        exerciseLibraryData = loadExerciseLibrary();
+        exerciseProgressData = loadExerciseProgress();
+        daySessionsData = loadDaySessions();
+
+        if (nomeTituloEl) nomeTituloEl.textContent = profile.nome;
+        if (nomeValorEl) nomeValorEl.textContent = profile.nome;
+        if (idadeValorEl) idadeValorEl.textContent = profile.idade;
+        if (alturaValorEl) alturaValorEl.textContent = profile.altura;
+        if (pesoInput) pesoInput.value = Number(profile.peso) || 0;
+
+        const savedPhoto = loadBodyPhoto();
+        if (savedPhoto && fotoPreview) {
+          fotoPreview.src = savedPhoto;
+        }
+
+        const trainingDays = loadTrainingDays();
+        currentTrainingDaysState = trainingDays;
+        dayButtons.forEach((btn) => {
+          const day = btn.dataset.day;
+          if (!day) return;
+          btn.classList.toggle("active", Boolean(trainingDays[day]));
+          btn.addEventListener("click", () => {
+            const nextValue = !Boolean(trainingDays[day]);
+            trainingDays[day] = nextValue;
+            btn.classList.toggle("active", nextValue);
+            saveTrainingDays(trainingDays);
+            renderWorkoutDay(trainingDays);
+            renderWorkoutAll(trainingDays);
+          });
+        });
+
+        buildChart(history);
+        renderDietAll();
+        populateTagFilters();
+        renderWorkoutAll(trainingDays);
+        renderWorkoutDay(trainingDays);
+
+        dietAddButtons.forEach((button) => {
+          const meal = button.dataset.meal;
+          if (!meal) return;
+          button.addEventListener("click", () => addDietItem(meal));
+        });
+
+        if (exerciciosDiaEl) {
+          exerciciosDiaEl.addEventListener("click", (event) => {
+            const actionBtn = event.target.closest("[data-action]");
+            const sessionCard = event.target.closest("[data-session-id]");
+            if (actionBtn && sessionCard) {
+              const sessionId = sessionCard.getAttribute("data-session-id");
+              const action = actionBtn.getAttribute("data-action");
+              if (!sessionId || !action) return;
+              if (action === "add-session-item") addExerciseToSession(sessionId);
+              if (action === "remove-session") removeSession(sessionId);
+              if (action === "remove-session-item") {
+                const idx = Number(actionBtn.getAttribute("data-item-index"));
+                if (Number.isFinite(idx)) removeSessionItem(sessionId, idx);
+              }
+              return;
+            }
+
+            const exerciseTrigger = event.target.closest("[data-exercise-id]");
+            if (!exerciseTrigger) return;
+            const exerciseId = exerciseTrigger.getAttribute("data-exercise-id");
+            if (!exerciseId) return;
+            openExerciseModal(exerciseId);
+          });
+
+          exerciciosDiaEl.addEventListener("blur", (event) => {
+            const title = event.target.closest(".academia-session-title");
+            if (!title) return;
+            const sessionCard = event.target.closest("[data-session-id]");
+            if (!sessionCard) return;
+            const sessionId = sessionCard.getAttribute("data-session-id");
+            const sessions = getTodaySessions();
+            const session = sessions.find((item) => item.id === sessionId);
+            if (!session) return;
+            const next = title.textContent ? title.textContent.trim() : "";
+            session.title = next || session.title;
+            saveDaySessions();
+          }, true);
+        }
+
+        if (addSessionBtnEl) {
+          addSessionBtnEl.addEventListener("click", openSessionCreateModal);
+        }
+
+        if (sessionCreateBtnEl) {
+          sessionCreateBtnEl.addEventListener("click", createSessionFromSelection);
+        }
+
+        if (sessionModalCloseEl) {
+          sessionModalCloseEl.addEventListener("click", closeSessionCreateModal);
+        }
+
+        if (sessionModalOverlayEl) {
+          sessionModalOverlayEl.addEventListener("click", (event) => {
+            if (event.target === sessionModalOverlayEl) {
+              closeSessionCreateModal();
+            }
+          });
+        }
+
+        if (addExerciseBtnEl) {
+          addExerciseBtnEl.addEventListener("click", addExerciseToLibrary);
+        }
+
+        if (tagFilterAllEl) {
+          tagFilterAllEl.addEventListener("change", () => {
+            currentTagFilterAll = tagFilterAllEl.value || "all";
+            currentExercisesPage = 1;
+            renderWorkoutAll(currentTrainingDaysState);
+          });
+        }
+
+        if (tagFilterSessionEl) {
+          tagFilterSessionEl.addEventListener("change", () => {
+            currentTagFilterSession = tagFilterSessionEl.value || "all";
+            if (sessionModalOverlayEl && sessionModalOverlayEl.classList.contains("active")) {
+              openSessionCreateModal();
+            }
+          });
+        }
+
+        if (pagePrevBtnEl) {
+          pagePrevBtnEl.addEventListener("click", () => {
+            currentExercisesPage = Math.max(1, currentExercisesPage - 1);
+            renderWorkoutAll(currentTrainingDaysState);
+          });
+        }
+
+        if (pageNextBtnEl) {
+          pageNextBtnEl.addEventListener("click", () => {
+            const pageCount = Math.max(1, Math.ceil(exerciseLibraryData.length / EXERCISES_PER_PAGE));
+            currentExercisesPage = Math.min(pageCount, currentExercisesPage + 1);
+            renderWorkoutAll(currentTrainingDaysState);
+          });
+        }
+
+        if (exerciciosAllEl) {
+          exerciciosAllEl.addEventListener("click", (event) => {
+            const deleteBtn = event.target.closest("[data-action='delete-exercise']");
+            if (deleteBtn) {
+              const card = event.target.closest("[data-exercise-id]");
+              if (!card) return;
+              const exerciseId = card.getAttribute("data-exercise-id");
+              if (!exerciseId) return;
+              deleteExerciseFromLibrary(exerciseId);
+              return;
+            }
+            const card = event.target.closest("[data-exercise-id]");
+            if (!card) return;
+            const exerciseId = card.getAttribute("data-exercise-id");
+            if (!exerciseId) return;
+            openExerciseModal(exerciseId);
+          });
+        }
+
+        if (exModalSaveEl) {
+          exModalSaveEl.addEventListener("click", saveExerciseModalProgress);
+        }
+
+        if (exModalCloseEl) {
+          exModalCloseEl.addEventListener("click", closeExerciseModal);
+        }
+
+        if (exModalOverlayEl) {
+          exModalOverlayEl.addEventListener("click", (event) => {
+            if (event.target === exModalOverlayEl) {
+              closeExerciseModal();
+            }
+          });
+        }
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && exModalOverlayEl && exModalOverlayEl.classList.contains("active")) {
+            closeExerciseModal();
+          }
+          if (event.key === "Escape" && sessionModalOverlayEl && sessionModalOverlayEl.classList.contains("active")) {
+            closeSessionCreateModal();
+          }
+        });
+
+        if (fotoInput && fotoPreview) {
+          fotoInput.addEventListener("change", async (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            try {
+              const imageData = await fileToCompressedDataUrl(file);
+              fotoPreview.src = imageData;
+
+              const saved = saveBodyPhoto(imageData);
+              if (saved) {
+                setFeedback("Foto de corpo inteiro salva.");
+              } else {
+                setFeedback("Nao foi possivel salvar a foto no navegador (espaco insuficiente).");
+              }
+            } catch (_) {
+              setFeedback("Nao foi possivel processar a imagem selecionada.");
+            }
+          });
+        }
+
+        if (pesoBtn && pesoInput) {
+          pesoBtn.addEventListener("click", () => {
+            const novoPeso = Number(pesoInput.value);
+            if (!Number.isFinite(novoPeso) || novoPeso <= 0) {
+              setFeedback("Digite um peso valido em kg.");
+              return;
+            }
+
+            profile.peso = novoPeso;
+            saveProfile(profile);
+
+            history.push({ date: new Date().toISOString(), peso: novoPeso });
+            if (history.length > 300) {
+              history = history.slice(history.length - 300);
+            }
+            saveJson(STORAGE_KEYS.history, history);
+            buildChart(history);
+            setFeedback("Peso atualizado e historico salvo.");
+          });
+        }
+      }
+
+      initAcademia();
+    </script>
+  </body>
+</html>
+

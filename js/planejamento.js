@@ -63,23 +63,30 @@ class RPGSystem {
     this.updateUI();
   }
 
-  // Ganhar XP baseado na categoria
-  gainXP(category) {
-    const xpAmount = 10; // XP base por tarefa
-    let statKey = "productivity"; // Default
+  // Ganhar XP baseado na categoria e quantidade recebida
+  gainXP(category, xpAmount = 10) {
+    let statKey = "productivity";
 
-    // Mapeamento de Categorias para Stats
-    if (category === "health") statKey = "strength";
+    // Categorias RPG explicitas
+    if (category === "strength" || category === "forca") statKey = "strength";
+    else if (category === "intelligence" || category === "intelecto")
+      statKey = "intelligence";
+    else if (category === "wisdom" || category === "sabedoria")
+      statKey = "wisdom";
+    else if (category === "productivity" || category === "produtividade")
+      statKey = "productivity";
+    // Fallback legado
+    else if (category === "health") statKey = "strength";
     else if (category === "study") statKey = "intelligence";
     else if (category === "financeiro" || category === "meta")
       statKey = "wisdom";
-    else if (category === "sonho") statKey = "wisdom"; // Sonhos dão sabedoria
+    else if (category === "sonho") statKey = "wisdom";
 
-    // Atualiza Stat Específico
+    // Atualiza Stat Especifico
     const stat = this.data.stats[statKey];
     stat.xp += xpAmount;
 
-    // Level Up do Stat Específico (Simples: lvl * 50)
+    // Level Up do Stat Especifico (Simples: lvl * 50)
     const statNextLvl = stat.lvl * 50;
     let statLeveledUp = false;
     if (stat.xp >= statNextLvl) {
@@ -94,7 +101,7 @@ class RPGSystem {
     if (this.data.xp >= this.data.xpToNextLevel) {
       this.data.level++;
       this.data.xp -= this.data.xpToNextLevel;
-      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2); // Curva de dificuldade
+      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
       charLeveledUp = true;
     }
 
@@ -602,6 +609,35 @@ class TaskPlanner {
     return list;
   }
 
+  getFilterCount(filter) {
+    let list = filter === "archived" ? this.loadArchive() : [...this.allItems];
+
+    if (filter === "pending") list = list.filter((t) => !t.completed);
+    else if (filter === "completed") list = list.filter((t) => t.completed);
+    else if (filter === "no-date") list = list.filter((t) => !t.date);
+    else if (
+      ["work", "personal", "health", "study", "financeiro"].includes(filter)
+    ) {
+      list = list.filter((t) => t.category === filter);
+    }
+
+    return list.length;
+  }
+
+  renderFilterCounts() {
+    const setCount = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+
+    setCount("count-all", this.getFilterCount("all"));
+    setCount("count-pending", this.getFilterCount("pending"));
+    setCount("count-completed", this.getFilterCount("completed"));
+    setCount("count-no-date", this.getFilterCount("no-date"));
+    setCount("count-work", this.getFilterCount("work"));
+    setCount("count-personal", this.getFilterCount("personal"));
+  }
+
   setFilter(filter) {
     this.currentFilter = filter;
     this.currentPage = 1;
@@ -686,7 +722,14 @@ class TaskPlanner {
     document.getElementById("task-date").value = t.date || "";
     document.getElementById("task-time").value = t.time || "";
     document.getElementById("task-priority").value = t.priority || "";
+    document.getElementById("task-difficulty").value = t.difficulty || "medium";
     document.getElementById("task-category").value = t.category || "other";
+    document.getElementById("task-rpg-category").value = t.rpgCategory || "productivity";
+    document.getElementById("recurring-checkbox").checked = !!t.recurring;
+    document.getElementById("recurring-type").value = t.recurringType || "weekly";
+    document.getElementById("recurring-options").style.display = t.recurring
+      ? "block"
+      : "none";
     this.editingTaskId = id;
     document.getElementById("modal-title").textContent = "Editar Tarefa";
   }
@@ -701,7 +744,8 @@ class TaskPlanner {
   // CORE RPG LOGIC ON COMPLETION
   toggleTaskCompletion(id) {
     let gainedXP = false;
-    let category = "other";
+    let category = "productivity";
+    let xpAmount = 10;
 
     if (id.startsWith("sonho-")) {
       const sid = id.replace("sonho-", "");
@@ -732,17 +776,23 @@ class TaskPlanner {
         t.completedAt = t.completed ? new Date().toISOString() : null;
         if (t.completed) {
           gainedXP = true;
-          category = t.category;
+          category = t.rpgCategory || "productivity";
+          const difficulty = t.difficulty || "medium";
+          const xpByDifficulty = {
+            easy: 10,
+            medium: 20,
+            hard: 35,
+          };
+          xpAmount = xpByDifficulty[difficulty] || 20;
         }
         this.saveTasks();
-        // Se ganhou XP, processa
-        if(gainedXP && window.rpgSystem) window.rpgSystem.gainXP(category);
+        if (gainedXP) this.rpg.gainXP(category, xpAmount);
         return;
       }
     }
 
     // Se for sonho/meta externo
-    if (gainedXP) this.rpg.gainXP(category);
+    if (gainedXP) this.rpg.gainXP(category, xpAmount);
 
     // Recarrega
     this.sonhos = this.loadSonhos();
@@ -764,12 +814,14 @@ class TaskPlanner {
     document.getElementById("pending-tasks").textContent = pending;
     document.getElementById("completed-tasks").textContent = completed;
     document.getElementById("completion-rate").textContent = rate + "%";
+    this.renderFilterCounts();
   }
 
   // --- MODAL ---
   openTaskModal() {
     document.getElementById("task-modal").classList.add("active");
     document.getElementById("task-form").reset();
+    document.getElementById("recurring-options").style.display = "none";
     this.editingTaskId = null;
     document.getElementById("modal-title").textContent = "Nova Tarefa";
     if (this.selectedDate) {
@@ -789,7 +841,9 @@ class TaskPlanner {
         : document.getElementById("task-date").value,
       time: document.getElementById("task-time").value,
       priority: document.getElementById("task-priority").value,
+      difficulty: document.getElementById("task-difficulty").value,
       category: document.getElementById("task-category").value,
+      rpgCategory: document.getElementById("task-rpg-category").value,
       recurring: document.getElementById("recurring-checkbox").checked,
       recurringType: document.getElementById("recurring-type").value,
     };
@@ -831,6 +885,14 @@ class TaskPlanner {
       this.renderTasks();
     };
 
+    const recurringCheckbox = document.getElementById("recurring-checkbox");
+    const recurringOptions = document.getElementById("recurring-options");
+    recurringCheckbox.onchange = () => {
+      recurringOptions.style.display = recurringCheckbox.checked
+        ? "block"
+        : "none";
+    };
+
     document.getElementById("add-task-btn").onclick = () =>
       this.openTaskModal();
     document.getElementById("close-modal").onclick = () =>
@@ -848,3 +910,7 @@ let taskPlanner;
 document.addEventListener("DOMContentLoaded", () => {
   taskPlanner = new TaskPlanner();
 });
+
+
+
+

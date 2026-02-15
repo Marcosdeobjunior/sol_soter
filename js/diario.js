@@ -806,3 +806,4 @@ window.diario = new DiarioPessoal();
                 if (e.key === 'ArrowRight') this.navegarLeitura(1);
             }
         });
+
