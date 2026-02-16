@@ -918,31 +918,455 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderCurrentEntertainment = () => {
     const container = $('#current-entertainment-body');
     if (!container) return;
+    const livros = ls('livrosTracker', []) || [];
     const midias = ls('midiasTracker', []) || [];
-    const atual = midias.find(m => (m.tipoMidia === 'serie' || m.tipoMidia === 'anime' || m.tipoMidia === 'filme') && !m.lido) || midias.find(m => m.tipoMidia === 'filme');
-    if (!atual) { container.innerHTML = '<p>Nenhuma mídia cadastrada.</p>'; return; }
-    const capa = atual.capaUrl || 'img/default_entertainment.png';
-    const titulo = atual.titulo || 'Entretenimento';
-    const autor = atual.diretor || atual.criador || '';
-    const tags = [atual.tipoMidia, atual.genero].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join('');
-    const prog = 0;
-    const sinopse = atual.sinopse || '';
-    const nota = Number(atual.nota||0);
-    const stars = Array.from({length:5}, (_,i)=> i < Math.round(nota) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>').join('');
-    container.innerHTML = `
-      <div class="cr-cover" style="background-image:url('${capa}')"></div>
-      <div>
-        <div class="cr-title-row"><span class="cr-title">${titulo}</span><span class="cr-stars">${stars}</span></div>
-        <div class="cr-author">${autor}</div>
-        <div class="cr-sinopse">${sinopse || '—'}</div>
-        <div class="cr-tags">${tags}</div>
-        <div class="cr-meta">
-          <div class="item">Progresso: ${prog}%</div>
-          <div class="item">Tipo: ${atual.tipoMidia || 'N/A'}</div>
+    const mangas = ls('mangasTracker', []) || [];
+    const historicoLivros = ls('historicoProgresso', {}) || {};
+    const historicoManga = ls('historicoProgressoMangas', {}) || {};
+    const historicoMidia = ls('historicoProgressoMidia', {}) || {};
+
+    const toInt = (v) => parseInt(v || 0, 10) || 0;
+    const today = new Date();
+    const starsHtml = (nota) => {
+      const n = Number(nota || 0);
+      return Array.from({ length: 5 }, (_, i) => i < Math.round(n) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>').join('');
+    };
+    const safePct = (current, total) => {
+      if (!total || total <= 0) return 0;
+      return Math.max(0, Math.min(100, pct(current, total)));
+    };
+    const parseDate = (value) => {
+      if (!value) return null;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    };
+    const daysDiff = (dateA, dateB) => {
+      const a = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+      const b = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+      return Math.floor((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+    };
+    const formatItemType = (type) => {
+      if (type === 'livraria') return 'Livraria';
+      if (type === 'mangas') return 'Mangás';
+      return 'Cinema';
+    };
+    const itemUrl = (type) => {
+      if (type === 'livraria') return 'livraria.html';
+      if (type === 'mangas') return 'mangas.html';
+      return 'cinema.html';
+    };
+    const normalizeGenres = (item) => {
+      if (Array.isArray(item.generos)) return item.generos.map(g => String(g || '').trim()).filter(Boolean);
+      if (typeof item.generos === 'string') return item.generos.split(',').map(g => g.trim()).filter(Boolean);
+      if (typeof item.genero === 'string') return [item.genero.trim()].filter(Boolean);
+      return [];
+    };
+    const weekRange = Array.from({ length: 7 }, (_, index) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - index));
+      return d.toISOString().slice(0, 10);
+    });
+    const sumHistory = (historyObj, field) => weekRange.reduce((acc, key) => acc + toInt(historyObj[key] && historyObj[key][field]), 0);
+    const getMonthKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthKey = getMonthKey(today);
+    const isCurrentMonth = (value) => {
+      const d = parseDate(value);
+      if (!d) return false;
+      return getMonthKey(d) === monthKey;
+    };
+
+    const livroItems = livros.map((livro) => {
+      const current = toInt(livro.paginaAtual);
+      const total = toInt(livro.totalPaginas);
+      return {
+        source: 'livraria',
+        title: livro.titulo || 'Sem título',
+        subtitle: livro.autor || '',
+        progress: safePct(current, total),
+        current,
+        total,
+        done: Boolean(livro.lido),
+        rating: Number(livro.nota || 0),
+        startDate: parseDate(livro.dataInicio),
+        completionDate: parseDate(livro.dataConclusao),
+        genres: normalizeGenres(livro),
+        cover: livro.capaUrl || livro.imagem || livro.image || 'img/gato.png',
+        raw: livro
+      };
+    });
+    const midiaItems = midias.map((midia) => {
+      const total = toInt(midia.totalEpisodios || midia.totalPaginas);
+      const current = toInt(midia.episodioAtual || midia.paginaAtual);
+      return {
+        source: 'cinema',
+        title: midia.titulo || 'Sem título',
+        subtitle: midia.tipoMidia || 'mídia',
+        progress: safePct(current, total),
+        current,
+        total,
+        done: Boolean(midia.lido),
+        rating: Number(midia.nota || 0),
+        startDate: parseDate(midia.dataInicio),
+        completionDate: parseDate(midia.dataConclusao),
+        genres: normalizeGenres(midia),
+        cover: midia.capaUrl || midia.imagem || midia.image || 'img/gato.png',
+        raw: midia
+      };
+    });
+    const mangaItems = mangas.map((manga) => {
+      const total = toInt(manga.totalCapitulos || manga.totalPaginas);
+      const current = toInt(manga.capituloAtual || manga.paginaAtual);
+      return {
+        source: 'mangas',
+        title: manga.titulo || 'Sem título',
+        subtitle: manga.autor || '',
+        progress: safePct(current, total),
+        current,
+        total,
+        done: Boolean(manga.lido),
+        rating: Number(manga.nota || 0),
+        startDate: parseDate(manga.dataInicio),
+        completionDate: parseDate(manga.dataConclusao),
+        genres: normalizeGenres(manga),
+        cover: manga.capaUrl || manga.imagem || manga.image || 'img/gato.png',
+        raw: manga
+      };
+    });
+
+    const allItems = [...livroItems, ...midiaItems, ...mangaItems];
+    const ongoingItems = allItems.filter(item => !item.done);
+    const completedItems = allItems.filter(item => item.done);
+
+    const livroAtual = livroItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
+    const livroProgresso = livroAtual ? livroAtual.progress : 0;
+
+    const serieAtual = midiaItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
+    const ultimoFilme = midiaItems
+      .filter(item => item.raw && item.raw.tipoMidia === 'filme' && item.done)
+      .sort((a, b) => (b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0))[0];
+    const mediaAtual = serieAtual || ultimoFilme || midiaItems.find(Boolean);
+    const serieProgresso = !mediaAtual
+      ? 0
+      : (mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' ? (mediaAtual.done ? 100 : mediaAtual.progress) : mediaAtual.progress);
+
+    const mangaAtual = mangaItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
+    const mangaAtualValor = mangaAtual ? mangaAtual.current : 0;
+    const mangaTotalValor = mangaAtual ? mangaAtual.total : 0;
+    const mangaProgresso = mangaAtual ? mangaAtual.progress : 0;
+
+    const livrosConcluidos = livroItems.filter(item => item.done).length;
+    const midiasConcluidas = midiaItems.filter(item => item.done).length;
+    const mangasConcluidos = mangaItems.filter(item => item.done).length;
+    const totalAndamento = [livroAtual, serieAtual || (mediaAtual && !mediaAtual.done ? mediaAtual : null), mangaAtual].filter(Boolean).length;
+
+    const hasData = Boolean(allItems.length);
+    if (!hasData) {
+      container.innerHTML = `
+        <article class="ent-empty-state">
+          <i class="fas fa-clapperboard"></i>
+          <h3>Seu painel de entretenimento ainda está vazio</h3>
+          <p>Cadastre itens na Livraria, Cinema e Mangás para visualizar progresso, destaques e concluídos aqui.</p>
+        </article>
+      `;
+      return;
+    }
+
+    const recommendToday = ongoingItems
+      .map(item => ({ item, score: item.progress * 10 + (item.total > 0 ? (100 - item.total) * 0.01 : 0) }))
+      .sort((a, b) => b.score - a.score)[0];
+    const recomendacao = recommendToday ? recommendToday.item : ongoingItems[0] || allItems[0];
+
+    const pagesWeekBooks = sumHistory(historicoLivros, 'pagesRead');
+    const pagesWeekManga = sumHistory(historicoManga, 'pagesRead');
+    const progressWeekMedia = sumHistory(historicoMidia, 'progress');
+    const estimatedWeekMinutes = Math.round((pagesWeekBooks * 1.8) + (pagesWeekManga * 1.3) + (progressWeekMedia * 8));
+    const estimatedWeekHours = (estimatedWeekMinutes / 60).toFixed(1);
+
+    const defaultGoals = { books: 2, media: 6, mangaProgress: 120 };
+    const goals = { ...defaultGoals, ...(ls('entertainmentGoals', {}) || {}) };
+    const booksMonth = livroItems.filter(item => item.done && item.completionDate && isCurrentMonth(item.completionDate)).length;
+    const mediaMonth = midiaItems.filter(item => item.done && item.completionDate && isCurrentMonth(item.completionDate)).length;
+    const mangaProgressMonth = Object.keys(historicoManga).reduce((acc, dateKey) => dateKey.startsWith(monthKey) ? (acc + toInt(historicoManga[dateKey] && historicoManga[dateKey].pagesRead)) : acc, 0);
+    const metaBooksPct = safePct(booksMonth, goals.books || 1);
+    const metaMediaPct = safePct(mediaMonth, goals.media || 1);
+    const metaMangaPct = safePct(mangaProgressMonth, goals.mangaProgress || 1);
+
+    const ranking = completedItems
+      .filter(item => item.rating > 0)
+      .sort((a, b) => (b.rating - a.rating) || ((b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0)))
+      .slice(0, 5);
+
+    const queueItems = ongoingItems
+      .filter(item => item.progress === 0 || item.current === 0)
+      .sort((a, b) => {
+        const ad = a.startDate ? a.startDate.getTime() : 0;
+        const bd = b.startDate ? b.startDate.getTime() : 0;
+        return bd - ad;
+      })
+      .slice(0, 3);
+
+    const activityMap = {};
+    weekRange.forEach((key) => {
+      const fromBooks = toInt(historicoLivros[key] && historicoLivros[key].pagesRead);
+      const fromManga = toInt(historicoManga[key] && historicoManga[key].pagesRead);
+      const fromMedia = toInt(historicoMidia[key] && historicoMidia[key].progress);
+      activityMap[key] = fromBooks + fromManga + fromMedia;
+    });
+    completedItems.forEach((item) => {
+      if (item.completionDate) {
+        const key = item.completionDate.toISOString().slice(0, 10);
+        activityMap[key] = (activityMap[key] || 0) + 1;
+      }
+    });
+    const isActiveDay = (dateObj) => (activityMap[dateObj.toISOString().slice(0, 10)] || 0) > 0;
+    let streak = 0;
+    for (let i = 0; i < 90; i += 1) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      if (isActiveDay(d)) {
+        streak += 1;
+      } else {
+        break;
+      }
+    }
+    const weekActivityDots = weekRange.map((key) => {
+      const active = (activityMap[key] || 0) > 0;
+      return `<span class="ent-dot ${active ? 'active' : ''}" title="${key}"></span>`;
+    }).join('');
+
+    const staleItems = ongoingItems.filter((item) => {
+      if (!item.startDate) return false;
+      const age = daysDiff(today, item.startDate);
+      return age >= 14 && item.progress <= 35;
+    }).slice(0, 2);
+    const nearFinish = ongoingItems.filter(item => item.progress >= 85 && item.progress < 100).slice(0, 2);
+    const noRatingRecent = completedItems
+      .filter(item => item.completionDate && daysDiff(today, item.completionDate) <= 30 && item.rating === 0)
+      .slice(0, 2);
+    const reminders = [
+      ...staleItems.map(item => `Você começou ${item.title} há ${daysDiff(today, item.startDate)} dias e está em ${item.progress}%.`),
+      ...nearFinish.map(item => `${item.title} está em ${item.progress}% e pode ser finalizado hoje.`),
+      ...noRatingRecent.map(item => `${item.title} foi concluído recentemente e ainda está sem nota.`)
+    ].slice(0, 4);
+
+    const totalConcluidos = completedItems.length;
+    const ratedCount = completedItems.filter(item => item.rating > 0).length;
+    const xpValue = Math.round((totalConcluidos * 22) + (streak * 12) + (estimatedWeekMinutes / 12) + (ratedCount * 6));
+    const levelValue = Math.max(1, Math.floor(xpValue / 120) + 1);
+    const achievements = [
+      { id: 'first_finish', icon: 'fa-flag-checkered', label: 'Primeiro Finalizado', unlocked: totalConcluidos >= 1 },
+      { id: 'critic', icon: 'fa-star', label: 'Crítico Ativo', unlocked: ratedCount >= 10 },
+      { id: 'consistency', icon: 'fa-fire', label: 'Streak 7 dias', unlocked: streak >= 7 },
+      { id: 'marathon', icon: 'fa-bolt', label: 'Maratona Semanal', unlocked: estimatedWeekMinutes >= 300 },
+      { id: 'collector', icon: 'fa-layer-group', label: 'Colecionador (40 itens)', unlocked: allItems.length >= 40 }
+    ];
+    const unlockedCount = achievements.filter(a => a.unlocked).length;
+
+    const moodRules = {
+      equilibrado: () => ongoingItems.sort((a, b) => b.progress - a.progress)[0] || allItems[0],
+      curto: () => ongoingItems.filter(item => item.total > 0).sort((a, b) => (a.total - a.current) - (b.total - b.current))[0],
+      leve: () => ongoingItems.find((item) => item.genres.some(g => /com[eé]dia|romance|slice|fam[ií]lia|aventura/i.test(g))),
+      acao: () => ongoingItems.find((item) => item.genres.some(g => /a[cç][aã]o|thriller|crime|guerra|shonen|suspense|policial/i.test(g)))
+    };
+
+    const renderMoodOutput = (mood) => {
+      const picker = moodRules[mood] || moodRules.equilibrado;
+      const item = picker() || moodRules.equilibrado();
+      if (!item) return '<p>Nenhuma sugestão disponível para este filtro.</p>';
+      const reason = mood === 'curto'
+        ? 'Opção mais curta da sua lista'
+        : mood === 'leve'
+          ? 'Gênero mais leve/relaxante'
+          : mood === 'acao'
+            ? 'Boa pedida para ritmo alto'
+            : 'Melhor avanço geral no momento';
+      return `
+        <div class="ent-mini-item">
+          <div class="ent-mini-cover" style="background-image:url('${item.cover}')"></div>
+          <div>
+            <div class="ent-mini-title">${item.title}</div>
+            <div class="ent-mini-meta">${formatItemType(item.source)} • ${item.progress}% • ${reason}</div>
+            <a class="ent-inline-link" href="${itemUrl(item.source)}">Abrir</a>
+          </div>
         </div>
-        <div class="cr-saga">${atual.franquia? (atual.franquia||'') : '—'}</div>
+      `;
+    };
+
+    container.innerHTML = `
+      <div class="ent-overview">
+        <div class="ent-overview-label">Resumo atual</div>
+        <div class="ent-overview-main">${totalAndamento} categoria(s) em andamento</div>
+        <div class="ent-overview-meta">
+          <span><strong>${livros.length + midias.length + mangas.length}</strong> itens no total</span>
+          <span><strong>${livrosConcluidos + midiasConcluidas + mangasConcluidos}</strong> concluídos</span>
+        </div>
       </div>
+
+      <article class="ent-card">
+        <div class="ent-card-top">
+          <div class="ent-card-title"><i class="fas fa-book-open"></i> Livraria</div>
+          <span class="ent-status ${livroAtual ? 'active' : ''}">${livroAtual ? 'Em andamento' : 'Sem leitura ativa'}</span>
+        </div>
+        <div class="ent-card-hero">
+          <div class="ent-cover" style="background-image:url('${(livroAtual && livroAtual.cover) || 'img/gato.png'}')"></div>
+          <div class="ent-card-content">
+            <div class="ent-card-main">${livroAtual ? livroAtual.title : 'Sem leitura em andamento'}</div>
+            <div class="ent-card-sub">${livroAtual ? `${livroAtual.subtitle || 'Autor não informado'} • ${livroAtual.current || 0}/${livroAtual.total || 0} páginas` : 'Adicione um livro na livraria'}</div>
+            <div class="ent-stars">${livroAtual ? starsHtml(livroAtual.rating) : ''}</div>
+          </div>
+        </div>
+        <div class="ent-progress"><span style="width:${livroProgresso}%"></span></div>
+        <div class="ent-percent">${livroProgresso}% concluído</div>
+        <div class="ent-chips">
+          <span class="ent-chip">Total: ${livros.length}</span>
+          <span class="ent-chip">Concluídos: ${livrosConcluidos}</span>
+        </div>
+        <a class="ent-link" href="livraria.html">Abrir Livraria <i class="fas fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ent-card">
+        <div class="ent-card-top">
+          <div class="ent-card-title"><i class="fas fa-tv"></i> Filmes/Séries</div>
+          <span class="ent-status ${(serieAtual || (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' && !mediaAtual.done)) ? 'active' : ''}">
+            ${serieAtual ? 'Acompanhando' : (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' ? (mediaAtual.done ? 'Último concluído' : 'Na fila') : 'Sem item ativo')}
+          </span>
+        </div>
+        <div class="ent-card-hero">
+          <div class="ent-cover" style="background-image:url('${(mediaAtual && mediaAtual.cover) || 'img/gato.png'}')"></div>
+          <div class="ent-card-content">
+            <div class="ent-card-main">${mediaAtual ? mediaAtual.title : 'Sem mídia em andamento'}</div>
+            <div class="ent-card-sub">${
+              serieAtual
+                ? `T${serieAtual.raw.temporadaAtual || 1} • E${serieAtual.raw.episodioAtual || 0}/${serieAtual.raw.totalEpisodios || serieAtual.total || 0}`
+                : (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme'
+                  ? `${mediaAtual.done ? 'Filme finalizado' : 'Filme pendente'} • ${(mediaAtual.genres[0] || mediaAtual.raw.genero || 'Gênero não informado')}`
+                  : 'Adicione uma mídia no cinema')
+            }</div>
+            <div class="ent-stars">${mediaAtual ? starsHtml(mediaAtual.rating) : ''}</div>
+          </div>
+        </div>
+        <div class="ent-progress"><span style="width:${serieProgresso}%"></span></div>
+        <div class="ent-percent">${serieProgresso}% de progresso</div>
+        <div class="ent-chips">
+          <span class="ent-chip">Total: ${midias.length}</span>
+          <span class="ent-chip">Concluídos: ${midiasConcluidas}</span>
+        </div>
+        <a class="ent-link" href="cinema.html">Abrir Cinema <i class="fas fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ent-card">
+        <div class="ent-card-top">
+          <div class="ent-card-title"><i class="fas fa-book"></i> Mangás</div>
+          <span class="ent-status ${mangaAtual ? 'active' : ''}">${mangaAtual ? 'Em leitura' : 'Sem mangá ativo'}</span>
+        </div>
+        <div class="ent-card-hero">
+          <div class="ent-cover" style="background-image:url('${(mangaAtual && mangaAtual.cover) || 'img/gato.png'}')"></div>
+          <div class="ent-card-content">
+            <div class="ent-card-main">${mangaAtual ? mangaAtual.title : 'Sem mangá em andamento'}</div>
+            <div class="ent-card-sub">${mangaAtual ? `${mangaAtualValor}/${mangaTotalValor} ${mangaAtual.raw.totalCapitulos ? 'capítulos' : 'páginas'}` : 'Adicione um mangá na coleção'}</div>
+            <div class="ent-stars">${mangaAtual ? starsHtml(mangaAtual.rating) : ''}</div>
+          </div>
+        </div>
+        <div class="ent-progress"><span style="width:${mangaProgresso}%"></span></div>
+        <div class="ent-percent">${mangaProgresso}% concluído</div>
+        <div class="ent-chips">
+          <span class="ent-chip">Total: ${mangas.length}</span>
+          <span class="ent-chip">Concluídos: ${mangasConcluidos}</span>
+        </div>
+        <a class="ent-link" href="mangas.html">Abrir Mangás <i class="fas fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ent-module ent-recommend">
+        <div class="ent-module-title"><i class="fas fa-lightbulb"></i> Recomendado para hoje</div>
+        <div class="ent-mini-item">
+          <div class="ent-mini-cover" style="background-image:url('${recomendacao ? recomendacao.cover : 'img/gato.png'}')"></div>
+          <div>
+            <div class="ent-mini-title">${recomendacao ? recomendacao.title : 'Sem sugestão'}</div>
+            <div class="ent-mini-meta">${recomendacao ? `${formatItemType(recomendacao.source)} • ${recomendacao.progress}%` : 'Adicione itens para receber sugestão.'}</div>
+            <a class="ent-inline-link" href="${recomendacao ? itemUrl(recomendacao.source) : '#'}">Ir para categoria</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="ent-module ent-week-time">
+        <div class="ent-module-title"><i class="fas fa-clock"></i> Tempo de lazer da semana</div>
+        <div class="ent-kpi-grid">
+          <div class="ent-kpi"><span>${pagesWeekBooks}</span><small>pág. livros</small></div>
+          <div class="ent-kpi"><span>${pagesWeekManga}</span><small>pág. mangás</small></div>
+          <div class="ent-kpi"><span>${progressWeekMedia}</span><small>progresso mídia</small></div>
+        </div>
+        <div class="ent-hint">Estimativa de tempo consumido: <strong>${estimatedWeekHours}h</strong> (${estimatedWeekMinutes} min)</div>
+      </article>
+
+      <article class="ent-module ent-month-goal">
+        <div class="ent-module-title"><i class="fas fa-bullseye"></i> Meta mensal</div>
+        <div class="ent-goal-row"><span>Livros: ${booksMonth}/${goals.books}</span><div class="ent-progress mini"><span style="width:${metaBooksPct}%"></span></div></div>
+        <div class="ent-goal-row"><span>Filmes/Séries: ${mediaMonth}/${goals.media}</span><div class="ent-progress mini"><span style="width:${metaMediaPct}%"></span></div></div>
+        <div class="ent-goal-row"><span>Mangás: ${mangaProgressMonth}/${goals.mangaProgress}</span><div class="ent-progress mini"><span style="width:${metaMangaPct}%"></span></div></div>
+      </article>
+
+      <article class="ent-module ent-ranking">
+        <div class="ent-module-title"><i class="fas fa-trophy"></i> Ranking pessoal</div>
+        <ul class="ent-list">
+          ${(ranking.map((item, index) => `<li><span class="rank">#${index + 1}</span><span>${item.title}</span><span class="meta">${item.rating.toFixed(1)}</span></li>`).join('')) || '<li><span>Sem avaliações suficientes.</span></li>'}
+        </ul>
+      </article>
+
+      <article class="ent-module ent-queue">
+        <div class="ent-module-title"><i class="fas fa-list-ol"></i> Próximo da fila</div>
+        <ul class="ent-list">
+          ${(queueItems.map((item) => `<li><span>${item.title}</span><span class="meta">${formatItemType(item.source)}</span></li>`).join('')) || '<li><span>Sem itens na fila curta.</span></li>'}
+        </ul>
+      </article>
+
+      <article class="ent-module ent-streak">
+        <div class="ent-module-title"><i class="fas fa-fire"></i> Streak de entretenimento</div>
+        <div class="ent-streak-value">${streak} dia(s)</div>
+        <div class="ent-dots">${weekActivityDots}</div>
+      </article>
+
+      <article class="ent-module ent-mood">
+        <div class="ent-module-title"><i class="fas fa-face-smile"></i> Mood/Filtro rápido</div>
+        <div class="ent-mood-chips">
+          <button class="ent-mood-chip active" data-ent-mood="equilibrado">Equilibrado</button>
+          <button class="ent-mood-chip" data-ent-mood="curto">Curto</button>
+          <button class="ent-mood-chip" data-ent-mood="leve">Leve</button>
+          <button class="ent-mood-chip" data-ent-mood="acao">Ação</button>
+        </div>
+        <div id="ent-mood-output">${renderMoodOutput('equilibrado')}</div>
+      </article>
+
+      <article class="ent-module ent-reminders">
+        <div class="ent-module-title"><i class="fas fa-bell"></i> Lembrete inteligente</div>
+        <ul class="ent-reminder-list">
+          ${(reminders.map(msg => `<li>${msg}</li>`).join('')) || '<li>Nenhum lembrete crítico no momento.</li>'}
+        </ul>
+      </article>
+
+      <article class="ent-module ent-achievements">
+        <div class="ent-module-title"><i class="fas fa-medal"></i> Conquistas e XP</div>
+        <div class="ent-xp-box">Nível <strong>${levelValue}</strong> • XP <strong>${xpValue}</strong> • ${unlockedCount}/${achievements.length} desbloqueadas</div>
+        <div class="ent-badges">
+          ${achievements.map((ach) => `
+            <div class="ent-badge ${ach.unlocked ? 'unlocked' : ''}">
+              <i class="fas ${ach.icon}"></i>
+              <span>${ach.label}</span>
+            </div>
+          `).join('')}
+        </div>
+      </article>
     `;
+
+    const moodButtons = container.querySelectorAll('.ent-mood-chip');
+    const moodOutput = container.querySelector('#ent-mood-output');
+    moodButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const mood = button.dataset.entMood || 'equilibrado';
+        moodButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        if (moodOutput) moodOutput.innerHTML = renderMoodOutput(mood);
+      });
+    });
   };
   const openDreamOverlay = (s) => {
     const overlay = document.querySelector('#dream-overlay');
