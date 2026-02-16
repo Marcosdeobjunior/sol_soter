@@ -627,7 +627,10 @@ class TaskPlanner {
   renderFilterCounts() {
     const setCount = (id, value) => {
       const el = document.getElementById(id);
-      if (el) el.textContent = value;
+      if (!el) return;
+      el.textContent = value;
+      el.classList.toggle("count-active", value > 0);
+      el.classList.toggle("count-empty", value === 0);
     };
 
     setCount("count-all", this.getFilterCount("all"));
@@ -870,6 +873,11 @@ class TaskPlanner {
       this.currentDate.setMonth(this.currentDate.getMonth() - 1);
       this.renderCalendar();
     };
+    document.getElementById("current-month").onclick = () => {
+      const today = new Date();
+      this.currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      this.renderCalendar();
+    };
     document.getElementById("next-month").onclick = () => {
       this.currentDate.setMonth(this.currentDate.getMonth() + 1);
       this.renderCalendar();
@@ -910,7 +918,3 @@ let taskPlanner;
 document.addEventListener("DOMContentLoaded", () => {
   taskPlanner = new TaskPlanner();
 });
-
-
-
-

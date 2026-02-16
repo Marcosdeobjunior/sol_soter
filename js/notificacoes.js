@@ -44,11 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Combina os resultados de todas as fontes
             const metas = this.getMetasNotifications();
             const tarefas = this.getTarefasNotifications();
+            const tarefasSemData = this.getNoDateTasksReminderNotifications();
             const financas = this.getFinancasNotifications();
             const conquistas = this.getConquistasNotifications();
             const estudos = this.getEstudosNotifications(); // NOVO
 
-            this.notifications = [...metas, ...tarefas, ...financas, ...conquistas, ...estudos];
+            this.notifications = [...metas, ...tarefas, ...tarefasSemData, ...financas, ...conquistas, ...estudos];
             
             // Ordena as notificações, talvez por data (a ser implementado se houver datas)
             // Por enquanto, a ordem de busca é mantida.
@@ -106,6 +107,57 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 });
             return notifications;
+        }
+
+        getNoDateTasksReminderNotifications() {
+            const reminderKey = 'sol-de-soter-no-date-tasks-last-reminder';
+            const tarefas = JSON.parse(localStorage.getItem('sol-de-soter-tasks')) || [];
+            const tarefasSemData = tarefas.filter(tarefa => !tarefa.date && !tarefa.completed);
+
+            if (tarefasSemData.length === 0) {
+                localStorage.removeItem(reminderKey);
+                return [];
+            }
+
+            const hoje = this.getDateKeyLocal(new Date());
+            const ultimoLembrete = localStorage.getItem(reminderKey);
+
+            if (ultimoLembrete && ultimoLembrete !== hoje) {
+                const diasDesdeUltimo = this.daysBetweenDateKeys(ultimoLembrete, hoje);
+                if (diasDesdeUltimo < 3) return [];
+            }
+
+            if (!ultimoLembrete || ultimoLembrete !== hoje) {
+                localStorage.setItem(reminderKey, hoje);
+            }
+
+            const limiteNomes = 4;
+            const titulos = tarefasSemData.slice(0, limiteNomes).map(t => `"${t.title}"`);
+            const restantes = tarefasSemData.length - limiteNomes;
+            const complemento = restantes > 0 ? ` e mais ${restantes}.` : '.';
+
+            return [{
+                icon: 'fa-calendar-xmark',
+                type: 'tarefa-sem-data',
+                text: `Tarefas sem data (${tarefasSemData.length}): ${titulos.join(', ')}${complemento}`,
+                timestamp: 'Lembrete recorrente: a cada 3 dias'
+            }];
+        }
+
+        getDateKeyLocal(date) {
+            const ano = date.getFullYear();
+            const mes = String(date.getMonth() + 1).padStart(2, '0');
+            const dia = String(date.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        daysBetweenDateKeys(startKey, endKey) {
+            const start = new Date(`${startKey}T00:00:00`);
+            const end = new Date(`${endKey}T00:00:00`);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            const diff = end.getTime() - start.getTime();
+            return Math.floor(diff / (1000 * 60 * 60 * 24));
         }
 
         /**

@@ -117,8 +117,10 @@
 /* Cores dos ícones por tipo (Mantive os tons fortes originais para diferenciação) */
 .notification-icon.meta { color: #fab387; } /* Laranja (Tom original) */
 .notification-icon.tarefa { color: var(--acento-azul); } /* Azul (Usando variável) */
+.notification-icon.tarefa-sem-data { color: #f9a826; }
 .notification-icon.financa { color: #f38ba8; } /* Vermelho (Tom original) */
 .notification-icon.conquista { color: #a6e3a1; } /* Verde (Tom original) */
+.notification-icon.estudo { color: #a78bfa; }
 
 
 .notification-content p {
