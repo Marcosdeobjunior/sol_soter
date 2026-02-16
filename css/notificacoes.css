@@ -67,12 +67,33 @@
 .notification-panel-header {
   padding: 15px 20px;
   border-bottom: 1px solid var(--borda); /* Alterado de #45475a */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .notification-panel-header h3 {
   margin: 0;
   color: var(--texto-principal); /* Alterado de #cdd6f4 */
   font-size: 1.1rem;
+}
+
+.notification-clear-btn {
+  display: none;
+  border: 1px solid var(--borda);
+  background: var(--fundo-overlay);
+  color: var(--texto-secundario);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.notification-clear-btn:hover {
+  border-color: var(--acento-azul);
+  color: var(--texto-principal);
 }
 
 .notification-list {
@@ -98,6 +119,11 @@
   padding: 15px 20px;
   border-bottom: 1px solid var(--borda); /* Alterado de #45475a */
   transition: background-color 0.2s ease;
+  align-items: flex-start;
+}
+
+.notification-item-clickable {
+  cursor: pointer;
 }
 
 .notification-item:hover {
@@ -130,6 +156,10 @@
   line-height: 1.4;
 }
 
+.notification-content {
+  flex: 1;
+}
+
 .notification-content span {
   font-size: 0.75rem;
   color: var(--texto-sutil); /* Alterado de #6c7086 */
@@ -145,6 +175,26 @@
   text-align: center;
   padding: 40px 20px;
   color: var(--texto-sutil); /* Alterado de #6c7086 */
+}
+
+.notification-dismiss-btn {
+  border: none;
+  background: transparent;
+  color: var(--texto-sutil);
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.notification-dismiss-btn:hover {
+  background: var(--fundo-overlay);
+  color: var(--texto-principal);
 }
 
 .empty-state i {
