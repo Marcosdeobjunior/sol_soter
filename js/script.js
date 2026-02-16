@@ -190,11 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return { lat: -23.396, lon: -47.008 };
   };
   const renderWeatherPirapora = async () => {
-    const currentEl = $('#weather-current');
-    const forecastEl = $('#weather-forecast');
-    if (!currentEl || !forecastEl) return;
-    currentEl.innerHTML = '';
-    forecastEl.innerHTML = '';
+    const currentEl = $('#nav-weather-current');
+    if (!currentEl) return;
+    currentEl.innerHTML = '<i class="fas fa-cloud-sun"></i><span>Carregando clima...</span>';
     try {
       const { lat, lon } = await getCoordsPirapora();
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=7&timezone=auto`;
@@ -211,30 +209,345 @@ document.addEventListener('DOMContentLoaded', () => {
       const todayMax = (dly.temperature_2m_max && dly.temperature_2m_max[todayIdx] !== undefined) ? dly.temperature_2m_max[todayIdx] : cw.temperature;
       const todayMin = (dly.temperature_2m_min && dly.temperature_2m_min[todayIdx] !== undefined) ? dly.temperature_2m_min[todayIdx] : cw.temperature;
       currentEl.innerHTML = `
-        <div class="wc-today">
-          <div class="wc-meta"><i class="${getWeatherIcon(code)}"></i> ${getWeatherDesc(code)} &bull; <span class="wc-date">${todayStrBR}</span></div>
-          <div class="wc-temp">${Math.round(todayMax)}&deg; / ${Math.round(todayMin)}&deg;</div>
+        <i class="${getWeatherIcon(code)}"></i>
+        <span>Pirapora ${Math.round(todayMax)}&deg;/${Math.round(todayMin)}&deg;</span>
+      `;
+    } catch (e) {
+      currentEl.innerHTML = '<i class="fas fa-cloud"></i><span>Clima indisponivel</span>';
+    }
+  };
+
+  const getAllTripsUnified = () => {
+    const travelsRaw = ls('travels', { travels: [] });
+    const travels = Array.isArray(travelsRaw) ? travelsRaw : (travelsRaw.travels || []);
+    const viagensAntigas = ls('viagensLista', []) || ls('viagens', []) || [];
+    const normalize = (v) => ({
+      destino: v.destination || v.destino || v.titulo || 'Viagem',
+      dataIda: v.startDate || v.dataIda || null,
+      dataVolta: v.endDate || v.dataVolta || null,
+      descricao: v.descricao || '',
+    });
+    return [...travels.map(normalize), ...viagensAntigas.map(normalize)];
+  };
+
+  const renderTopTrips = () => {
+    const container = $('#top-trips-body');
+    if (!container) return;
+
+    const trips = getAllTripsUnified();
+    if (!trips.length) {
+      container.innerHTML = '<div class="trips-widget-row"><div class="title">Nenhuma viagem cadastrada.</div><div class="meta">Cadastre em Viagens para acompanhar aqui.</div></div>';
+      return;
+    }
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const withDates = trips.filter(t => t.dataIda || t.dataVolta);
+    const semData = trips.filter(t => !t.dataIda && !t.dataVolta);
+    const futurasOuAtuais = withDates
+      .filter((t) => {
+        const ida = t.dataIda ? new Date(t.dataIda + 'T00:00:00') : null;
+        const volta = t.dataVolta ? new Date(t.dataVolta + 'T00:00:00') : ida;
+        return volta && volta.getTime() >= now.getTime();
+      })
+      .sort((a, b) => {
+        const ad = a.dataIda ? new Date(a.dataIda + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
+        const bd = b.dataIda ? new Date(b.dataIda + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
+        return ad - bd;
+      });
+
+    if (futurasOuAtuais.length) {
+      const trip = futurasOuAtuais[0];
+      const inicio = trip.dataIda ? formatBRDate(trip.dataIda) : 'N/A';
+      const fim = trip.dataVolta ? formatBRDate(trip.dataVolta) : 'N/A';
+      container.innerHTML = `
+        <div class="trips-widget-row">
+          <div class="title"><i class="fas fa-map-marker-alt"></i> ${trip.destino}</div>
+          <div class="meta">${inicio} - ${fim}</div>
+          <div class="status">Proxima viagem com data</div>
         </div>
       `;
-      const items = [];
-      for (let i = 0; i < Math.min(7, times.length); i++) {
-        const dayName = new Date(times[i]).toLocaleDateString('pt-BR', { weekday: 'long' });
-        const dCode = (dly.weathercode && dly.weathercode[i] !== undefined) ? dly.weathercode[i] : code;
-        const tmax = dly.temperature_2m_max ? Math.round(dly.temperature_2m_max[i]) : '';
-        const tmin = dly.temperature_2m_min ? Math.round(dly.temperature_2m_min[i]) : '';
-        const tempNow = i === todayIdx && cw.temperature !== undefined ? `<span class="tcurr">${Math.round(cw.temperature)}&deg;</span>` : '';
-        items.push(`
-          <div class="hf">
-            <div class="day">${dayName} ${tempNow}</div>
-            <div class="icon"><i class="${getWeatherIcon(dCode)}"></i></div>
-            <div class="temps"><span class="tmax">${tmax}&deg;</span> / <span class="tmin">${tmin}&deg;</span></div>
-          </div>
-        `);
-      }
-      forecastEl.innerHTML = items.join('');
-    } catch (e) {
-      currentEl.innerHTML = '<span style="color: var(--acento-vermelho)">Falha ao carregar clima</span>';
+      return;
     }
+
+    const realizadas = withDates
+      .filter((t) => {
+        const fimBase = t.dataVolta || t.dataIda;
+        if (!fimBase) return false;
+        const fim = new Date(fimBase + 'T00:00:00');
+        return fim.getTime() < now.getTime();
+      })
+      .sort((a, b) => {
+        const adBase = a.dataVolta || a.dataIda;
+        const bdBase = b.dataVolta || b.dataIda;
+        const ad = adBase ? new Date(adBase + 'T00:00:00').getTime() : 0;
+        const bd = bdBase ? new Date(bdBase + 'T00:00:00').getTime() : 0;
+        return bd - ad;
+      });
+
+    if (realizadas.length) {
+      const trip = realizadas[0];
+      const inicio = trip.dataIda ? formatBRDate(trip.dataIda) : 'N/A';
+      const fim = trip.dataVolta ? formatBRDate(trip.dataVolta) : 'N/A';
+      container.innerHTML = `
+        <div class="trips-widget-row">
+          <div class="title"><i class="fas fa-flag-checkered"></i> ${trip.destino}</div>
+          <div class="meta">${inicio} - ${fim}</div>
+          <div class="status">Viagem realizada</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (semData.length) {
+      const rotationKey = 'index-trips-no-date-rotation';
+      let idx = parseInt(localStorage.getItem(rotationKey) || '0', 10);
+      if (Number.isNaN(idx) || idx < 0) idx = 0;
+      const nextIdx = idx % semData.length;
+      localStorage.setItem(rotationKey, String(nextIdx + 1));
+      const trip = semData[nextIdx];
+
+      container.innerHTML = `
+        <div class="trips-widget-row">
+          <div class="title"><i class="fas fa-route"></i> ${trip.destino}</div>
+          <div class="meta">Sem data definida</div>
+          <div class="status">Alternando viagens sem data</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '<div class="trips-widget-row"><div class="title">Nenhuma viagem disponivel.</div></div>';
+  };
+
+  const renderAcademiaSummary = () => {
+    const todayStatusEl = $('#academia-today-status');
+    const todayPlanEl = $('#academia-today-plan');
+    const lastTrainingEl = $('#academia-last-training');
+    const lastTrainingMetaEl = $('#academia-last-training-meta');
+    const nextTrainingEl = $('#academia-next-training');
+    const nextTrainingMetaEl = $('#academia-next-training-meta');
+    const streakEl = $('#academia-streak');
+    const streakMetaEl = $('#academia-streak-meta');
+    const streakValueEl = $('#academia-streak-value');
+    const streakVisualEl = $('#academia-streak-visual');
+    const prListEl = $('#academia-pr-list');
+    const checklistEl = $('#academia-checklist');
+
+    if (
+      !todayStatusEl || !todayPlanEl || !lastTrainingEl || !lastTrainingMetaEl ||
+      !nextTrainingEl || !nextTrainingMetaEl || !streakEl || !streakMetaEl ||
+      !prListEl || !checklistEl
+    ) return;
+
+    const trainingDays = ls('academia-training-days-v1', {});
+    const exerciseProgress = ls('academia-exercise-progress-v1', {});
+    const exerciseLibrary = ls('academia-exercise-library-v1', []);
+    const daySessions = ls('academia-day-sessions-v1', {});
+
+    const WEEK_DAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+    const DAY_LABELS = {
+      seg: 'Segunda',
+      ter: 'Terca',
+      qua: 'Quarta',
+      qui: 'Quinta',
+      sex: 'Sexta',
+      sab: 'Sabado',
+      dom: 'Domingo',
+    };
+    const getTodayKey = () => {
+      const jsDay = new Date().getDay();
+      if (jsDay === 0) return 'dom';
+      if (jsDay === 1) return 'seg';
+      if (jsDay === 2) return 'ter';
+      if (jsDay === 3) return 'qua';
+      if (jsDay === 4) return 'qui';
+      if (jsDay === 5) return 'sex';
+      return 'sab';
+    };
+    const todayDateKey = new Date().toISOString().slice(0, 10);
+    const todayWeekKey = getTodayKey();
+    const markedDays = WEEK_DAYS.filter((d) => Boolean(trainingDays && trainingDays[d]));
+    const todaySessions = Array.isArray(daySessions && daySessions[todayDateKey])
+      ? daySessions[todayDateKey]
+      : [];
+    const idsToday = [...new Set(
+      todaySessions.flatMap((s) => Array.isArray(s.items) ? s.items : [])
+    )];
+    const touchedToday = new Set();
+    Object.keys(exerciseProgress || {}).forEach((id) => {
+      const h = Array.isArray(exerciseProgress[id] && exerciseProgress[id].historico)
+        ? exerciseProgress[id].historico
+        : [];
+      if (h.some((item) => String(item.date || '').slice(0, 10) === todayDateKey)) {
+        touchedToday.add(id);
+      }
+    });
+    const planLabel = (() => {
+      const idx = markedDays.indexOf(todayWeekKey);
+      if (idx < 0) return 'Sem treino hoje';
+      return `Treino ${String.fromCharCode(65 + (idx % 26))}`;
+    })();
+    if (!markedDays.includes(todayWeekKey)) {
+      todayStatusEl.textContent = 'Descanso';
+      todayPlanEl.textContent = 'Hoje nao esta marcado como dia de treino.';
+    } else if (!todaySessions.length) {
+      todayStatusEl.textContent = 'Nao iniciado';
+      todayPlanEl.textContent = `${planLabel} previsto para hoje.`;
+    } else {
+      const done = idsToday.length > 0 && touchedToday.size >= idsToday.length;
+      const status = done ? 'Feito' : 'Em andamento';
+      const estMin = Math.max(20, idsToday.length * 8);
+      todayStatusEl.textContent = `${status} - ${planLabel}`;
+      todayPlanEl.textContent = `${todaySessions.length} sessao(oes), ${idsToday.length} exercicios, ~${estMin} min.`;
+    }
+
+    const libraryMap = new Map(
+      (Array.isArray(exerciseLibrary) ? exerciseLibrary : []).map((e, idx) => [e.id || `ex_${idx}`, e.nome || 'Exercicio'])
+    );
+    const sessionDates = Object.keys(daySessions || {})
+      .filter((k) => Array.isArray(daySessions[k]) && daySessions[k].length > 0)
+      .sort((a, b) => new Date(b + 'T00:00:00').getTime() - new Date(a + 'T00:00:00').getTime());
+    if (!sessionDates.length) {
+      lastTrainingEl.textContent = 'Nenhum treino registrado';
+      lastTrainingMetaEl.textContent = 'Crie sessoes na pagina Academia.';
+    } else {
+      const lastKey = sessionDates[0];
+      const sessions = daySessions[lastKey] || [];
+      const ids = [...new Set(sessions.flatMap((s) => Array.isArray(s.items) ? s.items : []))];
+      const nomes = ids.map((id) => libraryMap.get(id) || id);
+      const cargaTotal = ids.reduce((acc, id) => {
+        const c = Number(exerciseProgress[id] && exerciseProgress[id].carga);
+        return acc + (Number.isFinite(c) ? c : 0);
+      }, 0);
+      const topNames = nomes.slice(0, 3).join(', ');
+      const extra = nomes.length > 3 ? ` +${nomes.length - 3}` : '';
+      lastTrainingEl.textContent = formatBRDate(lastKey);
+      lastTrainingMetaEl.textContent = `${topNames || 'Sem exercicios'}${extra} - carga total ${Math.round(cargaTotal)} kg`;
+    }
+
+    if (!markedDays.length) {
+      nextTrainingEl.textContent = 'Sem rotina definida';
+      nextTrainingMetaEl.textContent = 'Marque os dias de treino na pagina Academia.';
+    } else {
+      let nextDay = markedDays[0];
+      let nextLabel = DAY_LABELS[nextDay];
+      if (markedDays.includes(todayWeekKey) && todaySessions.length === 0) {
+        nextDay = todayWeekKey;
+        nextLabel = 'Hoje';
+      } else {
+        const tIdx = WEEK_DAYS.indexOf(todayWeekKey);
+        let bestDiff = 99;
+        markedDays.forEach((d) => {
+          const dIdx = WEEK_DAYS.indexOf(d);
+          const diff = dIdx > tIdx ? (dIdx - tIdx) : (7 - tIdx + dIdx);
+          if (diff > 0 && diff < bestDiff) {
+            bestDiff = diff;
+            nextDay = d;
+          }
+        });
+        nextLabel = DAY_LABELS[nextDay];
+      }
+      const letterIdx = markedDays.indexOf(nextDay);
+      const letter = String.fromCharCode(65 + Math.max(0, letterIdx));
+      nextTrainingEl.textContent = `${nextLabel} - Treino ${letter}`;
+      nextTrainingMetaEl.textContent = `Dia ${DAY_LABELS[nextDay] || nextDay} na sua rotina semanal.`;
+    }
+
+    if (!sessionDates.length) {
+      streakEl.textContent = '0 treinos seguidos';
+      streakMetaEl.textContent = 'Sem historico ainda.';
+      if (streakValueEl) streakValueEl.textContent = '0';
+      if (streakVisualEl) {
+        streakVisualEl.classList.remove('level-low', 'level-mid', 'level-high', 'level-elite');
+        streakVisualEl.classList.add('level-low');
+      }
+    } else {
+      let streak = 1;
+      for (let i = 1; i < sessionDates.length; i++) {
+        const prev = new Date(sessionDates[i - 1] + 'T00:00:00').getTime();
+        const curr = new Date(sessionDates[i] + 'T00:00:00').getTime();
+        const diff = Math.round((prev - curr) / (1000 * 60 * 60 * 24));
+        if (diff === 1) streak++;
+        else break;
+      }
+      streakEl.textContent = `${streak} treino(s) seguidos`;
+      streakMetaEl.textContent = `Ultimo registro em ${formatBRDate(sessionDates[0])}.`;
+      if (streakValueEl) streakValueEl.textContent = String(streak);
+      if (streakVisualEl) {
+        streakVisualEl.classList.remove('level-low', 'level-mid', 'level-high', 'level-elite');
+        if (streak >= 15) streakVisualEl.classList.add('level-elite');
+        else if (streak >= 8) streakVisualEl.classList.add('level-high');
+        else if (streak >= 4) streakVisualEl.classList.add('level-mid');
+        else streakVisualEl.classList.add('level-low');
+      }
+    }
+
+    const weekStartMs = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const prs = [];
+    Object.keys(exerciseProgress || {}).forEach((id) => {
+      const h = Array.isArray(exerciseProgress[id] && exerciseProgress[id].historico)
+        ? exerciseProgress[id].historico
+        : [];
+      if (!h.length) return;
+      const weekVals = h
+        .filter((item) => new Date(item.date).getTime() >= weekStartMs)
+        .map((item) => Number(item.carga))
+        .filter((v) => Number.isFinite(v));
+      if (!weekVals.length) return;
+      const oldVals = h
+        .filter((item) => new Date(item.date).getTime() < weekStartMs)
+        .map((item) => Number(item.carga))
+        .filter((v) => Number.isFinite(v));
+      const weekMax = Math.max(...weekVals);
+      const oldMax = oldVals.length ? Math.max(...oldVals) : 0;
+      if (weekMax > oldMax) {
+        prs.push({
+          id,
+          nome: libraryMap.get(id) || 'Exercicio',
+          atual: weekMax,
+          delta: weekMax - oldMax,
+        });
+      }
+    });
+    prs.sort((a, b) => b.delta - a.delta || b.atual - a.atual);
+    if (!prs.length) {
+      prListEl.innerHTML = '<li class="empty">Sem novos PRs na semana.</li>';
+    } else {
+      prListEl.innerHTML = prs.slice(0, 3).map((p) => {
+        return `<li>${p.nome}: ${Math.round(p.atual)}kg (+${Math.round(p.delta)}kg)</li>`;
+      }).join('');
+    }
+
+    const checklistKey = 'index-academia-checklist-v1';
+    const checklistDate = todayDateKey;
+    const checklistDef = { date: checklistDate, values: { agua: false, sono: false, pre: false, pos: false } };
+    const checklistStateRaw = ls(checklistKey, checklistDef);
+    const checklistState = (checklistStateRaw && checklistStateRaw.date === checklistDate)
+      ? checklistStateRaw
+      : checklistDef;
+    const items = [
+      { key: 'agua', label: 'Agua ok' },
+      { key: 'sono', label: 'Sono ok' },
+      { key: 'pre', label: 'Pre-treino' },
+      { key: 'pos', label: 'Pos-treino' },
+    ];
+    checklistEl.innerHTML = items.map((item) => `
+      <label class="academia-check-item">
+        <input type="checkbox" data-check-key="${item.key}" ${checklistState.values[item.key] ? 'checked' : ''} />
+        <span>${item.label}</span>
+      </label>
+    `).join('');
+    checklistEl.querySelectorAll('input[data-check-key]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const key = input.getAttribute('data-check-key');
+        const state = ls(checklistKey, checklistDef);
+        const next = (state && state.date === checklistDate) ? state : checklistDef;
+        next.values[key] = input.checked;
+        localStorage.setItem(checklistKey, JSON.stringify(next));
+      });
+    });
   };
 
   // Viagens: próxima viagem
@@ -656,9 +969,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCurrentReading();
     renderCurrentShopping();
     renderTopPlanner();
+    renderTopTrips();
     renderFavoritesCarousel();
     renderWeatherPirapora();
     renderDreamsSection();
+    renderAcademiaSummary();
     renderDiaryWidget();
     renderTripsSection();
     renderCurrentEntertainment();
