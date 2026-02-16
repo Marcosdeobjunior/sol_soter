@@ -35,6 +35,12 @@
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
+            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
+              <div class="nav-weather-main" id="nav-weather-current">
+                <i class="fas fa-cloud-sun"></i>
+                <span>Carregando clima...</span>
+              </div>
+            </li>
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Biblioteca</a>
@@ -204,7 +210,7 @@
               </a>
             </li>
             <li>
-              <a href="#"><i class="fas fa-cog"></i> Perfil</a>
+              <a href="perfil-rpg.html"><i class="fas fa-cog"></i> Perfil</a>
             </li>
             <li>
               <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
@@ -216,10 +222,9 @@
 
     <main>
       <section class="top-widgets">
-        <div class="weather-widget" id="weather-widget">
-          <div class="weather-header"><i class="fas fa-cloud-sun"></i> Pirapora do Bom Jesus</div>
-          <div class="weather-current" id="weather-current"></div>
-          <div class="weather-forecast" id="weather-forecast"></div>
+        <div class="trips-widget" id="trips-widget">
+          <div class="trips-widget-header"><i class="fas fa-plane"></i> Viagens</div>
+          <div class="trips-widget-body" id="top-trips-body"></div>
         </div>
 
         <div class="favorites-carousel" id="favorites-carousel">
@@ -250,6 +255,60 @@
             <div class="dream-modal-title" id="dream-modal-title"></div>
             <div class="dream-modal-desc" id="dream-modal-desc"></div>
           </div>
+        </div>
+      </section>
+      <section class="academia-summary">
+        <div class="academia-summary-header"><i class="fas fa-dumbbell"></i> Academia</div>
+        <div class="academia-summary-grid">
+          <article class="academia-summary-card academia-summary-card-hero">
+            <div class="academia-hero-media">
+              <img src="img/eu-gtp1.1.png" alt="Perfil treino" loading="lazy" />
+            </div>
+            <div class="academia-hero-content">
+              <h3><i class="fas fa-calendar-check"></i> Treino de hoje</h3>
+              <div id="academia-today-status" class="academia-summary-line"></div>
+              <div id="academia-today-plan" class="academia-summary-subline"></div>
+            </div>
+            <div class="academia-hero-badge">
+              <img src="img/soldesoter_logo.png" alt="Sol de Soter" loading="lazy" />
+            </div>
+          </article>
+
+          <article class="academia-summary-card">
+            <h3><i class="fas fa-clock-rotate-left"></i> Ultimo treino</h3>
+            <div id="academia-last-training" class="academia-summary-line"></div>
+            <div id="academia-last-training-meta" class="academia-summary-subline"></div>
+          </article>
+
+          <article class="academia-summary-card">
+            <h3><i class="fas fa-forward"></i> Proximo treino</h3>
+            <div id="academia-next-training" class="academia-summary-line"></div>
+            <div id="academia-next-training-meta" class="academia-summary-subline"></div>
+          </article>
+
+          <article class="academia-summary-card academia-streak-card">
+            <h3><i class="fas fa-fire"></i> Streak</h3>
+            <div class="academia-streak-layout">
+              <div class="academia-streak-visual" id="academia-streak-visual">
+                <span id="academia-streak-value">0</span>
+                <small>dias</small>
+              </div>
+              <div>
+                <div id="academia-streak" class="academia-summary-line"></div>
+                <div id="academia-streak-meta" class="academia-summary-subline"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="academia-summary-card academia-summary-card-wide">
+            <h3><i class="fas fa-trophy"></i> PRs da semana</h3>
+            <ul id="academia-pr-list" class="academia-pr-list"></ul>
+          </article>
+
+          <article class="academia-summary-card academia-summary-card-wide">
+            <h3><i class="fas fa-list-check"></i> Checklist rapido</h3>
+            <div id="academia-checklist" class="academia-checklist"></div>
+          </article>
         </div>
       </section>
       <section class="current-shopping">
@@ -296,5 +355,6 @@
     <script src="js/rpg.js"></script>
   </body>
 </html>
+
 
 

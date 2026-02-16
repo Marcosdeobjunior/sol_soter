@@ -1,13 +1,151 @@
 // ===== SISTEMA RPG GLOBAL (GAMIFICATION) ===== //
 class RPGSystem {
   constructor() {
+    this.config = this.loadConfig();
     this.data = this.loadData();
+    this.ensureDataConsistency();
     this.init();
   }
 
   init() {
     this.updateUI();
     this.bindEvents();
+  }
+
+  getDefaultConfig() {
+    return {
+      progression: {
+        baseXpToNextLevel: 100,
+        levelGrowthMultiplier: 1.2,
+        statLevelFactor: 50,
+      },
+      rewards: {
+        taskEasy: 10,
+        taskMedium: 20,
+        taskHard: 35,
+      },
+      ranks: {
+        bronzeMax: 10,
+        prataMax: 20,
+        ouroMax: 30,
+        diamanteMax: 40,
+        platinaMax: 50,
+      },
+    };
+  }
+
+  sanitizeConfig(config) {
+    const toInt = (value, fallback, min = 1) => {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return fallback;
+      return Math.max(min, Math.round(num));
+    };
+
+    const toFloat = (value, fallback, min = 1.01, max = 3) => {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return fallback;
+      return Math.min(max, Math.max(min, num));
+    };
+
+    const cleaned = {
+      progression: {
+        baseXpToNextLevel: toInt(
+          config.progression.baseXpToNextLevel,
+          100,
+          10
+        ),
+        levelGrowthMultiplier: toFloat(
+          config.progression.levelGrowthMultiplier,
+          1.2,
+          1.01,
+          3
+        ),
+        statLevelFactor: toInt(config.progression.statLevelFactor, 50, 10),
+      },
+      rewards: {
+        taskEasy: toInt(config.rewards.taskEasy, 10, 1),
+        taskMedium: toInt(config.rewards.taskMedium, 20, 1),
+        taskHard: toInt(config.rewards.taskHard, 35, 1),
+      },
+      ranks: {
+        bronzeMax: toInt(config.ranks.bronzeMax, 10, 1),
+        prataMax: toInt(config.ranks.prataMax, 20, 2),
+        ouroMax: toInt(config.ranks.ouroMax, 30, 3),
+        diamanteMax: toInt(config.ranks.diamanteMax, 40, 4),
+        platinaMax: toInt(config.ranks.platinaMax, 50, 5),
+      },
+    };
+
+    // Garante ordem crescente.
+    cleaned.ranks.prataMax = Math.max(
+      cleaned.ranks.prataMax,
+      cleaned.ranks.bronzeMax + 1
+    );
+    cleaned.ranks.ouroMax = Math.max(
+      cleaned.ranks.ouroMax,
+      cleaned.ranks.prataMax + 1
+    );
+    cleaned.ranks.diamanteMax = Math.max(
+      cleaned.ranks.diamanteMax,
+      cleaned.ranks.ouroMax + 1
+    );
+    cleaned.ranks.platinaMax = Math.max(
+      cleaned.ranks.platinaMax,
+      cleaned.ranks.diamanteMax + 1
+    );
+
+    return cleaned;
+  }
+
+  loadConfig() {
+    const defaults = this.getDefaultConfig();
+    const saved = localStorage.getItem("sol-de-soter-rpg-config");
+
+    if (!saved) return defaults;
+
+    try {
+      const parsed = JSON.parse(saved);
+      return this.sanitizeConfig({
+        progression: { ...defaults.progression, ...(parsed.progression || {}) },
+        rewards: { ...defaults.rewards, ...(parsed.rewards || {}) },
+        ranks: { ...defaults.ranks, ...(parsed.ranks || {}) },
+      });
+    } catch (error) {
+      return defaults;
+    }
+  }
+
+  saveConfig() {
+    localStorage.setItem("sol-de-soter-rpg-config", JSON.stringify(this.config));
+  }
+
+  getConfig() {
+    return JSON.parse(JSON.stringify(this.config));
+  }
+
+  updateConfig(nextConfig) {
+    this.config = this.sanitizeConfig({
+      progression: {
+        ...this.config.progression,
+        ...(nextConfig.progression || {}),
+      },
+      rewards: {
+        ...this.config.rewards,
+        ...(nextConfig.rewards || {}),
+      },
+      ranks: {
+        ...this.config.ranks,
+        ...(nextConfig.ranks || {}),
+      },
+    });
+    this.saveConfig();
+    this.updateUI();
+  }
+
+  resetConfig() {
+    this.config = this.getDefaultConfig();
+    this.saveConfig();
+    this.updateUI();
   }
 
   loadData() {
@@ -17,7 +155,7 @@ class RPGSystem {
       : {
           level: 1,
           xp: 0,
-          xpToNextLevel: 100,
+          xpToNextLevel: this.getXpToNextForLevel(1),
           stats: {
             strength: { lvl: 1, xp: 0, name: "Força" },
             intelligence: { lvl: 1, xp: 0, name: "Intelecto" },
@@ -27,50 +165,156 @@ class RPGSystem {
         };
   }
 
+  ensureDataConsistency() {
+    if (!this.data || typeof this.data !== "object") {
+      this.data = this.loadData();
+    }
+
+    this.data.level = Math.max(1, Number(this.data.level) || 1);
+    this.data.xp = Math.max(0, Number(this.data.xp) || 0);
+    this.data.xpToNextLevel = Math.max(
+      1,
+      Number(this.data.xpToNextLevel) || this.getXpToNextForLevel(this.data.level)
+    );
+
+    if (!this.data.stats || typeof this.data.stats !== "object") {
+      this.data.stats = {};
+    }
+
+    const defaultStats = this.getDefaultDataStats();
+    Object.keys(defaultStats).forEach((key) => {
+      if (!this.data.stats[key] || typeof this.data.stats[key] !== "object") {
+        this.data.stats[key] = defaultStats[key];
+      }
+      this.data.stats[key].lvl = Math.max(1, Number(this.data.stats[key].lvl) || 1);
+      this.data.stats[key].xp = Math.max(0, Number(this.data.stats[key].xp) || 0);
+      this.data.stats[key].name = this.data.stats[key].name || defaultStats[key].name;
+    });
+  }
+
+  getDefaultDataStats() {
+    return {
+      strength: { lvl: 1, xp: 0, name: "Força" },
+      intelligence: { lvl: 1, xp: 0, name: "Intelecto" },
+      wisdom: { lvl: 1, xp: 0, name: "Sabedoria" },
+      productivity: { lvl: 1, xp: 0, name: "Produtividade" },
+    };
+  }
+
   saveData() {
     localStorage.setItem("sol-de-soter-rpg", JSON.stringify(this.data));
     this.updateUI();
   }
 
-  gainXP(category) {
-    const xpAmount = 10;
-    let statKey = null; // Inicializa como null para indicar que não afeta estatística
+  getXpToNextForLevel(level) {
+    const lvl = Math.max(1, Number(level) || 1);
+    let xpToNext = this.config.progression.baseXpToNextLevel;
+    for (let i = 1; i < lvl; i++) {
+      xpToNext = Math.floor(xpToNext * this.config.progression.levelGrowthMultiplier);
+    }
+    return xpToNext;
+  }
 
-    if (category === "health" || category === "academia") statKey = "strength";
-    else if (
-      category === "study" ||
-      category === "livraria" ||
-      category === "cinema"
-    )
-      statKey = "intelligence";
-    else if (category === "financeiro") statKey = "wisdom";
-    // Metas e Sonhos agora afetam APENAS o nível geral, não as estatísticas
+  getTaskXP(difficulty) {
+    const diff = String(difficulty || "medium").toLowerCase();
+    if (diff === "easy") return this.config.rewards.taskEasy;
+    if (diff === "hard") return this.config.rewards.taskHard;
+    return this.config.rewards.taskMedium;
+  }
 
-    let statLeveledUp = false;
-    if (statKey) {
-      const stat = this.data.stats[statKey];
-      stat.xp += xpAmount;
+  recalculateCurrentLevelThreshold() {
+    this.data.xpToNextLevel = this.getXpToNextForLevel(this.data.level);
+    this.saveData();
+  }
 
-      const statNextLvl = stat.lvl * 50;
-      if (stat.xp >= statNextLvl) {
-        stat.lvl++;
-        stat.xp -= statNextLvl;
-        statLeveledUp = true;
-      }
+  getStatKeyByCategory(category) {
+    const normalizedCategory = String(category || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    if (["strength", "forca", "health", "academia"].includes(normalizedCategory)) {
+      return "strength";
     }
 
+    if (
+      ["intelligence", "intelecto", "study", "livraria", "cinema"].includes(
+        normalizedCategory
+      )
+    ) {
+      return "intelligence";
+    }
+
+    if (
+      ["wisdom", "sabedoria", "financeiro", "meta", "sonho"].includes(
+        normalizedCategory
+      )
+    ) {
+      return "wisdom";
+    }
+
+    if (
+      ["productivity", "produtividade", "work", "personal"].includes(
+        normalizedCategory
+      )
+    ) {
+      return "productivity";
+    }
+
+    return null;
+  }
+
+  applyXpToStat(statKey, xpAmount) {
+    if (!statKey || !this.data.stats[statKey]) return false;
+
+    const stat = this.data.stats[statKey];
+    stat.xp += xpAmount;
+
+    let statLeveledUp = false;
+    const statFactor = this.config.progression.statLevelFactor;
+
+    while (stat.xp >= stat.lvl * statFactor) {
+      stat.lvl++;
+      stat.xp -= (stat.lvl - 1) * statFactor;
+      statLeveledUp = true;
+    }
+
+    return statLeveledUp;
+  }
+
+  applyXpToCharacter(xpAmount) {
     this.data.xp += xpAmount;
+
     let charLeveledUp = false;
-    if (this.data.xp >= this.data.xpToNextLevel) {
+    while (this.data.xp >= this.data.xpToNextLevel) {
       this.data.level++;
       this.data.xp -= this.data.xpToNextLevel;
-      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
+      this.data.xpToNextLevel = Math.floor(
+        this.data.xpToNextLevel * this.config.progression.levelGrowthMultiplier
+      );
       charLeveledUp = true;
     }
 
+    return charLeveledUp;
+  }
+
+  gainXP(category, xpAmount = 10) {
+    const normalizedCategory = String(category || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    const statKey = this.getStatKeyByCategory(category);
+    const statLeveledUp = this.applyXpToStat(statKey, xpAmount);
+    const charLeveledUp = this.applyXpToCharacter(xpAmount);
+
     this.saveData();
-    // Passa a categoria original para o toast, mas usa statKey para o ícone se existir
-    this.showToast(xpAmount, statKey || category, statLeveledUp, charLeveledUp);
+    this.showToast(
+      xpAmount,
+      statKey || normalizedCategory || "general",
+      statLeveledUp,
+      charLeveledUp
+    );
   }
 
   gainDiaryXP(entry) {
@@ -84,31 +328,20 @@ class RPGSystem {
     }
     if (entry && entry.favorito) xpAmount += 5;
 
-    let statLeveledUp = false;
-    const stat = this.data.stats.wisdom;
-    stat.xp += xpAmount;
-    const statNextLvl = stat.lvl * 50;
-    if (stat.xp >= statNextLvl) {
-      stat.lvl++;
-      stat.xp -= statNextLvl;
-      statLeveledUp = true;
-    }
-
-    this.data.xp += xpAmount;
-    let charLeveledUp = false;
-    if (this.data.xp >= this.data.xpToNextLevel) {
-      this.data.level++;
-      this.data.xp -= this.data.xpToNextLevel;
-      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
-      charLeveledUp = true;
-    }
+    const statLeveledUp = this.applyXpToStat("wisdom", xpAmount);
+    const charLeveledUp = this.applyXpToCharacter(xpAmount);
 
     this.saveData();
     this.showToast(xpAmount, "wisdom", statLeveledUp, charLeveledUp);
   }
 
+  gainCustomXP(amount, type) {
+    const charLeveledUp = this.applyXpToCharacter(amount);
+    this.saveData();
+    this.showToast(amount, type || "general", false, charLeveledUp);
+  }
+
   updateUI() {
-    // Header Elements
     const headerBar = document.getElementById("header-xp-bar");
     const headerBadge = document.getElementById("header-level-badge");
 
@@ -118,7 +351,8 @@ class RPGSystem {
       headerBadge.textContent = this.data.level;
     }
 
-    // Dropdown Stats
+    this.applyProfileRankTheme(this.data.level);
+
     this.updateStatUI("str", "strength");
     this.updateStatUI("int", "intelligence");
     this.updateStatUI("wis", "wisdom");
@@ -127,7 +361,9 @@ class RPGSystem {
 
   updateStatUI(idSuffix, statKey) {
     const stat = this.data.stats[statKey];
-    const nextLvl = stat.lvl * 50;
+    if (!stat) return;
+
+    const nextLvl = stat.lvl * this.config.progression.statLevelFactor;
     const percent = (stat.xp / nextLvl) * 100;
 
     const lvlEl = document.getElementById(`lvl-${idSuffix}`);
@@ -137,24 +373,7 @@ class RPGSystem {
     if (barEl) barEl.style.width = `${percent}%`;
   }
 
-  gainCustomXP(amount, type) {
-    let statLeveledUp = false;
-    let charLeveledUp = false;
-
-    this.data.xp += amount;
-    while (this.data.xp >= this.data.xpToNextLevel) {
-      this.data.level++;
-      this.data.xp -= this.data.xpToNextLevel;
-      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
-      charLeveledUp = true;
-    }
-
-    this.saveData();
-    this.showToast(amount, type || "general", statLeveledUp, charLeveledUp);
-  }
-
   showToast(xp, type, statLevelUp, charLevelUp) {
-    // Cria container se não existir (para páginas que não têm o HTML base)
     let container = document.getElementById("rpg-toast-container");
     if (!container) {
       container = document.createElement("div");
@@ -168,8 +387,9 @@ class RPGSystem {
       intelligence: '<i class="fas fa-brain"></i>',
       wisdom: '<i class="fas fa-scroll"></i>',
       productivity: '<i class="fas fa-briefcase"></i>',
-      meta: '<i class="fas fa-bullseye"></i>', // Novo ícone para metas
-      sonho: '<i class="fas fa-star"></i>', // Novo ícone para sonhos
+      meta: '<i class="fas fa-bullseye"></i>',
+      sonho: '<i class="fas fa-star"></i>',
+      general: '<i class="fas fa-star"></i>',
     };
 
     const toastType =
@@ -190,11 +410,13 @@ class RPGSystem {
       toastText = `<span>+<span class="rpg-toast-xp">${xp} XP</span> (Meta)</span>`;
     } else if (type === "sonho") {
       toastText = `<span>+<span class="rpg-toast-xp">${xp} XP</span> (Sonho)</span>`;
-    } else {
+    } else if (this.data.stats[type]) {
       toastText = `<span>+<span class="rpg-toast-xp">${xp} XP</span> em ${this.data.stats[type].name}</span>`;
+    } else {
+      toastText = `<span>+<span class="rpg-toast-xp">${xp} XP</span></span>`;
     }
 
-    toast.innerHTML = `${icons[type] || icons.productivity} ${toastText}`;
+    toast.innerHTML = `${icons[type] || icons.general} ${toastText}`;
     container.appendChild(toast);
 
     if (charLevelUp) {
@@ -211,17 +433,54 @@ class RPGSystem {
   }
 
   bindEvents() {
-    // Sincroniza abas diferentes quando o localStorage muda
     window.addEventListener("storage", (event) => {
       if (event.key === "sol-de-soter-rpg") {
+        if (!event.newValue) return;
         this.data = JSON.parse(event.newValue);
+        this.ensureDataConsistency();
         this.updateUI();
       }
+
+      if (event.key === "sol-de-soter-rpg-config") {
+        this.config = this.loadConfig();
+        this.updateUI();
+      }
+    });
+  }
+
+  getRankByLevel(level) {
+    const lvl = Number(level) || 1;
+    if (lvl <= this.config.ranks.bronzeMax) return "bronze";
+    if (lvl <= this.config.ranks.prataMax) return "prata";
+    if (lvl <= this.config.ranks.ouroMax) return "ouro";
+    if (lvl <= this.config.ranks.diamanteMax) return "diamante";
+    if (lvl <= this.config.ranks.platinaMax) return "platina";
+    return "profissional";
+  }
+
+  applyProfileRankTheme(level) {
+    const rank = this.getRankByLevel(level);
+    const profileEls = Array.from(
+      document.querySelectorAll(".profile.rpg-profile-trigger, .profile")
+    );
+    const rankClasses = [
+      "rank-bronze",
+      "rank-prata",
+      "rank-ouro",
+      "rank-diamante",
+      "rank-platina",
+      "rank-profissional",
+    ];
+
+    profileEls.forEach((el) => {
+      el.classList.remove(...rankClasses);
+      el.classList.add(`rank-${rank}`);
+      el.setAttribute("data-rank", rank);
+      el.setAttribute("title", `Ranking: ${rank}`);
     });
   }
 }
 
 // Inicializa globalmente
 const rpgSystem = new RPGSystem();
-window.rpgSystem = rpgSystem; // Disponível no console e outros scripts
-
+window.rpgSystem = rpgSystem;

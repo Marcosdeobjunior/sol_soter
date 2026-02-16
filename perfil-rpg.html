@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Sol de Sóter</title>
+    <title>Perfil RPG - Sol de Sóter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
@@ -14,16 +14,18 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
     <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      rel="shortcut icon"
+      href="img/soldesoter_logo.png"
+      type="image/x-icon"
     />
-
-    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon">
 
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
+    <link rel="stylesheet" href="css/perfil-rpg.css" />
   </head>
   <body>
+    <div id="rpg-toast-container" class="rpg-toast-container"></div>
+
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
@@ -214,20 +216,160 @@
       </div>
     </header>
 
-    <main>
+    <main class="perfil-rpg-main">
+      <section class="perfil-rpg-hero">
+        <article class="perfil-card">
+          <h2><i class="fas fa-user-shield"></i> Perfil RPG</h2>
+          <p>
+            Configure progressão de níveis, XP por dificuldade e limites dos
+            rankings visuais do perfil.
+          </p>
 
+          <div class="perfil-progress">
+            <div class="perfil-progress-head">
+              <span>Progresso Geral</span>
+              <span id="perfil-progress-text">0 / 100 XP</span>
+            </div>
+            <div class="perfil-progress-bar">
+              <div id="perfil-progress-fill" class="perfil-progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="perfil-rpg-kpi">
+            <div class="kpi">
+              <span class="kpi-label">Nível</span>
+              <span id="perfil-level" class="kpi-value">1</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">Ranking Atual</span>
+              <span id="perfil-rank" class="kpi-value">bronze</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi-label">XP Próx. Nível</span>
+              <span id="perfil-next-xp" class="kpi-value">100</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="perfil-card">
+          <h2><i class="fas fa-chart-line"></i> Estatísticas</h2>
+          <ul class="perfil-rpg-stats">
+            <li>
+              <span>Força</span>
+              <strong id="stat-strength">Lvl 1 · 0 XP</strong>
+            </li>
+            <li>
+              <span>Intelecto</span>
+              <strong id="stat-intelligence">Lvl 1 · 0 XP</strong>
+            </li>
+            <li>
+              <span>Sabedoria</span>
+              <strong id="stat-wisdom">Lvl 1 · 0 XP</strong>
+            </li>
+            <li>
+              <span>Produtividade</span>
+              <strong id="stat-productivity">Lvl 1 · 0 XP</strong>
+            </li>
+            <li>
+              <span>XP Atual</span>
+              <strong id="perfil-current-xp">0</strong>
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="perfil-card">
+        <h2><i class="fas fa-sliders-h"></i> Configuração do Sistema RPG</h2>
+
+        <form id="rpg-config-form">
+          <div class="perfil-rpg-form-grid">
+            <div class="perfil-rpg-section">
+              <h3>Progressão</h3>
+              <div class="perfil-field">
+                <label for="base-xp">XP base para próximo nível</label>
+                <input type="number" id="base-xp" min="10" required />
+              </div>
+              <div class="perfil-field">
+                <label for="growth-multiplier">Multiplicador por nível</label>
+                <input
+                  type="number"
+                  id="growth-multiplier"
+                  min="1.01"
+                  max="3"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div class="perfil-field">
+                <label for="stat-factor">Fator XP por nível de stat</label>
+                <input type="number" id="stat-factor" min="10" required />
+              </div>
+            </div>
+
+            <div class="perfil-rpg-section">
+              <h3>XP por Dificuldade</h3>
+              <div class="perfil-field">
+                <label for="xp-easy">Fácil</label>
+                <input type="number" id="xp-easy" min="1" required />
+              </div>
+              <div class="perfil-field">
+                <label for="xp-medium">Média</label>
+                <input type="number" id="xp-medium" min="1" required />
+              </div>
+              <div class="perfil-field">
+                <label for="xp-hard">Difícil</label>
+                <input type="number" id="xp-hard" min="1" required />
+              </div>
+            </div>
+
+            <div class="perfil-rpg-section">
+              <h3>Limites de Ranking</h3>
+              <div class="perfil-field">
+                <label for="rank-bronze">Bronze até nível</label>
+                <input type="number" id="rank-bronze" min="1" required />
+              </div>
+              <div class="perfil-field">
+                <label for="rank-prata">Prata até nível</label>
+                <input type="number" id="rank-prata" min="2" required />
+              </div>
+              <div class="perfil-field">
+                <label for="rank-ouro">Ouro até nível</label>
+                <input type="number" id="rank-ouro" min="3" required />
+              </div>
+              <div class="perfil-field">
+                <label for="rank-diamante">Diamante até nível</label>
+                <input type="number" id="rank-diamante" min="4" required />
+              </div>
+              <div class="perfil-field">
+                <label for="rank-platina">Platina até nível</label>
+                <input type="number" id="rank-platina" min="5" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="perfil-actions">
+            <button class="perfil-btn primary" type="submit">
+              <i class="fas fa-save"></i> Salvar Configurações
+            </button>
+            <button class="perfil-btn" type="button" id="btn-recalc-threshold">
+              <i class="fas fa-sync-alt"></i> Recalcular XP do nível atual
+            </button>
+            <button class="perfil-btn warning" type="button" id="btn-reset-config">
+              <i class="fas fa-undo"></i> Restaurar Padrão
+            </button>
+          </div>
+          <div id="perfil-feedback" class="perfil-feedback"></div>
+        </form>
+      </section>
     </main>
 
     <footer>
       <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
     </footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script>
     <script src="js/notificacoes.js"></script>
     <script src="js/rpg.js"></script>
+    <script src="js/perfil-rpg.js"></script>
   </body>
 </html>
-
-

@@ -33,151 +33,15 @@ window.addEventListener("storage", (event) => {
   }
 });
 
-// ===== SISTEMA RPG (GAMIFICATION) ===== //
-class RPGSystem {
-  constructor() {
-    this.data = this.loadData();
-    this.updateUI();
+function getRPGSystem() {
+  if (window.rpgSystem && typeof window.rpgSystem.gainXP === "function") {
+    return window.rpgSystem;
   }
 
-  loadData() {
-    const saved = localStorage.getItem("sol-de-soter-rpg");
-    // Estrutura inicial padrão
-    return saved
-      ? JSON.parse(saved)
-      : {
-          level: 1,
-          xp: 0,
-          xpToNextLevel: 100,
-          stats: {
-            strength: { lvl: 1, xp: 0, name: "Força" },
-            intelligence: { lvl: 1, xp: 0, name: "Intelecto" },
-            wisdom: { lvl: 1, xp: 0, name: "Sabedoria" },
-            productivity: { lvl: 1, xp: 0, name: "Produtividade" },
-          },
-        };
-  }
-
-  saveData() {
-    localStorage.setItem("sol-de-soter-rpg", JSON.stringify(this.data));
-    this.updateUI();
-  }
-
-  // Ganhar XP baseado na categoria e quantidade recebida
-  gainXP(category, xpAmount = 10) {
-    let statKey = "productivity";
-
-    // Categorias RPG explicitas
-    if (category === "strength" || category === "forca") statKey = "strength";
-    else if (category === "intelligence" || category === "intelecto")
-      statKey = "intelligence";
-    else if (category === "wisdom" || category === "sabedoria")
-      statKey = "wisdom";
-    else if (category === "productivity" || category === "produtividade")
-      statKey = "productivity";
-    // Fallback legado
-    else if (category === "health") statKey = "strength";
-    else if (category === "study") statKey = "intelligence";
-    else if (category === "financeiro" || category === "meta")
-      statKey = "wisdom";
-    else if (category === "sonho") statKey = "wisdom";
-
-    // Atualiza Stat Especifico
-    const stat = this.data.stats[statKey];
-    stat.xp += xpAmount;
-
-    // Level Up do Stat Especifico (Simples: lvl * 50)
-    const statNextLvl = stat.lvl * 50;
-    let statLeveledUp = false;
-    if (stat.xp >= statNextLvl) {
-      stat.lvl++;
-      stat.xp -= statNextLvl;
-      statLeveledUp = true;
-    }
-
-    // Atualiza XP Geral
-    this.data.xp += xpAmount;
-    let charLeveledUp = false;
-    if (this.data.xp >= this.data.xpToNextLevel) {
-      this.data.level++;
-      this.data.xp -= this.data.xpToNextLevel;
-      this.data.xpToNextLevel = Math.floor(this.data.xpToNextLevel * 1.2);
-      charLeveledUp = true;
-    }
-
-    this.saveData();
-    this.showToast(xpAmount, statKey, statLeveledUp, charLeveledUp);
-  }
-
-  // Atualiza Elementos da Interface (Header e Menu)
-  updateUI() {
-    // XP Geral no Header
-    const xpPercent = (this.data.xp / this.data.xpToNextLevel) * 100;
-    const headerBar = document.getElementById("header-xp-bar");
-    const headerBadge = document.getElementById("header-level-badge");
-
-    if (headerBar) headerBar.style.width = `${xpPercent}%`;
-    if (headerBadge) headerBadge.textContent = this.data.level;
-
-    // Stats Detalhados no Menu Dropdown
-    this.updateStatUI("str", "strength");
-    this.updateStatUI("int", "intelligence");
-    this.updateStatUI("wis", "wisdom");
-    this.updateStatUI("prod", "productivity");
-  }
-
-  updateStatUI(idSuffix, statKey) {
-    const stat = this.data.stats[statKey];
-    const nextLvl = stat.lvl * 50;
-    const percent = (stat.xp / nextLvl) * 100;
-
-    const lvlEl = document.getElementById(`lvl-${idSuffix}`);
-    const barEl = document.getElementById(`bar-${idSuffix}`);
-
-    if (lvlEl) lvlEl.textContent = stat.lvl;
-    if (barEl) barEl.style.width = `${percent}%`;
-  }
-
-  showToast(xp, type, statLevelUp, charLevelUp) {
-    const container = document.getElementById("rpg-toast-container");
-    if (!container) return;
-
-    // Ícones
-    const icons = {
-      strength: '<i class="fas fa-dumbbell"></i>',
-      intelligence: '<i class="fas fa-brain"></i>',
-      wisdom: '<i class="fas fa-scroll"></i>',
-      productivity: '<i class="fas fa-briefcase"></i>',
-    };
-
-    // Notificação de XP
-    const toast = document.createElement("div");
-    toast.className = `rpg-toast toast-${
-      type === "strength"
-        ? "str"
-        : type === "intelligence"
-        ? "int"
-        : type === "wisdom"
-        ? "wis"
-        : "prod"
-    }`;
-    toast.innerHTML = `${icons[type]} <span>+<span class="rpg-toast-xp">${xp} XP</span> em ${this.data.stats[type].name}</span>`;
-    container.appendChild(toast);
-
-    // Notificação de Level Up (Personagem)
-    if (charLevelUp) {
-      setTimeout(() => {
-        const lvlToast = document.createElement("div");
-        lvlToast.className = "rpg-toast toast-levelup";
-        lvlToast.innerHTML = `<i class="fas fa-crown" style="color:gold"></i> <span>Level Up! Nível <span class="rpg-toast-xp">${this.data.level}</span></span>`;
-        container.appendChild(lvlToast);
-        setTimeout(() => lvlToast.remove(), 4500);
-      }, 500);
-    }
-
-    // Remove toast após animação
-    setTimeout(() => toast.remove(), 4500);
-  }
+  // Fallback para evitar quebra caso js/rpg.js falhe.
+  return {
+    gainXP: () => {},
+  };
 }
 
 // ===== CLASSE PRINCIPAL DE PLANEJAMENTO ===== //
@@ -201,8 +65,8 @@ class TaskPlanner {
     this.currentSearchTerm = "";
     this.editingTaskId = null;
 
-    // Inicializa RPG
-    this.rpg = new RPGSystem();
+    // Usa o sistema global de RPG compartilhado entre páginas.
+    this.rpg = getRPGSystem();
 
     this.getAllItems();
     this.init();
@@ -781,12 +645,16 @@ class TaskPlanner {
           gainedXP = true;
           category = t.rpgCategory || "productivity";
           const difficulty = t.difficulty || "medium";
-          const xpByDifficulty = {
-            easy: 10,
-            medium: 20,
-            hard: 35,
-          };
-          xpAmount = xpByDifficulty[difficulty] || 20;
+          if (typeof this.rpg.getTaskXP === "function") {
+            xpAmount = this.rpg.getTaskXP(difficulty);
+          } else {
+            const xpByDifficulty = {
+              easy: 10,
+              medium: 20,
+              hard: 35,
+            };
+            xpAmount = xpByDifficulty[difficulty] || 20;
+          }
         }
         this.saveTasks();
         if (gainedXP) this.rpg.gainXP(category, xpAmount);
@@ -918,3 +786,7 @@ let taskPlanner;
 document.addEventListener("DOMContentLoaded", () => {
   taskPlanner = new TaskPlanner();
 });
+
+
+
+
