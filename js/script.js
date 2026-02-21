@@ -1,4 +1,20 @@
-// Lógica de Dropdown aprimorada para todos os menus
+﻿// Lógica de Dropdown aprimorada para todos os menus
+const alignNavDropdownPointer = (dropdownContainer) => {
+  const menu = dropdownContainer.querySelector('.dropdown-menu');
+  const toggleBtn = dropdownContainer.querySelector('.dropdown-toggle');
+  if (!menu || !toggleBtn) return;
+  if (!dropdownContainer.closest('.nav-menu')) return;
+
+  const btnRect = toggleBtn.getBoundingClientRect();
+  const menuRect = menu.getBoundingClientRect();
+  if (!menuRect.width) return;
+
+  const centerX = btnRect.left + (btnRect.width / 2) - menuRect.left;
+  const triangleHalf = 9;
+  const clamped = Math.max(triangleHalf, Math.min(menuRect.width - triangleHalf, centerX));
+  menu.style.setProperty('--dropdown-pointer-x', `${clamped}px`);
+};
+
 document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
   // O gatilho pode ser o cabeçalho do dropdown ou o perfil
   const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
@@ -17,6 +33,12 @@ document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
 
       // Abre/fecha o menu atual
       dropdownContainer.classList.toggle('active');
+      if (dropdownContainer.classList.contains('active')) {
+        requestAnimationFrame(() => {
+          alignNavDropdownPointer(dropdownContainer);
+          requestAnimationFrame(() => alignNavDropdownPointer(dropdownContainer));
+        });
+      }
     });
   }
 });
@@ -31,6 +53,9 @@ document.addEventListener('click', e => {
   }
 });
 
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.dropdown.active').forEach(alignNavDropdownPointer);
+});
 
 // --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,7 +77,7 @@ window.addEventListener('storage', (event) => {
 // ===== DASHBOARD INDEX =====
 document.addEventListener('DOMContentLoaded', () => {
   const dashboardEl = document.querySelector('.dashboard');
-  if (!dashboardEl) return;
+  const hasDashboard = Boolean(dashboardEl);
 
   const $ = (sel) => document.querySelector(sel);
   const ls = (key, defVal) => {
@@ -63,6 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const feedbackEl = $('#dashboard-feedback');
+  const ENTERTAINMENT_ROTATE_SECONDS = 30;
+  let entertainmentRotationTick = 0;
+  let entertainmentRotationTimer = null;
   const setFeedback = (msg, type = 'info') => {
     if (!feedbackEl) return;
     feedbackEl.textContent = msg;
@@ -81,13 +109,99 @@ document.addEventListener('DOMContentLoaded', () => {
     const v = Math.max(0, Math.min(100, Math.round((num / den) * 100)));
     return v;
   };
+  const getLocalDateKey = (date = new Date()) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+  const rewardEntertainmentStreakXp = (streak) => {
+    if (!window.rpgSystem || typeof window.rpgSystem.gainXP !== 'function') return;
+
+    const currentStreak = Math.max(0, Number(streak) || 0);
+    if (currentStreak <= 0) return;
+
+    let xpBase = 4;
+    if (currentStreak >= 20) xpBase = 24;
+    else if (currentStreak >= 10) xpBase = 16;
+    else if (currentStreak >= 5) xpBase = 10;
+
+    const rewardKey = 'sol-de-soter-entertainment-streak-reward';
+    const todayKey = getLocalDateKey();
+    const rewardState = ls(rewardKey, null);
+    const sameDay = rewardState && rewardState.date === todayKey;
+    const prevXp = sameDay ? (Number(rewardState.xp) || 0) : 0;
+
+    if (sameDay && prevXp >= xpBase) return;
+
+    const xpDelta = Math.max(0, xpBase - prevXp);
+    if (xpDelta <= 0) return;
+
+    window.rpgSystem.gainXP('sabedoria', xpDelta);
+    if (typeof window.recordBibliotecaXp === 'function') window.recordBibliotecaXp('wisdom', xpDelta);
+    localStorage.setItem(rewardKey, JSON.stringify({
+      date: todayKey,
+      streak: currentStreak,
+      xp: xpBase
+    }));
+  };
+  const syncBibliotecaAchievementsToRpg = (achievements) => {
+    if (!window.rpgSystem || !Array.isArray(achievements) || !achievements.length) return;
+    if (typeof window.rpgSystem.gainXP !== 'function') return;
+
+    const key = 'sol-de-soter-biblioteca-achievements-rpg';
+    const state = ls(key, {}) || {};
+    let changed = false;
+
+    achievements.forEach((ach) => {
+      if (!ach || !ach.unlocked || !ach.id) return;
+      if (state[ach.id]) return;
+
+      state[ach.id] = getLocalDateKey();
+      changed = true;
+
+      if (typeof window.rpgSystem.unlockAchievement === 'function') {
+        window.rpgSystem.unlockAchievement(`biblioteca_${ach.id}`, `Biblioteca: ${ach.label}`);
+      }
+      window.rpgSystem.gainXP('intelecto', 12);
+      window.rpgSystem.gainXP('sabedoria', 12);
+      if (typeof window.recordBibliotecaXp === 'function') {
+        window.recordBibliotecaXp('intelligence', 12);
+        window.recordBibliotecaXp('wisdom', 12);
+      }
+    });
+
+    if (changed) {
+      localStorage.setItem(key, JSON.stringify(state));
+    }
+  };
 
   const renderTopPlanner = () => {
     const list = $('#planner-list');
     if (!list) return;
     const tasks = ls('sol-de-soter-tasks', []);
     const todayStr = new Date().toISOString().slice(0,10);
-    const todayTasks = (tasks||[]).filter(t => t.date === todayStr).sort((a,b)=> (a.time||'') < (b.time||'') ? -1 : 1);
+    const esc = (value) => String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const categoryMap = {
+      work: 'Trabalho',
+      personal: 'Pessoal',
+      health: 'Saude',
+      study: 'Estudo',
+      financeiro: 'Financeiro',
+      sonho: 'Sonho',
+      meta: 'Meta',
+    };
+    const todayTasks = (tasks || [])
+      .filter(t => t.date === todayStr)
+      .sort((a, b) => {
+        if (Boolean(a.completed) !== Boolean(b.completed)) return a.completed ? 1 : -1;
+        return (a.time || '').localeCompare(b.time || '');
+      });
 
     if (!todayTasks.length) {
       list.innerHTML = `
@@ -99,12 +213,28 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const completedCount = todayTasks.filter(t => Boolean(t.completed)).length;
     list.innerHTML = todayTasks.map(t => `
-      <li class="planner-item">
-        <span class="title">${t.title}</span>
-                  <span class="meta">${t.time||''} ${t.category? '• '+t.category: ''}</span>
+      <li class="planner-item ${t.completed ? 'is-done' : ''}">
+        <span class="planner-state-icon">
+          <i class="fas ${t.completed ? 'fa-check-circle' : 'fa-circle'}"></i>
+        </span>
+        <div class="planner-item-content">
+          <span class="title">${esc(t.title || 'Sem titulo')}</span>
+          <span class="meta">
+            <span><i class="far fa-clock"></i> ${esc(t.time || 'Sem horario')}</span>
+            <span class="planner-sep">•</span>
+            <span class="planner-category-pill">${esc(categoryMap[t.category] || t.category || 'Geral')}</span>
+          </span>
+        </div>
       </li>
     `).join('');
+    list.insertAdjacentHTML('afterbegin', `
+      <li class="planner-summary-row">
+        <span><i class="fas fa-list-check"></i> ${todayTasks.length} tarefa(s) hoje</span>
+        <strong>${completedCount} concluida(s)</strong>
+      </li>
+    `);
   };
 
   let carouselIndex = 0;
@@ -234,9 +364,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = $('#top-trips-body');
     if (!container) return;
 
+    const esc = (value) => String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const dayMs = 24 * 60 * 60 * 1000;
+    const daysBetween = (from, to) => Math.ceil((to.getTime() - from.getTime()) / dayMs);
+    const daysLabel = (n) => `${Math.abs(n)} dia${Math.abs(n) === 1 ? '' : 's'}`;
+    const tripPeriodLabel = (trip) => {
+      if (trip.dataIda && trip.dataVolta) return `${formatBRDate(trip.dataIda)} ate ${formatBRDate(trip.dataVolta)}`;
+      if (trip.dataIda) return `Partida em ${formatBRDate(trip.dataIda)}`;
+      if (trip.dataVolta) return `Retorno em ${formatBRDate(trip.dataVolta)}`;
+      return 'Sem data definida';
+    };
+    const buildTripCard = ({ trip, stateClass, stateIcon, stateLabel, countdownLabel, note }) => `
+      <div class="trips-widget-row ${stateClass}">
+        <div class="trip-row-head">
+          <span class="trip-state-pill"><i class="${stateIcon}"></i> ${stateLabel}</span>
+          ${countdownLabel ? `<span class="trip-countdown">${countdownLabel}</span>` : ''}
+        </div>
+        <div class="title">${esc(trip.destino)}</div>
+        <div class="meta"><i class="far fa-calendar-alt"></i> ${tripPeriodLabel(trip)}</div>
+        ${note ? `<div class="trip-note">${esc(note)}</div>` : ''}
+      </div>
+    `;
+
     const trips = getAllTripsUnified();
     if (!trips.length) {
-      container.innerHTML = '<div class="trips-widget-row"><div class="title">Nenhuma viagem cadastrada.</div><div class="meta">Cadastre em Viagens para acompanhar aqui.</div></div>';
+      container.innerHTML = `
+        <div class="trips-widget-row trips-widget-row--empty">
+          <div class="trip-row-head">
+            <span class="trip-state-pill"><i class="fas fa-suitcase-rolling"></i> Lista vazia</span>
+          </div>
+          <div class="title">Nenhuma viagem cadastrada.</div>
+          <div class="meta"><i class="fas fa-map-signs"></i> Crie uma viagem no planner para acompanhar aqui.</div>
+        </div>
+      `;
       return;
     }
 
@@ -252,22 +417,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return volta && volta.getTime() >= now.getTime();
       })
       .sort((a, b) => {
-        const ad = a.dataIda ? new Date(a.dataIda + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
-        const bd = b.dataIda ? new Date(b.dataIda + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
+        const adBase = a.dataIda || a.dataVolta;
+        const bdBase = b.dataIda || b.dataVolta;
+        const ad = adBase ? new Date(adBase + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
+        const bd = bdBase ? new Date(bdBase + 'T00:00:00').getTime() : Number.MAX_SAFE_INTEGER;
         return ad - bd;
       });
 
     if (futurasOuAtuais.length) {
       const trip = futurasOuAtuais[0];
-      const inicio = trip.dataIda ? formatBRDate(trip.dataIda) : 'N/A';
-      const fim = trip.dataVolta ? formatBRDate(trip.dataVolta) : 'N/A';
-      container.innerHTML = `
-        <div class="trips-widget-row">
-          <div class="title"><i class="fas fa-map-marker-alt"></i> ${trip.destino}</div>
-          <div class="meta">${inicio} - ${fim}</div>
-          <div class="status">Proxima viagem com data</div>
-        </div>
-      `;
+      const ida = trip.dataIda ? new Date(trip.dataIda + 'T00:00:00') : null;
+      const volta = trip.dataVolta ? new Date(trip.dataVolta + 'T00:00:00') : ida;
+      const isOngoing = ida && volta && ida.getTime() <= now.getTime() && volta.getTime() >= now.getTime();
+
+      let countdownLabel = '';
+      if (isOngoing && volta) {
+        const daysLeft = daysBetween(now, volta);
+        countdownLabel = daysLeft <= 0 ? 'Ultimo dia' : `Termina em ${daysLabel(daysLeft)}`;
+      } else if (ida) {
+        const daysToStart = daysBetween(now, ida);
+        countdownLabel = daysToStart <= 0 ? 'Comeca hoje' : `Faltam ${daysLabel(daysToStart)}`;
+      }
+
+      container.innerHTML = buildTripCard({
+        trip,
+        stateClass: isOngoing ? 'trips-widget-row--ongoing' : 'trips-widget-row--upcoming',
+        stateIcon: isOngoing ? 'fas fa-location-dot' : 'fas fa-plane-departure',
+        stateLabel: isOngoing ? 'Em andamento' : 'Proxima viagem',
+        countdownLabel,
+        note: trip.descricao || 'Planeje roteiro, gastos e checklist para viajar com tranquilidade.',
+      });
       return;
     }
 
@@ -288,15 +467,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (realizadas.length) {
       const trip = realizadas[0];
-      const inicio = trip.dataIda ? formatBRDate(trip.dataIda) : 'N/A';
-      const fim = trip.dataVolta ? formatBRDate(trip.dataVolta) : 'N/A';
-      container.innerHTML = `
-        <div class="trips-widget-row">
-          <div class="title"><i class="fas fa-flag-checkered"></i> ${trip.destino}</div>
-          <div class="meta">${inicio} - ${fim}</div>
-          <div class="status">Viagem realizada</div>
-        </div>
-      `;
+      const fimBase = trip.dataVolta || trip.dataIda;
+      const fim = fimBase ? new Date(fimBase + 'T00:00:00') : now;
+      const daysAgo = daysBetween(fim, now);
+      container.innerHTML = buildTripCard({
+        trip,
+        stateClass: 'trips-widget-row--done',
+        stateIcon: 'fas fa-flag-checkered',
+        stateLabel: 'Viagem realizada',
+        countdownLabel: daysAgo > 0 ? `Ha ${daysLabel(daysAgo)}` : 'Concluida hoje',
+        note: trip.descricao || 'Revise fotos e aprendizados para montar sua proxima aventura.',
+      });
       return;
     }
 
@@ -308,17 +489,25 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem(rotationKey, String(nextIdx + 1));
       const trip = semData[nextIdx];
 
-      container.innerHTML = `
-        <div class="trips-widget-row">
-          <div class="title"><i class="fas fa-route"></i> ${trip.destino}</div>
-          <div class="meta">Sem data definida</div>
-          <div class="status">Alternando viagens sem data</div>
-        </div>
-      `;
+      container.innerHTML = buildTripCard({
+        trip,
+        stateClass: 'trips-widget-row--nodate',
+        stateIcon: 'fas fa-route',
+        stateLabel: 'No radar',
+        countdownLabel: semData.length > 1 ? `Rotacionando ${semData.length} ideias` : 'Aguardando data',
+        note: trip.descricao || 'Defina uma data para priorizar esse destino no seu planejamento.',
+      });
       return;
     }
 
-    container.innerHTML = '<div class="trips-widget-row"><div class="title">Nenhuma viagem disponivel.</div></div>';
+    container.innerHTML = `
+      <div class="trips-widget-row trips-widget-row--empty">
+        <div class="trip-row-head">
+          <span class="trip-state-pill"><i class="fas fa-compass"></i> Sem resultados</span>
+        </div>
+        <div class="title">Nenhuma viagem disponivel.</div>
+      </div>
+    `;
   };
 
   const renderAcademiaSummary = () => {
@@ -754,45 +943,179 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sonhos - seção dedicada com overlay
   const renderDreamsSection = () => {
-    const grid = document.querySelector('#dreams-grid');
-    if (!grid) return;
+    const carouselCard = document.querySelector('#dream-carousel-card');
+    const detailsPanel = document.querySelector('#dream-detail-panel');
+    const dotsEl = document.querySelector('#dream-carousel-dots');
+    const prevBtn = document.querySelector('#dream-prev-btn');
+    const nextBtn = document.querySelector('#dream-next-btn');
+    if (!carouselCard || !detailsPanel || !dotsEl || !prevBtn || !nextBtn) return;
+
+    const esc = (value) => String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
     const sonhos = ls('sonhos-objetivos', []) || [];
+    const metas = ls('metas-objetivos', []) || [];
     const sel = document.querySelector('#dream-select');
-    if (sel) sel.innerHTML = sonhos.map((s, i) => `<option value="${i}">${s.titulo || 'Sonho'}</option>`).join('');
-    grid.innerHTML = sonhos.map((s, idx) => {
-      const img = s.imagem || 'img/default_dream.png';
-      const titulo = s.titulo || 'Sonho';
-      return `
-        <div class="dream-card" data-idx="${idx}">
-          <img src="${img}" alt="${titulo}" loading="lazy"/>
-          <div class="title">${titulo}</div>
+
+    const PRIORITY_LABELS = {
+      alta: 'Alta',
+      media: 'Media',
+      baixa: 'Baixa',
+    };
+    const META_STATUS_LABELS = {
+      concluida: 'Concluida',
+      progresso: 'Em progresso',
+      pausada: 'Pausada',
+      pendente: 'Pendente',
+    };
+    const getMetaStatus = (status) => META_STATUS_LABELS[String(status || '').toLowerCase()] || 'Pendente';
+    const clampPct = (value) => Math.max(0, Math.min(100, Number(value) || 0));
+
+    if (sel) {
+      sel.innerHTML = sonhos.length
+        ? sonhos.map((s, i) => `<option value="${i}">${esc(s.titulo || 'Sonho')}</option>`).join('')
+        : '<option value="">Nenhum sonho cadastrado</option>';
+    }
+
+    if (!sonhos.length) {
+      carouselCard.innerHTML = `
+        <div class="dream-carousel-media">
+          <img src="img/default_dream.png" alt="Sem sonhos cadastrados" loading="lazy" />
+          <div class="dream-carousel-overlay"></div>
+          <div class="dream-carousel-title">Nenhum sonho cadastrado</div>
         </div>
       `;
-    }).join('');
-    grid.querySelectorAll('.dream-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const i = parseInt(card.dataset.idx, 10);
-        const s = sonhos[i];
-        openDreamOverlay(s);
-      });
-    });
-
-    ['count-1','count-2','count-3','count-4','count-5','count-6'].forEach(c => grid.classList.remove(c));
-    grid.classList.add(`count-${Math.min((sonhos||[]).length, 6)}`);
-    grid.classList.toggle('scrollable', sonhos.length > 6);
-    const updateIndicators = () => {
-      const maxScroll = grid.scrollWidth - grid.clientWidth;
-      const atStart = grid.scrollLeft <= 1;
-      const atEnd = grid.scrollLeft >= (maxScroll - 1);
-      grid.classList.toggle('at-start', atStart);
-      grid.classList.toggle('at-end', atEnd);
-    };
-    if (sonhos.length > 6) {
-      updateIndicators();
-      grid.addEventListener('scroll', updateIndicators, { passive: true });
-    } else {
-      grid.classList.remove('at-start', 'at-end');
+      detailsPanel.innerHTML = `
+        <h3>Adicione seu primeiro sonho</h3>
+        <p>Crie sonhos na pagina de Sonhos para visualizar tudo aqui com metas e progresso.</p>
+      `;
+      dotsEl.innerHTML = '';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
     }
+
+    const currentKey = 'index-dream-carousel-current';
+    let currentIndex = parseInt(localStorage.getItem(currentKey) || '0', 10);
+    if (Number.isNaN(currentIndex) || currentIndex < 0) currentIndex = 0;
+    if (currentIndex >= sonhos.length) currentIndex = 0;
+
+    const getMetaListForDream = (dream) => metas
+      .filter((meta) => String(meta.sonhoId) === String(dream.id))
+      .sort((a, b) => {
+        if (a.status === 'concluida' && b.status !== 'concluida') return 1;
+        if (a.status !== 'concluida' && b.status === 'concluida') return -1;
+        return new Date(a.prazo || '2999-12-31').getTime() - new Date(b.prazo || '2999-12-31').getTime();
+      });
+
+    const updateDots = () => {
+      dotsEl.innerHTML = sonhos.map((_, i) => `
+        <button class="${i === currentIndex ? 'active' : ''}" data-dream-dot="${i}" aria-label="Ir para sonho ${i + 1}"></button>
+      `).join('');
+      dotsEl.querySelectorAll('[data-dream-dot]').forEach((dot) => {
+        dot.onclick = () => {
+          const idx = parseInt(dot.dataset.dreamDot, 10);
+          if (Number.isNaN(idx)) return;
+          currentIndex = idx;
+          renderCurrentDream();
+        };
+      });
+    };
+
+    const renderCurrentDream = () => {
+      const dream = sonhos[currentIndex];
+      if (!dream) return;
+
+      const img = dream.imagem || 'img/default_dream.png';
+      const title = dream.titulo || 'Sonho';
+      const deadline = dream.prazo ? formatBRDate(dream.prazo) : 'Sem prazo';
+      const priorityKey = String(dream.prioridade || '').toLowerCase();
+      const priority = PRIORITY_LABELS[priorityKey] || 'Nao definida';
+      const dreamMetas = getMetaListForDream(dream);
+      const doneMetas = dreamMetas.filter((meta) => String(meta.status).toLowerCase() === 'concluida').length;
+      const calculatedProgress = dreamMetas.length
+        ? Math.round((doneMetas / dreamMetas.length) * 100)
+        : clampPct(dream.progresso);
+
+      carouselCard.innerHTML = `
+        <div class="dream-carousel-media">
+          <img src="${img}" alt="${esc(title)}" loading="lazy" />
+          <div class="dream-carousel-overlay"></div>
+          <div class="dream-carousel-title">${esc(title)}</div>
+        </div>
+      `;
+      carouselCard.onclick = () => openDreamOverlay(dream);
+
+      detailsPanel.innerHTML = `
+        <h3 id="dream-detail-title">${esc(title)}</h3>
+        <p id="dream-detail-desc">${esc(dream.descricao || 'Sem resumo cadastrado para este sonho.')}</p>
+
+        <div class="dream-detail-kpis">
+          <div class="dream-detail-kpi">
+            <span>Data</span>
+            <strong id="dream-detail-date">${esc(deadline)}</strong>
+          </div>
+          <div class="dream-detail-kpi">
+            <span>Prioridade</span>
+            <strong id="dream-detail-priority">${esc(priority)}</strong>
+          </div>
+          <div class="dream-detail-kpi">
+            <span>Metas Relacionadas</span>
+            <strong id="dream-detail-metas">${dreamMetas.length}</strong>
+          </div>
+        </div>
+
+        <div class="dream-detail-progress">
+          <div class="dream-progress-label-row">
+            <span>Progresso</span>
+            <strong id="dream-detail-progress-text">${calculatedProgress}%</strong>
+          </div>
+          <div class="dream-progress-bar">
+            <div class="dream-progress-fill" id="dream-detail-progress-fill" style="width:${calculatedProgress}%"></div>
+          </div>
+        </div>
+
+        <ul class="dream-detail-meta-list" id="dream-detail-meta-list">
+          ${dreamMetas.length
+            ? dreamMetas.slice(0, 6).map((meta) => `
+                <li>
+                  <div class="meta-title">${esc(meta.titulo || 'Meta')}</div>
+                  <div class="meta-sub">${esc(meta.prazo ? formatBRDate(meta.prazo) : 'Sem prazo')} • ${esc(getMetaStatus(meta.status))}</div>
+                </li>
+              `).join('')
+            : '<li class="dream-detail-empty">Nenhuma meta relacionada a este sonho.</li>'
+          }
+        </ul>
+      `;
+
+      if (sel) sel.value = String(currentIndex);
+      localStorage.setItem(currentKey, String(currentIndex));
+      updateDots();
+    };
+
+    prevBtn.disabled = sonhos.length <= 1;
+    nextBtn.disabled = sonhos.length <= 1;
+    prevBtn.onclick = () => {
+      currentIndex = (currentIndex - 1 + sonhos.length) % sonhos.length;
+      renderCurrentDream();
+    };
+    nextBtn.onclick = () => {
+      currentIndex = (currentIndex + 1) % sonhos.length;
+      renderCurrentDream();
+    };
+    if (sel) {
+      sel.onchange = () => {
+        const idx = parseInt(sel.value, 10);
+        if (Number.isNaN(idx)) return;
+        currentIndex = idx;
+        renderCurrentDream();
+      };
+    }
+
+    renderCurrentDream();
 
     // Upload de imagem com validação
     const input = document.querySelector('#dream-image-input');
@@ -801,7 +1124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) {
       btn.onclick = async () => {
         try {
-          if (!sel || sel.value === '') { if (feedback) feedback.textContent = 'Selecione um sonho.'; return; }
+          if (!sonhos[currentIndex]) { if (feedback) feedback.textContent = 'Selecione um sonho.'; return; }
           const file = input && input.files && input.files[0];
           if (!file) { if (feedback) feedback.textContent = 'Escolha uma imagem.'; return; }
           const allowed = ['image/png','image/jpeg','image/webp'];
@@ -810,10 +1133,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (file.size > max) { if (feedback) feedback.textContent = 'Imagem muito grande (máx 2MB).'; return; }
           if (feedback) feedback.textContent = 'Carregando imagem...';
           const dataUrl = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
-          const idx = parseInt(sel.value, 10);
           const list = ls('sonhos-objetivos', []) || [];
-          if (!list[idx]) { if (feedback) feedback.textContent = 'Sonho não encontrado.'; return; }
-          list[idx].imagem = dataUrl;
+          if (!list[currentIndex]) { if (feedback) feedback.textContent = 'Sonho não encontrado.'; return; }
+          list[currentIndex].imagem = dataUrl;
           localStorage.setItem('sonhos-objetivos', JSON.stringify(list));
           if (feedback) feedback.textContent = 'Imagem adicionada com sucesso.';
           renderDreamsSection();
@@ -826,9 +1148,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botão fechar overlay
     const closeBtn = document.querySelector('#dream-close');
     const overlayEl = document.querySelector('#dream-overlay');
-    if (closeBtn) closeBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeDreamOverlay(); });
-    if (overlayEl) overlayEl.addEventListener('click', (e) => { if (e.target === overlayEl) closeDreamOverlay(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDreamOverlay(); });
+    if (closeBtn) closeBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); closeDreamOverlay(); };
+    if (overlayEl) overlayEl.onclick = (e) => { if (e.target === overlayEl) closeDreamOverlay(); };
+    if (!window.__dreamEscBound) {
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDreamOverlay(); });
+      window.__dreamEscBound = true;
+    }
   };
 
   const renderDiaryWidget = () => {
@@ -924,6 +1249,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const historicoLivros = ls('historicoProgresso', {}) || {};
     const historicoManga = ls('historicoProgressoMangas', {}) || {};
     const historicoMidia = ls('historicoProgressoMidia', {}) || {};
+    const historicoLivrosPorItem = ls('historicoProgressoLivros', {}) || {};
+    const historicoMangaPorItem = ls('historicoProgressoMangasItens', {}) || {};
+    const historicoMidiaPorItem = ls('historicoProgressoMidiaItens', {}) || {};
+    const bibliotecaXpHistory = ls('sol-de-soter-biblioteca-xp-history', {}) || {};
 
     const toInt = (v) => parseInt(v || 0, 10) || 0;
     const today = new Date();
@@ -960,6 +1289,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof item.generos === 'string') return item.generos.split(',').map(g => g.trim()).filter(Boolean);
       if (typeof item.genero === 'string') return [item.genero.trim()].filter(Boolean);
       return [];
+    };
+    const getItemUniqueKey = (item) => (item && item.raw && item.raw.id ? String(item.raw.id) : String(item && item.title ? item.title : ''));
+    const getLastProgressDate = (item) => {
+      if (!item) return null;
+      const key = getItemUniqueKey(item);
+      const source = item.source;
+      const historyObj = source === 'livraria'
+        ? historicoLivrosPorItem
+        : source === 'mangas'
+          ? historicoMangaPorItem
+          : historicoMidiaPorItem;
+      const getter = (payload) => {
+        if (source === 'livraria') return toInt(payload && payload.books && payload.books[key]);
+        return toInt(payload && payload.items && payload.items[key]);
+      };
+      let latest = null;
+      Object.entries(historyObj || {}).forEach(([dateKey, payload]) => {
+        const value = getter(payload);
+        if (value <= 0) return;
+        if (!latest || String(dateKey) > String(latest)) latest = dateKey;
+      });
+      return latest;
     };
     const weekRange = Array.from({ length: 7 }, (_, index) => {
       const d = new Date(today);
@@ -1036,20 +1387,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const allItems = [...livroItems, ...midiaItems, ...mangaItems];
     const ongoingItems = allItems.filter(item => !item.done);
     const completedItems = allItems.filter(item => item.done);
+    const ongoingLivros = livroItems.filter(item => !item.done);
+    const ongoingMidias = midiaItems.filter(item => !item.done);
+    const ongoingMangas = mangaItems.filter(item => !item.done);
+    const pickCardItem = (ongoingList, fullList) => {
+      const inProgress = ongoingList
+        .filter((item) => item.progress > 0 && item.progress < 100)
+        .sort((a, b) => (b.progress - a.progress) || (b.current - a.current));
 
-    const livroAtual = livroItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
+      if (inProgress.length) {
+        const fixed = inProgress[0];
+        return { item: fixed, hasProgress: true, rotating: false, hasOngoing: true };
+      }
+
+      const zeroProgressQueue = ongoingList
+        .filter((item) => item.progress <= 0 || item.current <= 0);
+      if (zeroProgressQueue.length) {
+        const index = entertainmentRotationTick % zeroProgressQueue.length;
+        return {
+          item: zeroProgressQueue[index],
+          hasProgress: false,
+          rotating: zeroProgressQueue.length > 1,
+          hasOngoing: true
+        };
+      }
+
+      if (!fullList.length) {
+        return { item: null, hasProgress: false, rotating: false, hasOngoing: false };
+      }
+      const index = entertainmentRotationTick % fullList.length;
+      return { item: fullList[index], hasProgress: false, rotating: fullList.length > 1, hasOngoing: false };
+    };
+    const pickCompletedShowcase = (completedList) => {
+      if (!completedList.length) return { items: [], rotating: false };
+      const pageSize = 3;
+      const totalPages = Math.ceil(completedList.length / pageSize);
+      const pageIndex = entertainmentRotationTick % totalPages;
+      const start = pageIndex * pageSize;
+      return {
+        items: completedList.slice(start, start + pageSize),
+        rotating: completedList.length > pageSize
+      };
+    };
+
+    const livroCard = pickCardItem(ongoingLivros, livroItems);
+    const livroAtual = livroCard.item;
     const livroProgresso = livroAtual ? livroAtual.progress : 0;
 
-    const serieAtual = midiaItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
-    const ultimoFilme = midiaItems
-      .filter(item => item.raw && item.raw.tipoMidia === 'filme' && item.done)
-      .sort((a, b) => (b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0))[0];
-    const mediaAtual = serieAtual || ultimoFilme || midiaItems.find(Boolean);
-    const serieProgresso = !mediaAtual
-      ? 0
-      : (mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' ? (mediaAtual.done ? 100 : mediaAtual.progress) : mediaAtual.progress);
+    const mediaCard = pickCardItem(ongoingMidias, midiaItems);
+    const mediaAtual = mediaCard.item;
+    const mediaIsFilm = Boolean(mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme');
+    const serieProgresso = mediaAtual ? mediaAtual.progress : 0;
 
-    const mangaAtual = mangaItems.filter(item => !item.done).sort((a, b) => b.progress - a.progress)[0];
+    const mangaCard = pickCardItem(ongoingMangas, mangaItems);
+    const mangaAtual = mangaCard.item;
     const mangaAtualValor = mangaAtual ? mangaAtual.current : 0;
     const mangaTotalValor = mangaAtual ? mangaAtual.total : 0;
     const mangaProgresso = mangaAtual ? mangaAtual.progress : 0;
@@ -1057,10 +1448,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const livrosConcluidos = livroItems.filter(item => item.done).length;
     const midiasConcluidas = midiaItems.filter(item => item.done).length;
     const mangasConcluidos = mangaItems.filter(item => item.done).length;
-    const totalAndamento = [livroAtual, serieAtual || (mediaAtual && !mediaAtual.done ? mediaAtual : null), mangaAtual].filter(Boolean).length;
+    const totalAndamento = [livroCard.hasProgress, mediaCard.hasProgress, mangaCard.hasProgress].filter(Boolean).length;
 
     const hasData = Boolean(allItems.length);
     if (!hasData) {
+      if (entertainmentRotationTimer) {
+        clearInterval(entertainmentRotationTimer);
+        entertainmentRotationTimer = null;
+      }
       container.innerHTML = `
         <article class="ent-empty-state">
           <i class="fas fa-clapperboard"></i>
@@ -1095,15 +1490,77 @@ document.addEventListener('DOMContentLoaded', () => {
       .filter(item => item.rating > 0)
       .sort((a, b) => (b.rating - a.rating) || ((b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0)))
       .slice(0, 5);
+    const completedLivros = livroItems
+      .filter(item => item.done)
+      .sort((a, b) => (b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0))
+    ;
+    const completedMidias = midiaItems
+      .filter(item => item.done)
+      .sort((a, b) => (b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0))
+    ;
+    const completedMangas = mangaItems
+      .filter(item => item.done)
+      .sort((a, b) => (b.completionDate ? b.completionDate.getTime() : 0) - (a.completionDate ? a.completionDate.getTime() : 0))
+    ;
+    const completedLivrosShow = pickCompletedShowcase(completedLivros);
+    const completedMidiasShow = pickCompletedShowcase(completedMidias);
+    const completedMangasShow = pickCompletedShowcase(completedMangas);
 
-    const queueItems = ongoingItems
+    const shouldRotateCards = livroCard.rotating || mediaCard.rotating || mangaCard.rotating;
+    const shouldRotateCompleted = completedLivrosShow.rotating || completedMidiasShow.rotating || completedMangasShow.rotating;
+    if ((shouldRotateCards || shouldRotateCompleted) && !entertainmentRotationTimer) {
+      entertainmentRotationTimer = setInterval(() => {
+        entertainmentRotationTick += 1;
+        renderCurrentEntertainment();
+      }, ENTERTAINMENT_ROTATE_SECONDS * 1000);
+    } else if (!shouldRotateCards && !shouldRotateCompleted && entertainmentRotationTimer) {
+      clearInterval(entertainmentRotationTimer);
+      entertainmentRotationTimer = null;
+      entertainmentRotationTick = 0;
+    }
+
+    const queueSourceItems = ongoingItems
       .filter(item => item.progress === 0 || item.current === 0)
       .sort((a, b) => {
         const ad = a.startDate ? a.startDate.getTime() : 0;
         const bd = b.startDate ? b.startDate.getTime() : 0;
         return bd - ad;
-      })
-      .slice(0, 3);
+      });
+    const queueTabType = (item) => {
+      if (!item) return 'livraria';
+      if (item.source === 'livraria') return 'livraria';
+      if (item.source === 'mangas') return 'mangas';
+      const mediaType = String(item.raw && item.raw.tipoMidia ? item.raw.tipoMidia : '').toLowerCase();
+      return mediaType === 'filme' ? 'cinema' : 'series';
+    };
+    const queueByTab = {
+      livraria: [],
+      cinema: [],
+      series: [],
+      mangas: []
+    };
+    queueSourceItems.forEach((item) => {
+      const tab = queueTabType(item);
+      queueByTab[tab].push(item);
+    });
+    Object.keys(queueByTab).forEach((key) => {
+      queueByTab[key] = queueByTab[key].slice(0, 3);
+    });
+    const renderQueueTabList = (tabKey) => {
+      const list = queueByTab[tabKey] || [];
+      if (!list.length) return '<li><span>Sem itens nesta aba.</span></li>';
+      return list.map((item) => `<li><span>${item.title}</span><span class="meta">${item.startDate ? formatBRDate(item.startDate) : 'sem data'}</span></li>`).join('');
+    };
+    const randomMoodPool = ongoingItems.length ? ongoingItems : allItems;
+    const moodItemKey = (item) => `${item && item.source ? item.source : 'x'}:${getItemUniqueKey(item)}`;
+    let randomMoodCurrentKey = '';
+    const pickRandomMoodItem = (excludeKey) => {
+      if (!randomMoodPool.length) return null;
+      const candidates = randomMoodPool.filter((item) => moodItemKey(item) !== excludeKey);
+      const source = candidates.length ? candidates : randomMoodPool;
+      const index = Math.floor(Math.random() * source.length);
+      return source[index] || null;
+    };
 
     const activityMap = {};
     weekRange.forEach((key) => {
@@ -1129,11 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
     }
-    const weekActivityDots = weekRange.map((key) => {
-      const active = (activityMap[key] || 0) > 0;
-      return `<span class="ent-dot ${active ? 'active' : ''}" title="${key}"></span>`;
-    }).join('');
-
+    rewardEntertainmentStreakXp(streak);
     const staleItems = ongoingItems.filter((item) => {
       if (!item.startDate) return false;
       const age = daysDiff(today, item.startDate);
@@ -1149,10 +1602,52 @@ document.addEventListener('DOMContentLoaded', () => {
       ...noRatingRecent.map(item => `${item.title} foi concluído recentemente e ainda está sem nota.`)
     ].slice(0, 4);
 
+    const timelineEntries = [...weekRange]
+      .reverse()
+      .map((dateKey) => {
+        const booksPages = toInt(historicoLivros[dateKey] && historicoLivros[dateKey].pagesRead);
+        const mangaPages = toInt(historicoManga[dateKey] && historicoManga[dateKey].pagesRead);
+        const mediaProgress = toInt(historicoMidia[dateKey] && historicoMidia[dateKey].progress);
+        const completedCount = completedItems.filter((item) => item.completionDate && item.completionDate.toISOString().slice(0, 10) === dateKey).length;
+        const chunks = [];
+        if (booksPages > 0) chunks.push(`Livros +${booksPages} pág`);
+        if (mangaPages > 0) chunks.push(`Mangás +${mangaPages} pág`);
+        if (mediaProgress > 0) chunks.push(`Mídia +${mediaProgress}`);
+        if (completedCount > 0) chunks.push(`Concluídos ${completedCount}`);
+        return {
+          date: dateKey,
+          text: chunks.join(' • ') || 'Sem atividade registrada'
+        };
+      });
+
+    const xpHistoryRange = [...weekRange].reverse().map((dateKey) => {
+      const row = bibliotecaXpHistory[dateKey] || {};
+      const intelligence = toInt(row.intelligence);
+      const wisdom = toInt(row.wisdom);
+      return { date: dateKey, intelligence, wisdom, total: intelligence + wisdom };
+    });
+    const xpPeak = Math.max(1, ...xpHistoryRange.map((row) => row.total));
+    const xpTotalIntelligence = xpHistoryRange.reduce((acc, row) => acc + row.intelligence, 0);
+    const xpTotalWisdom = xpHistoryRange.reduce((acc, row) => acc + row.wisdom, 0);
+
+    const riskItems = ongoingItems
+      .map((item) => {
+        const lastProgressKey = getLastProgressDate(item);
+        let inactiveDays = null;
+        if (lastProgressKey) {
+          const lastProgressDate = new Date(`${lastProgressKey}T00:00:00`);
+          inactiveDays = daysDiff(today, lastProgressDate);
+        } else if (item.startDate) {
+          inactiveDays = daysDiff(today, item.startDate);
+        }
+        return { item, inactiveDays };
+      })
+      .filter((entry) => Number.isFinite(entry.inactiveDays) && entry.inactiveDays >= 10)
+      .sort((a, b) => (b.inactiveDays - a.inactiveDays))
+      .slice(0, 4);
+
     const totalConcluidos = completedItems.length;
     const ratedCount = completedItems.filter(item => item.rating > 0).length;
-    const xpValue = Math.round((totalConcluidos * 22) + (streak * 12) + (estimatedWeekMinutes / 12) + (ratedCount * 6));
-    const levelValue = Math.max(1, Math.floor(xpValue / 120) + 1);
     const achievements = [
       { id: 'first_finish', icon: 'fa-flag-checkered', label: 'Primeiro Finalizado', unlocked: totalConcluidos >= 1 },
       { id: 'critic', icon: 'fa-star', label: 'Crítico Ativo', unlocked: ratedCount >= 10 },
@@ -1160,18 +1655,38 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'marathon', icon: 'fa-bolt', label: 'Maratona Semanal', unlocked: estimatedWeekMinutes >= 300 },
       { id: 'collector', icon: 'fa-layer-group', label: 'Colecionador (40 itens)', unlocked: allItems.length >= 40 }
     ];
-    const unlockedCount = achievements.filter(a => a.unlocked).length;
+    syncBibliotecaAchievementsToRpg(achievements);
 
-    const moodRules = {
-      equilibrado: () => ongoingItems.sort((a, b) => b.progress - a.progress)[0] || allItems[0],
-      curto: () => ongoingItems.filter(item => item.total > 0).sort((a, b) => (a.total - a.current) - (b.total - b.current))[0],
-      leve: () => ongoingItems.find((item) => item.genres.some(g => /com[eé]dia|romance|slice|fam[ií]lia|aventura/i.test(g))),
-      acao: () => ongoingItems.find((item) => item.genres.some(g => /a[cç][aã]o|thriller|crime|guerra|shonen|suspense|policial/i.test(g)))
+    const moodPool = ongoingItems.length ? ongoingItems.slice() : allItems.slice();
+    const chooseUnique = (candidates, usedIds) => {
+      const list = (candidates || []).filter(Boolean);
+      const unique = list.find((item) => !usedIds.has(item.raw && item.raw.id ? item.raw.id : item.title));
+      if (unique) {
+        usedIds.add(unique.raw && unique.raw.id ? unique.raw.id : unique.title);
+        return unique;
+      }
+      const fallback = list[0];
+      if (fallback) usedIds.add(fallback.raw && fallback.raw.id ? fallback.raw.id : fallback.title);
+      return fallback || null;
+    };
+    const byProgressDesc = [...moodPool].sort((a, b) => b.progress - a.progress);
+    const byShortest = [...moodPool]
+      .filter(item => item.total > 0)
+      .sort((a, b) => (a.total - a.current) - (b.total - b.current));
+    const byLeve = moodPool.filter((item) => item.genres.some(g => /com[eé]dia|romance|slice|fam[ií]lia|aventura/i.test(g)));
+    const byAcao = moodPool.filter((item) => item.genres.some(g => /a[cç][aã]o|thriller|crime|guerra|shonen|suspense|policial/i.test(g)));
+    const byRandom = [...moodPool].sort(() => Math.random() - 0.5);
+    const usedMoodItems = new Set();
+    const moodSelections = {
+      equilibrado: chooseUnique(byProgressDesc, usedMoodItems),
+      curto: chooseUnique(byShortest.length ? byShortest : byProgressDesc, usedMoodItems),
+      leve: chooseUnique(byLeve.length ? byLeve : byProgressDesc, usedMoodItems),
+      acao: chooseUnique(byAcao.length ? byAcao : byProgressDesc, usedMoodItems),
+      aleatorio: chooseUnique(byRandom.length ? byRandom : byProgressDesc, usedMoodItems)
     };
 
-    const renderMoodOutput = (mood) => {
-      const picker = moodRules[mood] || moodRules.equilibrado;
-      const item = picker() || moodRules.equilibrado();
+    const renderMoodOutput = (mood, forcedItem = null) => {
+      const item = forcedItem || moodSelections[mood] || moodSelections.equilibrado;
       if (!item) return '<p>Nenhuma sugestão disponível para este filtro.</p>';
       const reason = mood === 'curto'
         ? 'Opção mais curta da sua lista'
@@ -1179,33 +1694,40 @@ document.addEventListener('DOMContentLoaded', () => {
           ? 'Gênero mais leve/relaxante'
           : mood === 'acao'
             ? 'Boa pedida para ritmo alto'
+            : mood === 'aleatorio'
+              ? 'Escolha aleatória da sua lista'
             : 'Melhor avanço geral no momento';
+      if (mood === 'aleatorio') randomMoodCurrentKey = moodItemKey(item);
       return `
-        <div class="ent-mini-item">
+        <div class="ent-mini-item ent-mini-item-with-dice">
           <div class="ent-mini-cover" style="background-image:url('${item.cover}')"></div>
-          <div>
+          <div class="ent-mini-content">
             <div class="ent-mini-title">${item.title}</div>
-            <div class="ent-mini-meta">${formatItemType(item.source)} • ${item.progress}% • ${reason}</div>
-            <a class="ent-inline-link" href="${itemUrl(item.source)}">Abrir</a>
+            <div class="ent-mini-meta ent-chip-purple">${formatItemType(item.source)} • ${item.progress}% • ${reason}</div>
+            <a class="ent-inline-link ent-inline-link-purple" href="${itemUrl(item.source)}">Abrir</a>
           </div>
+          ${mood === 'aleatorio' ? '<button class="ent-random-dice" type="button" aria-label="Sortear novo item"><i class="fas fa-dice"></i></button>' : ''}
         </div>
       `;
     };
 
     container.innerHTML = `
       <div class="ent-overview">
-        <div class="ent-overview-label">Resumo atual</div>
+        <div class="ent-overview-title"><i class="fas fa-chart-pie"></i><span>Resumo total</span></div>
         <div class="ent-overview-main">${totalAndamento} categoria(s) em andamento</div>
         <div class="ent-overview-meta">
           <span><strong>${livros.length + midias.length + mangas.length}</strong> itens no total</span>
           <span><strong>${livrosConcluidos + midiasConcluidas + mangasConcluidos}</strong> concluídos</span>
+          <span class="ent-overview-streak"><strong><i class="fas fa-fire"></i> ${streak} dia(s)</strong> streak de entretenimento</span>
         </div>
       </div>
 
       <article class="ent-card">
         <div class="ent-card-top">
           <div class="ent-card-title"><i class="fas fa-book-open"></i> Livraria</div>
-          <span class="ent-status ${livroAtual ? 'active' : ''}">${livroAtual ? 'Em andamento' : 'Sem leitura ativa'}</span>
+          <span class="ent-status ${livroCard.hasProgress ? 'active' : ''}">
+            ${livroCard.hasOngoing ? (livroCard.hasProgress ? 'Em andamento' : 'Na fila') : (livroAtual ? 'Alternando catálogo' : 'Sem leitura ativa')}
+          </span>
         </div>
         <div class="ent-card-hero">
           <div class="ent-cover" style="background-image:url('${(livroAtual && livroAtual.cover) || 'img/gato.png'}')"></div>
@@ -1217,6 +1739,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="ent-progress"><span style="width:${livroProgresso}%"></span></div>
         <div class="ent-percent">${livroProgresso}% concluído</div>
+        <ul class="ent-list ent-list-inline">
+          ${completedLivrosShow.items.length
+            ? completedLivrosShow.items.map((item) => `<li><span>${item.title}</span><span class="meta">${item.completionDate ? formatBRDate(item.completionDate) : 'sem data'}</span></li>`).join('')
+            : '<li><span>Nenhum item concluído.</span></li>'}
+        </ul>
         <div class="ent-chips">
           <span class="ent-chip">Total: ${livros.length}</span>
           <span class="ent-chip">Concluídos: ${livrosConcluidos}</span>
@@ -1227,8 +1754,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="ent-card">
         <div class="ent-card-top">
           <div class="ent-card-title"><i class="fas fa-tv"></i> Filmes/Séries</div>
-          <span class="ent-status ${(serieAtual || (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' && !mediaAtual.done)) ? 'active' : ''}">
-            ${serieAtual ? 'Acompanhando' : (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme' ? (mediaAtual.done ? 'Último concluído' : 'Na fila') : 'Sem item ativo')}
+          <span class="ent-status ${mediaCard.hasProgress ? 'active' : ''}">
+            ${mediaCard.hasOngoing ? (mediaCard.hasProgress ? (mediaIsFilm ? 'Assistindo' : 'Acompanhando') : 'Na fila') : (mediaAtual ? 'Alternando catálogo' : 'Sem item ativo')}
           </span>
         </div>
         <div class="ent-card-hero">
@@ -1236,10 +1763,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="ent-card-content">
             <div class="ent-card-main">${mediaAtual ? mediaAtual.title : 'Sem mídia em andamento'}</div>
             <div class="ent-card-sub">${
-              serieAtual
-                ? `T${serieAtual.raw.temporadaAtual || 1} • E${serieAtual.raw.episodioAtual || 0}/${serieAtual.raw.totalEpisodios || serieAtual.total || 0}`
+              (mediaAtual && mediaAtual.raw && (mediaAtual.raw.tipoMidia === 'serie' || mediaAtual.raw.tipoMidia === 'anime'))
+                ? `T${mediaAtual.raw.temporadaAtual || 1} • E${mediaAtual.raw.episodioAtual || 0}/${mediaAtual.raw.totalEpisodios || mediaAtual.total || 0}`
                 : (mediaAtual && mediaAtual.raw && mediaAtual.raw.tipoMidia === 'filme'
-                  ? `${mediaAtual.done ? 'Filme finalizado' : 'Filme pendente'} • ${(mediaAtual.genres[0] || mediaAtual.raw.genero || 'Gênero não informado')}`
+                  ? `Filme pendente • ${(mediaAtual.genres[0] || mediaAtual.raw.genero || 'Gênero não informado')}`
                   : 'Adicione uma mídia no cinema')
             }</div>
             <div class="ent-stars">${mediaAtual ? starsHtml(mediaAtual.rating) : ''}</div>
@@ -1247,6 +1774,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="ent-progress"><span style="width:${serieProgresso}%"></span></div>
         <div class="ent-percent">${serieProgresso}% de progresso</div>
+        <ul class="ent-list ent-list-inline">
+          ${completedMidiasShow.items.length
+            ? completedMidiasShow.items.map((item) => `<li><span>${item.title}</span><span class="meta">${item.completionDate ? formatBRDate(item.completionDate) : 'sem data'}</span></li>`).join('')
+            : '<li><span>Nenhum item concluído.</span></li>'}
+        </ul>
         <div class="ent-chips">
           <span class="ent-chip">Total: ${midias.length}</span>
           <span class="ent-chip">Concluídos: ${midiasConcluidas}</span>
@@ -1257,7 +1789,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="ent-card">
         <div class="ent-card-top">
           <div class="ent-card-title"><i class="fas fa-book"></i> Mangás</div>
-          <span class="ent-status ${mangaAtual ? 'active' : ''}">${mangaAtual ? 'Em leitura' : 'Sem mangá ativo'}</span>
+          <span class="ent-status ${mangaCard.hasProgress ? 'active' : ''}">
+            ${mangaCard.hasOngoing ? (mangaCard.hasProgress ? 'Em leitura' : 'Na fila') : (mangaAtual ? 'Alternando catálogo' : 'Sem mangá ativo')}
+          </span>
         </div>
         <div class="ent-card-hero">
           <div class="ent-cover" style="background-image:url('${(mangaAtual && mangaAtual.cover) || 'img/gato.png'}')"></div>
@@ -1269,6 +1803,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="ent-progress"><span style="width:${mangaProgresso}%"></span></div>
         <div class="ent-percent">${mangaProgresso}% concluído</div>
+        <ul class="ent-list ent-list-inline">
+          ${completedMangasShow.items.length
+            ? completedMangasShow.items.map((item) => `<li><span>${item.title}</span><span class="meta">${item.completionDate ? formatBRDate(item.completionDate) : 'sem data'}</span></li>`).join('')
+            : '<li><span>Nenhum item concluído.</span></li>'}
+        </ul>
         <div class="ent-chips">
           <span class="ent-chip">Total: ${mangas.length}</span>
           <span class="ent-chip">Concluídos: ${mangasConcluidos}</span>
@@ -1276,85 +1815,124 @@ document.addEventListener('DOMContentLoaded', () => {
         <a class="ent-link" href="mangas.html">Abrir Mangás <i class="fas fa-arrow-right"></i></a>
       </article>
 
-      <article class="ent-module ent-recommend">
-        <div class="ent-module-title"><i class="fas fa-lightbulb"></i> Recomendado para hoje</div>
-        <div class="ent-mini-item">
-          <div class="ent-mini-cover" style="background-image:url('${recomendacao ? recomendacao.cover : 'img/gato.png'}')"></div>
-          <div>
-            <div class="ent-mini-title">${recomendacao ? recomendacao.title : 'Sem sugestão'}</div>
-            <div class="ent-mini-meta">${recomendacao ? `${formatItemType(recomendacao.source)} • ${recomendacao.progress}%` : 'Adicione itens para receber sugestão.'}</div>
-            <a class="ent-inline-link" href="${recomendacao ? itemUrl(recomendacao.source) : '#'}">Ir para categoria</a>
+      <div class="ent-discovery-wrap">
+        <div class="ent-discovery-band">
+          <div class="ent-overview-title ent-group-title ent-group-title-discovery">
+            <i class="fas fa-lightbulb"></i>
+            <span>Descobertas e metas</span>
           </div>
+          <article class="ent-module ent-recommend">
+            <div class="ent-module-title"><i class="fas fa-lightbulb"></i> Recomendado para hoje</div>
+            <div class="ent-mini-item">
+              <div class="ent-mini-cover" style="background-image:url('${recomendacao ? recomendacao.cover : 'img/gato.png'}')"></div>
+              <div>
+                <div class="ent-mini-title">${recomendacao ? recomendacao.title : 'Sem sugestão'}</div>
+                <div class="ent-mini-meta ent-chip-purple">${recomendacao ? `${formatItemType(recomendacao.source)} • ${recomendacao.progress}%` : 'Adicione itens para receber sugestão.'}</div>
+                <a class="ent-inline-link ent-inline-link-purple" href="${recomendacao ? itemUrl(recomendacao.source) : '#'}">Ir para categoria</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="ent-module ent-week-time">
+            <div class="ent-module-title"><i class="fas fa-clock"></i> Tempo de lazer da semana</div>
+            <div class="ent-kpi-grid">
+              <div class="ent-kpi"><span>${pagesWeekBooks}</span><small>pág. livros</small></div>
+              <div class="ent-kpi"><span>${pagesWeekManga}</span><small>pág. mangás</small></div>
+              <div class="ent-kpi"><span>${progressWeekMedia}</span><small>progresso mídia</small></div>
+            </div>
+            <div class="ent-hint">Estimativa de tempo consumido: <strong>${estimatedWeekHours}h</strong> (${estimatedWeekMinutes} min)</div>
+          </article>
+
+          <article class="ent-module ent-month-goal">
+            <div class="ent-module-title"><i class="fas fa-bullseye"></i> Meta mensal</div>
+            <div class="ent-goal-row"><span>Livros: ${booksMonth}/${goals.books}</span><div class="ent-progress mini"><span style="width:${metaBooksPct}%"></span></div></div>
+            <div class="ent-goal-row"><span>Filmes/Séries: ${mediaMonth}/${goals.media}</span><div class="ent-progress mini"><span style="width:${metaMediaPct}%"></span></div></div>
+            <div class="ent-goal-row"><span>Mangás: ${mangaProgressMonth}/${goals.mangaProgress}</span><div class="ent-progress mini"><span style="width:${metaMangaPct}%"></span></div></div>
+          </article>
+
+          <article class="ent-module ent-queue ent-queue-tabs">
+            <div class="ent-module-title"><i class="fas fa-list-ol"></i> Próximo da fila</div>
+            <div class="ent-queue-tab-buttons">
+              <button class="ent-queue-tab active" data-ent-queue-tab="livraria">Livraria</button>
+              <button class="ent-queue-tab" data-ent-queue-tab="cinema">Cinema</button>
+              <button class="ent-queue-tab" data-ent-queue-tab="series">Séries</button>
+              <button class="ent-queue-tab" data-ent-queue-tab="mangas">Mangás</button>
+            </div>
+            <div class="ent-queue-tab-panels">
+              <ul class="ent-list ent-queue-panel active" data-ent-queue-panel="livraria">${renderQueueTabList('livraria')}</ul>
+              <ul class="ent-list ent-queue-panel" data-ent-queue-panel="cinema">${renderQueueTabList('cinema')}</ul>
+              <ul class="ent-list ent-queue-panel" data-ent-queue-panel="series">${renderQueueTabList('series')}</ul>
+              <ul class="ent-list ent-queue-panel" data-ent-queue-panel="mangas">${renderQueueTabList('mangas')}</ul>
+            </div>
+          </article>
+
+          <article class="ent-module ent-mood ent-meta-mood">
+            <div class="ent-module-title"><i class="fas fa-face-smile"></i> Mood/Filtro rápido</div>
+            <div class="ent-mood-chips">
+              <button class="ent-mood-chip active" data-ent-mood="equilibrado">Equilibrado</button>
+              <button class="ent-mood-chip" data-ent-mood="curto">Curto</button>
+              <button class="ent-mood-chip" data-ent-mood="leve">Leve</button>
+              <button class="ent-mood-chip" data-ent-mood="acao">Ação</button>
+              <button class="ent-mood-chip" data-ent-mood="aleatorio">Aleatório</button>
+            </div>
+            <div id="ent-mood-output">${renderMoodOutput('equilibrado')}</div>
+          </article>
+
+          <article class="ent-module ent-ranking ent-discovery-ranking">
+            <div class="ent-module-title"><i class="fas fa-trophy"></i> Ranking pessoal</div>
+            <ul class="ent-list">
+              ${(ranking.map((item, index) => {
+                const medal = index === 0
+                  ? '<i class="fas fa-medal ent-medal gold" title="Ouro"></i>'
+                  : index === 1
+                    ? '<i class="fas fa-medal ent-medal silver" title="Prata"></i>'
+                    : index === 2
+                      ? '<i class="fas fa-medal ent-medal bronze" title="Bronze"></i>'
+                      : `<span class="meta">${item.rating.toFixed(1)}</span>`;
+                return `<li><span class="rank">#${index + 1}</span><span>${item.title}</span>${medal}</li>`;
+              }).join('')) || '<li><span>Sem avaliações suficientes.</span></li>'}
+            </ul>
+          </article>
         </div>
-      </article>
+      </div>
 
-      <article class="ent-module ent-week-time">
-        <div class="ent-module-title"><i class="fas fa-clock"></i> Tempo de lazer da semana</div>
-        <div class="ent-kpi-grid">
-          <div class="ent-kpi"><span>${pagesWeekBooks}</span><small>pág. livros</small></div>
-          <div class="ent-kpi"><span>${pagesWeekManga}</span><small>pág. mangás</small></div>
-          <div class="ent-kpi"><span>${progressWeekMedia}</span><small>progresso mídia</small></div>
-        </div>
-        <div class="ent-hint">Estimativa de tempo consumido: <strong>${estimatedWeekHours}h</strong> (${estimatedWeekMinutes} min)</div>
-      </article>
+      <div class="ent-overview-title ent-group-title ent-group-title-monitor">
+        <i class="fas fa-gauge-high"></i>
+        <span>Monitoramento e alertas</span>
+      </div>
 
-      <article class="ent-module ent-month-goal">
-        <div class="ent-module-title"><i class="fas fa-bullseye"></i> Meta mensal</div>
-        <div class="ent-goal-row"><span>Livros: ${booksMonth}/${goals.books}</span><div class="ent-progress mini"><span style="width:${metaBooksPct}%"></span></div></div>
-        <div class="ent-goal-row"><span>Filmes/Séries: ${mediaMonth}/${goals.media}</span><div class="ent-progress mini"><span style="width:${metaMediaPct}%"></span></div></div>
-        <div class="ent-goal-row"><span>Mangás: ${mangaProgressMonth}/${goals.mangaProgress}</span><div class="ent-progress mini"><span style="width:${metaMangaPct}%"></span></div></div>
-      </article>
-
-      <article class="ent-module ent-ranking">
-        <div class="ent-module-title"><i class="fas fa-trophy"></i> Ranking pessoal</div>
+      <article class="ent-module ent-monitoring">
+        <div class="ent-module-title"><i class="fas fa-stream"></i> Linha do tempo (7 dias)</div>
         <ul class="ent-list">
-          ${(ranking.map((item, index) => `<li><span class="rank">#${index + 1}</span><span>${item.title}</span><span class="meta">${item.rating.toFixed(1)}</span></li>`).join('')) || '<li><span>Sem avaliações suficientes.</span></li>'}
+          ${timelineEntries.map((entry) => `<li><span>${formatBRDate(entry.date)}</span><span class="meta">${entry.text}</span></li>`).join('')}
         </ul>
       </article>
 
-      <article class="ent-module ent-queue">
-        <div class="ent-module-title"><i class="fas fa-list-ol"></i> Próximo da fila</div>
+      <article class="ent-module ent-monitoring">
+        <div class="ent-module-title"><i class="fas fa-chart-line"></i> XP da Biblioteca</div>
+        <div class="ent-hint">Intelecto: <strong>${xpTotalIntelligence}</strong> • Sabedoria: <strong>${xpTotalWisdom}</strong></div>
+        ${xpHistoryRange.map((row) => `
+          <div class="ent-goal-row">
+            <span>${formatBRDate(row.date)} · Int ${row.intelligence} · Sab ${row.wisdom}</span>
+            <div class="ent-progress mini"><span style="width:${Math.round((row.total / xpPeak) * 100)}%"></span></div>
+          </div>
+        `).join('')}
+      </article>
+
+      <article class="ent-module ent-monitoring">
+        <div class="ent-module-title"><i class="fas fa-triangle-exclamation"></i> Em risco de abandono</div>
         <ul class="ent-list">
-          ${(queueItems.map((item) => `<li><span>${item.title}</span><span class="meta">${formatItemType(item.source)}</span></li>`).join('')) || '<li><span>Sem itens na fila curta.</span></li>'}
+          ${(riskItems.map((entry) => `<li><span>${entry.item.title}</span><span class="meta">${entry.inactiveDays} dia(s) sem progresso · ${formatItemType(entry.item.source)}</span></li>`).join('')) || '<li><span>Nenhum item em risco no momento.</span></li>'}
         </ul>
       </article>
 
-      <article class="ent-module ent-streak">
-        <div class="ent-module-title"><i class="fas fa-fire"></i> Streak de entretenimento</div>
-        <div class="ent-streak-value">${streak} dia(s)</div>
-        <div class="ent-dots">${weekActivityDots}</div>
-      </article>
-
-      <article class="ent-module ent-mood">
-        <div class="ent-module-title"><i class="fas fa-face-smile"></i> Mood/Filtro rápido</div>
-        <div class="ent-mood-chips">
-          <button class="ent-mood-chip active" data-ent-mood="equilibrado">Equilibrado</button>
-          <button class="ent-mood-chip" data-ent-mood="curto">Curto</button>
-          <button class="ent-mood-chip" data-ent-mood="leve">Leve</button>
-          <button class="ent-mood-chip" data-ent-mood="acao">Ação</button>
-        </div>
-        <div id="ent-mood-output">${renderMoodOutput('equilibrado')}</div>
-      </article>
-
-      <article class="ent-module ent-reminders">
+      <article class="ent-module ent-reminders ent-monitoring">
         <div class="ent-module-title"><i class="fas fa-bell"></i> Lembrete inteligente</div>
         <ul class="ent-reminder-list">
           ${(reminders.map(msg => `<li>${msg}</li>`).join('')) || '<li>Nenhum lembrete crítico no momento.</li>'}
         </ul>
       </article>
 
-      <article class="ent-module ent-achievements">
-        <div class="ent-module-title"><i class="fas fa-medal"></i> Conquistas e XP</div>
-        <div class="ent-xp-box">Nível <strong>${levelValue}</strong> • XP <strong>${xpValue}</strong> • ${unlockedCount}/${achievements.length} desbloqueadas</div>
-        <div class="ent-badges">
-          ${achievements.map((ach) => `
-            <div class="ent-badge ${ach.unlocked ? 'unlocked' : ''}">
-              <i class="fas ${ach.icon}"></i>
-              <span>${ach.label}</span>
-            </div>
-          `).join('')}
-        </div>
-      </article>
     `;
 
     const moodButtons = container.querySelectorAll('.ent-mood-chip');
@@ -1365,6 +1943,28 @@ document.addEventListener('DOMContentLoaded', () => {
         moodButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
         if (moodOutput) moodOutput.innerHTML = renderMoodOutput(mood);
+      });
+    });
+    if (moodOutput) {
+      moodOutput.addEventListener('click', (event) => {
+        const diceButton = event.target.closest('.ent-random-dice');
+        if (!diceButton) return;
+        const selectedMood = container.querySelector('.ent-mood-chip.active');
+        if (!selectedMood || selectedMood.dataset.entMood !== 'aleatorio') return;
+        const nextItem = pickRandomMoodItem(randomMoodCurrentKey);
+        if (nextItem) moodOutput.innerHTML = renderMoodOutput('aleatorio', nextItem);
+      });
+    }
+    const queueTabButtons = container.querySelectorAll('.ent-queue-tab');
+    const queuePanels = container.querySelectorAll('.ent-queue-panel');
+    queueTabButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const tab = button.dataset.entQueueTab || 'livraria';
+        queueTabButtons.forEach((btn) => btn.classList.remove('active'));
+        queuePanels.forEach((panel) => panel.classList.remove('active'));
+        button.classList.add('active');
+        const panel = container.querySelector(`.ent-queue-panel[data-ent-queue-panel="${tab}"]`);
+        if (panel) panel.classList.add('active');
       });
     });
   };
@@ -1389,18 +1989,26 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   // Removido listener global; controlado em renderDreamsSection para evitar conflitos
 
+  const hasEntertainmentContainer = () => Boolean(document.querySelector('#current-entertainment-body'));
+
   const renderAll = () => {
-    renderCurrentReading();
-    renderCurrentShopping();
-    renderTopPlanner();
-    renderTopTrips();
-    renderFavoritesCarousel();
+    if (hasDashboard) {
+      renderCurrentReading();
+      renderCurrentShopping();
+      renderTopPlanner();
+      renderTopTrips();
+      renderFavoritesCarousel();
+    }
     renderWeatherPirapora();
-    renderDreamsSection();
-    renderAcademiaSummary();
-    renderDiaryWidget();
-    renderTripsSection();
-    renderCurrentEntertainment();
+    if (hasDashboard) {
+      renderDreamsSection();
+      renderAcademiaSummary();
+      renderDiaryWidget();
+      renderTripsSection();
+    }
+    if (hasDashboard || hasEntertainmentContainer()) {
+      renderCurrentEntertainment();
+    }
   };
 
   // Import/Export
@@ -1526,6 +2134,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', renderAll);
   // Responsividade já aplicada via CSS Grid; não é necessário re-render no resize
 });
+
+
 
 
 

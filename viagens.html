@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,7 @@
     <title>Dashboard - Sol de Sóter</title>
 
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&family=Russo+One&display=swap"
       rel="stylesheet"
     />
     <link
@@ -23,6 +23,7 @@
       type="image/x-icon"
     />
 
+    <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
     <link rel="stylesheet" href="css/viagens.css">
   </head>
@@ -31,17 +32,22 @@
       <div class="logo-container">
         <a href="index.html" class="logo-link">
           <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-          <h1>Sol de Sóter</h1>
         </a>
       </div>
 
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
+            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
+              <div class="nav-weather-main" id="nav-weather-current">
+                <i class="fas fa-cloud-sun"></i>
+                <span>Carregando clima...</span>
+              </div>
+            </li>
             <li class="dropdown">
               <div class="dropdown-header">
-                <a href="#">Biblioteca</a>
-                <button class="dropdown-toggle">▼</button>
+                <a href="biblioteca.html">Biblioteca</a>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="livraria.html">Livraria</a></li>
@@ -53,7 +59,7 @@
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Pessoal</a>
-                <button class="dropdown-toggle">▼</button>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="sonhos.html">Sonhos</a></li>
@@ -68,7 +74,7 @@
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Estudos</a>
-                <button class="dropdown-toggle">▼</button>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="estudos.html">Planner</a></li>
@@ -118,7 +124,7 @@
               </div>
             </div>
             <div class="profile-avatar-wrapper">
-              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" loading="lazy" />
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
               <span class="level-badge" id="header-level-badge">1</span>
             </div>
           </div>
@@ -202,16 +208,12 @@
                   src="img/Corinthians_simbolo.png"
                   alt="Escudo do Corinthians"
                   class="corinthians-shield"
-                  loading="lazy"
                 />
                 Corinthians
               </a>
             </li>
             <li>
-              <a href="perfil-rpg.html"><i class="fas fa-cog"></i> Perfil</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+              <a href="perfil-rpg.html"><i class="fas fa-dice-d20"></i> RPG</a>
             </li>
           </ul>
         </div>
@@ -287,6 +289,16 @@
         <label for="budget">Orçamento (R$):</label>
         <input type="number" id="budget" min="0" step="0.01">
 
+        <label for="local-description">Descrição do Local:</label>
+        <textarea id="local-description" rows="3" placeholder="Descreva o local, experiências esperadas, dicas e pontos de interesse."></textarea>
+
+        <label for="travel-image-url">Imagem (URL):</label>
+        <input type="url" id="travel-image-url" placeholder="https://exemplo.com/imagem.jpg">
+
+        <label for="travel-image-file">Imagem (Arquivo):</label>
+        <input type="file" id="travel-image-file" accept="image/*">
+        <input type="hidden" id="travel-image-data">
+
         <div class="popup-actions">
           <button type="button" class="cancel-btn" data-popup="add-travel-popup">Cancelar</button>
           <button type="button" id="delete-travel-btn" class="delete-btn">Excluir</button>
@@ -327,11 +339,15 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/saldo-global.js"></script>
+    <script src="js/script.js"></script>
     <script src="js/notificacoes.js"></script>
     <script src="js/viagens.js"></script>
     <script src="js/rpg.js"></script>
   </body>
 </html>
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-function atualizarSaldoGlobal() {
+﻿function atualizarSaldoGlobal() {
     const elementoSaldo = document.getElementById('saldo-do-dia');
     if (!elementoSaldo) {
         console.log("Elemento 'saldo-do-dia' nao encontrado no cabecalho.");

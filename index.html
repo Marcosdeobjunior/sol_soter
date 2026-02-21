@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,7 @@
     <title>Dashboard - Sol de Sóter</title>
 
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&family=Russo+One&display=swap"
       rel="stylesheet"
     />
     <link
@@ -23,12 +23,18 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
   </head>
-  <body>
+    <body class="index-page">
+    <div class="index-bg-shapes" aria-hidden="true">
+      <span class="shape s1"></span>
+      <span class="shape s2"></span>
+      <span class="shape s3"></span>
+      <span class="shape s4"></span>
+      <span class="shape s5"></span>
+    </div>
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
           <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-          <h1>Sol de Sóter</h1>
         </a>
       </div>
 
@@ -43,8 +49,8 @@
             </li>
             <li class="dropdown">
               <div class="dropdown-header">
-                <a href="#">Biblioteca</a>
-                <button class="dropdown-toggle">▼</button>
+                <a href="biblioteca.html">Biblioteca</a>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="livraria.html">Livraria</a></li>
@@ -56,7 +62,7 @@
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Pessoal</a>
-                <button class="dropdown-toggle">▼</button>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="sonhos.html">Sonhos</a></li>
@@ -71,7 +77,7 @@
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Estudos</a>
-                <button class="dropdown-toggle">▼</button>
+                <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
                 <li><a href="estudos.html">Planner</a></li>
@@ -210,134 +216,125 @@
               </a>
             </li>
             <li>
-              <a href="perfil-rpg.html"><i class="fas fa-cog"></i> Perfil</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+              <a href="perfil-rpg.html"><i class="fas fa-dice-d20"></i> RPG</a>
             </li>
           </ul>
         </div>
       </div>
     </header>
 
-    <main>
-      <section class="top-widgets">
-        <div class="trips-widget" id="trips-widget">
-          <div class="trips-widget-header"><i class="fas fa-plane"></i> Viagens</div>
-          <div class="trips-widget-body" id="top-trips-body"></div>
+    <main class="hero-main">
+      <section class="dream-hero" aria-label="Carrossel de sonhos">
+        <div class="dream-hero-track" id="dream-hero-track"></div>
+        <div class="dream-hero-overlay"></div>
+
+        <article class="dream-hero-frame">
+          <div class="dream-hero-badge" id="dream-hero-badge">SONHO</div>
+          <h2 id="dream-hero-title">Carregando sonhos...</h2>
+          <p id="dream-hero-desc">Prepare seus próximos passos.</p>
+          <a id="dream-hero-link" href="sonhos.html">Abrir Sonhos</a>
+          <div class="dream-hero-thumbs" id="dream-hero-thumbs"></div>
+        </article>
+
+        <button class="dream-hero-arrow prev" id="dream-hero-prev" aria-label="Slide anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="dream-hero-arrow next" id="dream-hero-next" aria-label="Próximo slide">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+      </section>
+
+      <section class="trip-showcase" aria-label="Resumo de viagens">
+        <h2 class="trip-showcase-title"><i class="fas fa-plane"></i> Uma volta ao Mundo</h2>
+        <div class="trip-showcase-head">
+          <button class="trip-filter-card active" data-trip-filter="past">
+            <span class="tag">Concluidas</span>
+            <strong>Viagens ja concluidas</strong>
+          </button>
+          <button class="trip-filter-card" data-trip-filter="upcoming">
+            <span class="tag">Proximas</span>
+            <strong>Com base na data</strong>
+          </button>
+          <button class="trip-filter-card" data-trip-filter="nodate">
+            <span class="tag">Sem data</span>
+            <strong>Planejamento aberto</strong>
+          </button>
         </div>
 
-        <div class="favorites-carousel" id="favorites-carousel">
-          <div class="carousel-header"><i class="fas fa-star"></i> Destaques</div>
-          <div class="carousel-viewport">
-            <div class="carousel-track" id="carousel-track"></div>
+        <article class="trip-balloon" id="trip-balloon">
+          <div class="trip-balloon-media" id="trip-balloon-media"></div>
+          <div class="trip-balloon-content">
+            <div class="trip-balloon-topline">
+              <span class="trip-pill" id="trip-balloon-pill">Viagem</span>
+              <span class="trip-dates" id="trip-balloon-dates">Sem data</span>
+            </div>
+            <h3 id="trip-balloon-title">Carregando viagens...</h3>
+            <p class="trip-meta" id="trip-balloon-meta"></p>
+            <p class="trip-desc" id="trip-balloon-desc">As informacoes da viagem aparecem aqui.</p>
+            <div class="trip-balloon-nav" id="trip-balloon-nav">
+              <button type="button" class="trip-balloon-nav-btn" id="trip-balloon-prev" aria-label="Viagem anterior">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <span id="trip-balloon-count">1/1</span>
+              <button type="button" class="trip-balloon-nav-btn" id="trip-balloon-next" aria-label="Próxima viagem">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div class="daily-planner" id="daily-planner">
-          <div class="planner-header"><i class="fas fa-calendar-day"></i> Tarefas de Hoje</div>
-          <ul class="planner-list" id="planner-list"></ul>
-        </div>
-      </section>
-      <section class="dreams-section">
-        <div class="dreams-header"><i class="fas fa-cloud"></i> Sonhos</div>
-        <div class="dreams-controls">
-          <select id="dream-select" aria-label="Selecione o sonho"></select>
-          <label class="btn-file"><span>Selecionar imagem</span><input type="file" id="dream-image-input" accept="image/png,image/jpeg,image/webp" hidden></label>
-          <button id="dream-upload-btn" class="dashboard-btn import"><i class="fas fa-upload"></i> Enviar</button>
-          <span class="dream-feedback" id="dream-feedback" aria-live="polite"></span>
-        </div>
-        <div class="dreams-grid" id="dreams-grid"></div>
-        <div class="dream-overlay" id="dream-overlay" aria-hidden="true">
-          <div class="dream-modal">
-            <button class="dream-close" id="dream-close" aria-label="Fechar"><i class="fas fa-times"></i></button>
-            <div class="dream-modal-image" id="dream-modal-image"></div>
-            <div class="dream-modal-title" id="dream-modal-title"></div>
-            <div class="dream-modal-desc" id="dream-modal-desc"></div>
+          <div class="trip-balloon-map-wrap">
+            <div class="trip-balloon-map" id="trip-balloon-map" aria-label="Mapa da viagem"></div>
+            <p class="trip-balloon-map-note" id="trip-balloon-map-note">Carregando localizacao no mapa...</p>
           </div>
-        </div>
+        </article>
       </section>
-      <section class="academia-summary">
-        <div class="academia-summary-header"><i class="fas fa-dumbbell"></i> Academia</div>
-        <div class="academia-summary-grid">
-          <article class="academia-summary-card academia-summary-card-hero">
-            <div class="academia-hero-media">
-              <img src="img/eu-gtp1.1.png" alt="Perfil treino" loading="lazy" />
-            </div>
-            <div class="academia-hero-content">
-              <h3><i class="fas fa-calendar-check"></i> Treino de hoje</h3>
-              <div id="academia-today-status" class="academia-summary-line"></div>
-              <div id="academia-today-plan" class="academia-summary-subline"></div>
-            </div>
-            <div class="academia-hero-badge">
-              <img src="img/soldesoter_logo.png" alt="Sol de Soter" loading="lazy" />
-            </div>
-          </article>
 
-          <article class="academia-summary-card">
-            <h3><i class="fas fa-clock-rotate-left"></i> Ultimo treino</h3>
-            <div id="academia-last-training" class="academia-summary-line"></div>
-            <div id="academia-last-training-meta" class="academia-summary-subline"></div>
-          </article>
+      <section class="wishlist-highlight" aria-label="Loja wishlist">
+        <h2 class="wishlist-highlight-title"><i class="fas fa-store"></i> Loja</h2>
+        <div class="wishlist-accent-band" aria-hidden="true">
+          <span class="geo geo-square"></span>
+          <span class="geo geo-diamond"></span>
+          <span class="geo geo-circle"></span>
+          <span class="geo geo-triangle"></span>
+          <span class="geo geo-square"></span>
+        </div>
+        <article class="wishlist-frame" id="wishlist-frame">
+          <div class="wishlist-frame-head">
+            <span class="wishlist-pill">Wishlist</span>
+            <span class="wishlist-head-note">Importantes e Urgentes</span>
+          </div>
+          <div class="wishlist-grid" id="wishlist-highlight-grid"></div>
+        </article>
+      </section>
 
-          <article class="academia-summary-card">
-            <h3><i class="fas fa-forward"></i> Proximo treino</h3>
-            <div id="academia-next-training" class="academia-summary-line"></div>
-            <div id="academia-next-training-meta" class="academia-summary-subline"></div>
-          </article>
+      <section class="entertainment-showcase" aria-label="Resumo de entretenimento">
+        <h2 class="entertainment-showcase-title"><i class="fas fa-film"></i> Entretenimento</h2>
+        <div class="entertainment-layout" id="entertainment-layout">
+          <aside class="ent-nav" aria-label="Categorias de entretenimento">
+            <button class="ent-nav-item active" data-ent-key="books"><i class="fas fa-book-open"></i> Livros</button>
+            <button class="ent-nav-item" data-ent-key="mangas"><i class="fas fa-book"></i> Mangas</button>
+            <button class="ent-nav-item" data-ent-key="movies"><i class="fas fa-film"></i> Filmes</button>
+            <button class="ent-nav-item" data-ent-key="series"><i class="fas fa-tv"></i> Series</button>
+          </aside>
 
-          <article class="academia-summary-card academia-streak-card">
-            <h3><i class="fas fa-fire"></i> Streak</h3>
-            <div class="academia-streak-layout">
-              <div class="academia-streak-visual" id="academia-streak-visual">
-                <span id="academia-streak-value">0</span>
-                <small>dias</small>
+          <article class="ent-stage" id="ent-stage">
+            <div class="ent-stage-media" id="ent-stage-media"></div>
+            <div class="ent-stage-info">
+              <div class="ent-stage-head">
+                <span class="ent-stage-pill" id="ent-stage-pill">Livros</span>
+                <span class="ent-stage-fav" id="ent-stage-favorite" aria-label="Favorito"></span>
               </div>
-              <div>
-                <div id="academia-streak" class="academia-summary-line"></div>
-                <div id="academia-streak-meta" class="academia-summary-subline"></div>
+              <div class="ent-stage-title-row">
+                <h3 id="ent-stage-title">Carregando...</h3>
+                <span class="ent-title-stars" id="ent-stage-rating"></span>
               </div>
+              <p class="ent-stage-meta" id="ent-stage-meta"></p>
+              <div class="ent-stage-progress"><span id="ent-stage-progress"></span></div>
+              <p class="ent-stage-foot" id="ent-stage-foot"></p>
+              <ul class="ent-stage-details" id="ent-stage-details"></ul>
             </div>
           </article>
-
-          <article class="academia-summary-card academia-summary-card-wide">
-            <h3><i class="fas fa-trophy"></i> PRs da semana</h3>
-            <ul id="academia-pr-list" class="academia-pr-list"></ul>
-          </article>
-
-          <article class="academia-summary-card academia-summary-card-wide">
-            <h3><i class="fas fa-list-check"></i> Checklist rapido</h3>
-            <div id="academia-checklist" class="academia-checklist"></div>
-          </article>
         </div>
-      </section>
-      <section class="current-shopping">
-        <div class="current-shopping-header"><i class="fas fa-shopping-bag"></i> Compras</div>
-        <div class="current-shopping-body" id="current-shopping-body"></div>
-      </section>
-      <!--
-      <section class="trips-section">
-        <div class="trips-header"><i class="fas fa-plane"></i> Viagens</div>
-        <div class="trips-tabs" id="trips-tabs"></div>
-        <div class="trip-list" id="trip-list"></div>
-      </section>
-       -->
-      <section class="dashboard">
-        <div class="dashboard-actions">
-          <button id="dashboard-export" class="dashboard-btn export"><i class="fas fa-download"></i> Exportar</button>
-          <button id="dashboard-import" class="dashboard-btn import"><i class="fas fa-upload"></i> Importar</button>
-          <input id="dashboard-import-input" type="file" accept=".json" hidden>
-          <div id="dashboard-feedback" class="dashboard-feedback" aria-live="polite"></div>
-        </div>
-
-        <div class="dashboard-grid"></div>
-      </section>
-      <section class="current-entertainment">
-        <div class="current-entertainment-header-wrap">
-          <div class="current-entertainment-header"><i class="fas fa-film"></i> Entretenimento</div>
-          <p class="current-entertainment-subtitle">Acompanhe Livraria, Filmes/Séries e Mangás em um só lugar.</p>
-        </div>
-        <div class="current-entertainment-body" id="current-entertainment-body"></div>
       </section>
     </main>
 
@@ -348,10 +345,18 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/saldo-global.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/index-hero-carousel.js"></script>
+    <script src="js/index-trip-showcase.js"></script>
+    <script src="js/index-wishlist-highlight.js"></script>
+    <script src="js/index-entertainment-showcase.js"></script>
     <script src="js/notificacoes.js"></script>
     <script src="js/rpg.js"></script>
   </body>
 </html>
+
+
+
+
 
 
 

@@ -1,38 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
-document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
-  // O gatilho pode ser o cabeçalho do dropdown ou o perfil
-  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
-
-  if (toggle) {
-    toggle.addEventListener('click', (event) => {
-      // Impede que o clique no link dentro do dropdown feche o menu imediatamente
-      if (event.target.tagName === 'A') return;
-
-      // Fecha outros menus abertos
-      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
-        if (activeDropdown !== dropdownContainer) {
-          activeDropdown.classList.remove('active');
-        }
-      });
-
-      // Abre/fecha o menu atual
-      dropdownContainer.classList.toggle('active');
-    });
-  }
-});
-
-// Fecha todos os dropdowns ao clicar fora
-document.addEventListener('click', e => {
-  // Se o clique não foi dentro de um dropdown, fecha todos
-  if (!e.target.closest('.dropdown')) {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  }
-});
-
-
-// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
+﻿// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
 document.addEventListener('DOMContentLoaded', () => {
     // Chama a função do script global para mostrar o saldo
     if (typeof atualizarSaldoGlobal === 'function') {
@@ -551,6 +517,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("start-date").value = travel.startDate;
     document.getElementById("end-date").value = travel.endDate;
     document.getElementById("budget").value = travel.budget || "";
+    document.getElementById("local-description").value = travel.localDescription || travel.descricaoLocal || travel.descricao || "";
+    const existingImage = travel.image || travel.imagem || "";
+    document.getElementById("travel-image-url").value = existingImage && !String(existingImage).startsWith("data:image") ? existingImage : "";
+    document.getElementById("travel-image-data").value = existingImage && String(existingImage).startsWith("data:image") ? existingImage : "";
+    document.getElementById("travel-image-file").value = "";
 
     // Alterar o título e botão do popup
     popupTitle.textContent = "Editar Viagem";
@@ -642,6 +613,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const categoryHtml = travel.category
         ? `<p class="travel-category" style="font-weight: 600;">${travel.category}</p>`
         : "";
+      const localDescHtml = (travel.localDescription || travel.descricaoLocal || travel.descricao)
+        ? `<p><i class="fas fa-map-marked-alt"></i> ${travel.localDescription || travel.descricaoLocal || travel.descricao}</p>`
+        : "";
 
       card.innerHTML = `
         <div class="travel-card-header">
@@ -656,6 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ${weatherHtml}
           ${eventsHtml}
           ${categoryHtml}
+          ${localDescHtml}
         </div>
       `;
 
@@ -736,14 +711,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const endDateInput = document.getElementById("end-date");
     const budgetInput = document.getElementById("budget");
     const travelTypeInput = document.getElementById("travel-type"); // ATUALIZADO
+    const localDescriptionInput = document.getElementById("local-description");
+    const imageUrlInput = document.getElementById("travel-image-url");
+    const imageFileInput = document.getElementById("travel-image-file");
+    const imageDataInput = document.getElementById("travel-image-data");
 
     const destination = destinationInput.value.trim();
     const startDate = startDateInput.value;
     const endDate = endDateInput.value;
     const budget = parseFloat(budgetInput.value) || 0;
     const category = travelTypeInput.value; // ATUALIZADO
+    const localDescription = (localDescriptionInput && localDescriptionInput.value ? localDescriptionInput.value.trim() : "");
+    const imageUrl = (imageUrlInput && imageUrlInput.value ? imageUrlInput.value.trim() : "");
 
-    console.log("Dados do formulário:", { destination, startDate, endDate, budget, category });
+    console.log("Dados do formulário:", { destination, startDate, endDate, budget, category, localDescription, imageUrl });
 
     // Validação
     if (!destination) {
@@ -760,6 +741,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     try {
+      const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Falha ao ler imagem"));
+        reader.readAsDataURL(file);
+      });
+
+      let image = "";
+      const selectedFile = imageFileInput && imageFileInput.files ? imageFileInput.files[0] : null;
+      if (selectedFile) {
+        image = await fileToDataUrl(selectedFile);
+      } else if (imageUrl) {
+        image = imageUrl;
+      } else if (imageDataInput && imageDataInput.value) {
+        image = imageDataInput.value;
+      } else if (isEditing && travels[editingIndex]) {
+        image = travels[editingIndex].image || travels[editingIndex].imagem || "";
+      }
+
+      if (imageDataInput) imageDataInput.value = image;
+
       // Obter informações de clima e eventos
       const weatherInfo = await getWeatherInfo(destination);
       const eventsInfo = await getEventsInfo(destination);
@@ -773,6 +775,10 @@ document.addEventListener("DOMContentLoaded", () => {
         endDate,
         budget,
         category, // ATUALIZADO
+        localDescription,
+        descricao: localDescription,
+        image,
+        imagem: image,
         weather: weatherInfo,
         events: eventsInfo,
         createdAt: isEditing ? travels[editingIndex].createdAt : new Date().toISOString(),
@@ -864,4 +870,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap();
   renderTravels();
 });
+
 

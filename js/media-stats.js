@@ -1,4 +1,4 @@
-class MediaStats {
+﻿class MediaStats {
   constructor() {
     this.goalTarget = 50; // Meta anual padrão para mídias
     this.initializeEventListeners();
@@ -22,6 +22,10 @@ class MediaStats {
         if (e.target === statsModal) this.closeStatsModal();
       });
     }
+  }
+
+  setHeaderHiddenByStatsModal(hidden) {
+    document.body.classList.toggle("modal-open-hide-header", Boolean(hidden));
   }
 
   getWatchingHistory() {
@@ -212,6 +216,7 @@ class MediaStats {
 
     modal.classList.add("show");
     modal.style.display = "flex";
+    this.setHeaderHiddenByStatsModal(true);
   }
 
   closeStatsModal() {
@@ -220,6 +225,7 @@ class MediaStats {
       modal.classList.remove("show");
       modal.style.display = "none";
     }
+    this.setHeaderHiddenByStatsModal(false);
   }
 
   updateModalStats() {

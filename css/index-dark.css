@@ -1,0 +1,266 @@
+﻿/* ===== INDEX REDESIGN TERROSO DARK (OVERRIDES) ===== */
+:root {
+  --fundo-base: #17130f;
+  --fundo-superficie: #221b15;
+  --fundo-overlay: #2d241c;
+  --fundo-hover: #3a2e24;
+  --texto-principal: #efe6d7;
+  --texto-secundario: #c1b29d;
+  --texto-sutil: #8f7f69;
+  --borda: #4a3a2c;
+  --acento-azul: #ba8652;
+  --acento-amarelo: #d3a367;
+  --acento-verde: #7f8f62;
+}
+
+body {
+  font-family: "Manrope", "Poppins", sans-serif;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(186, 134, 82, 0.18), transparent 36%),
+    radial-gradient(circle at 12% 18%, rgba(127, 143, 98, 0.08), transparent 30%),
+    var(--fundo-base);
+}
+
+h1, h2, h3, .dashboard-title, .dreams-header, .planner-header, .current-shopping-header, .trips-widget-copy h3, .current-entertainment-header, .academia-summary-header {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+header {
+  background: rgba(25, 20, 15, 0.92);
+  border-bottom: 1px solid var(--borda);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34);
+}
+
+.logo-container h1 { color: #dfbf95; }
+.logo-container img { border-color: #8a6746; }
+
+.nav-menu { gap: 10px; }
+
+.nav-menu a {
+  border-radius: 999px;
+  color: var(--texto-secundario);
+  font-weight: 600;
+}
+
+.nav-menu a:hover {
+  background: rgba(186, 134, 82, 0.18);
+  color: #f4e5cf;
+}
+
+.nav-weather-item {
+  background: rgba(186, 134, 82, 0.12);
+  border-color: #5a4635;
+}
+
+.dropdown-menu {
+  background: #221b14;
+  border: 1px solid #544131;
+  border-radius: 12px;
+}
+
+.dropdown-menu li a {
+  color: #e8dcc8;
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+
+.dropdown-menu li a:hover {
+  background: #32261d;
+  color: #f4e4cf;
+}
+
+.profile {
+  background: #2b221a;
+  border: 1px solid #5a4636;
+}
+
+.profile:hover {
+  background: #372a1f;
+  border-color: #896646;
+}
+
+main {
+  width: min(1480px, 96%);
+  margin: 24px auto 34px;
+  display: grid;
+  gap: 20px;
+}
+
+section {
+  background: linear-gradient(160deg, #261f18, #1f1913);
+  border: 1px solid #4f3d2d;
+  border-radius: 18px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+}
+
+.top-widgets {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.trips-widget,
+.favorites-carousel,
+.daily-planner {
+  background: linear-gradient(170deg, #2b221a, #211a14);
+  border: 1px solid #4f3d2d;
+  border-radius: 18px;
+}
+
+.trips-widget-header,
+.carousel-header,
+.planner-header {
+  border-bottom: 1px solid #4a392b;
+  color: #ecdcc8;
+}
+
+.trips-widget-copy p { color: #bcae99; }
+
+.trips-widget-cta,
+.dreams-controls .btn-file,
+.dashboard-btn {
+  background: rgba(186, 134, 82, 0.16);
+  border: 1px solid rgba(186, 134, 82, 0.4);
+  color: #f0dfca;
+  border-radius: 999px;
+}
+
+.trips-widget-cta:hover,
+.dreams-controls .btn-file:hover,
+.dashboard-btn:hover {
+  background: rgba(186, 134, 82, 0.24);
+}
+
+.planner-list li {
+  background: #2f241b;
+  border-color: #594532;
+  color: #d8c9b4;
+}
+
+.dreams-section,
+.academia-summary,
+.current-shopping,
+.dashboard,
+.current-entertainment { padding: 18px; }
+
+.dreams-header-row {
+  border-bottom: 1px solid #4d3b2d;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.dreams-header,
+.academia-summary-header,
+.current-shopping-header,
+.current-entertainment-header {
+  color: #ebd7bf;
+}
+
+.dreams-controls select,
+.dashboard-actions .dashboard-btn {
+  background: #2c221a;
+  border: 1px solid #5a4634;
+  color: #e7d8c5;
+  border-radius: 999px;
+}
+
+.dreams-controls select:focus {
+  outline: none;
+  border-color: #ba8652;
+  box-shadow: 0 0 0 3px rgba(186, 134, 82, 0.2);
+}
+
+#dream-upload-btn,
+.dashboard-btn.import {
+  background: linear-gradient(120deg, #ba8652, #8a623f);
+  color: #17120d;
+  border-color: #8c6441;
+}
+
+.dream-carousel-card,
+.dream-detail-panel,
+.academia-summary-card,
+.shopping-card,
+.dashboard-card,
+.current-entertainment-body .ent-card,
+.current-entertainment-body .ent-module {
+  background: #2a2119;
+  border: 1px solid #564332;
+  border-radius: 14px;
+}
+
+.dream-detail-panel p,
+.dream-detail-meta-list li,
+.academia-summary-subline,
+.shopping-body-line,
+.current-entertainment-subtitle { color: #b8a891; }
+
+.dream-detail-kpi {
+  background: #241c15;
+  border: 1px solid #554232;
+}
+
+.dream-progress-bar {
+  background: #201912;
+  border: 1px solid #4d3a2c;
+}
+
+.dream-progress-fill {
+  background: linear-gradient(90deg, #ba8652, #7f8f62);
+}
+
+.dream-arrow-btn {
+  background: #2c2219;
+  border: 1px solid #5a4635;
+  color: #e8d7c1;
+}
+
+.dream-arrow-btn:hover {
+  background: #3a2c21;
+}
+
+.dashboard-feedback,
+.dream-feedback { color: #d1a772; }
+
+.current-entertainment-body .ent-dot.active {
+  background: #7f8f62;
+  border-color: rgba(127, 143, 98, 0.8);
+}
+
+.current-entertainment-body .ent-mood-chip.active {
+  border-color: rgba(186, 134, 82, 0.7);
+  background: rgba(186, 134, 82, 0.16);
+  color: #ecdcc8;
+}
+
+footer {
+  background: #1f1812;
+  color: #ab9981;
+  border-top: 1px solid #4a392b;
+}
+
+@media (max-width: 1200px) {
+  .top-widgets { grid-template-columns: 1fr 1fr; }
+  .daily-planner { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .menu-profile { flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .navbar { width: 100%; }
+  .nav-menu { flex-wrap: wrap; justify-content: center; }
+  main { width: min(97%, 960px); margin-top: 14px; gap: 14px; }
+}
+
+@media (max-width: 680px) {
+  .top-widgets { grid-template-columns: 1fr; }
+  section { border-radius: 14px; }
+  .dreams-section,
+  .academia-summary,
+  .current-shopping,
+  .dashboard,
+  .current-entertainment { padding: 14px; }
+}
+

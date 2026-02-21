@@ -1,26 +1,4 @@
-// Lógica de Dropdown Global
-document.querySelectorAll(".dropdown").forEach((dropdownContainer) => {
-  const toggle = dropdownContainer.querySelector(".dropdown-header, .profile");
-  if (toggle) {
-    toggle.addEventListener("click", (event) => {
-      if (event.target.tagName === "A") return;
-      document.querySelectorAll(".dropdown.active").forEach((active) => {
-        if (active !== dropdownContainer) active.classList.remove("active");
-      });
-      dropdownContainer.classList.toggle("active");
-    });
-  }
-});
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".dropdown")) {
-    document
-      .querySelectorAll(".dropdown.active")
-      .forEach((d) => d.classList.remove("active"));
-  }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
   if (typeof atualizarSaldoGlobal === "function") atualizarSaldoGlobal();
 });
 
@@ -786,6 +764,7 @@ let taskPlanner;
 document.addEventListener("DOMContentLoaded", () => {
   taskPlanner = new TaskPlanner();
 });
+
 
 
 

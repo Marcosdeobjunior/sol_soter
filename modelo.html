@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -28,13 +28,18 @@
       <div class="logo-container">
         <a href="index.html" class="logo-link">
           <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
-          <h1>Sol de Sóter</h1>
         </a>
       </div>
 
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
+            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
+              <div class="nav-weather-main" id="nav-weather-current">
+                <i class="fas fa-cloud-sun"></i>
+                <span>Carregando clima...</span>
+              </div>
+            </li>
             <li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Biblioteca</a>
@@ -204,10 +209,7 @@
               </a>
             </li>
             <li>
-              <a href="perfil-rpg.html"><i class="fas fa-cog"></i> Perfil</a>
-            </li>
-            <li>
-              <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+              <a href="perfil-rpg.html"><i class="fas fa-dice-d20"></i> RPG</a>
             </li>
           </ul>
         </div>
@@ -229,5 +231,7 @@
     <script src="js/rpg.js"></script>
   </body>
 </html>
+
+
 
 

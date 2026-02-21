@@ -1,38 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
-document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
-  // O gatilho pode ser o cabeçalho do dropdown ou o perfil
-  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
-
-  if (toggle) {
-    toggle.addEventListener('click', (event) => {
-      // Impede que o clique no link dentro do dropdown feche o menu imediatamente
-      if (event.target.tagName === 'A') return;
-
-      // Fecha outros menus abertos
-      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
-        if (activeDropdown !== dropdownContainer) {
-          activeDropdown.classList.remove('active');
-        }
-      });
-
-      // Abre/fecha o menu atual
-      dropdownContainer.classList.toggle('active');
-    });
-  }
-});
-
-// Fecha todos os dropdowns ao clicar fora
-document.addEventListener('click', e => {
-  // Se o clique não foi dentro de um dropdown, fecha todos
-  if (!e.target.closest('.dropdown')) {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  }
-});
-
-
-// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
+﻿// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
 document.addEventListener('DOMContentLoaded', () => {
     // Chama a função do script global para mostrar o saldo
     if (typeof atualizarSaldoGlobal === 'function') {
@@ -373,6 +339,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
     historico[hoje].progress += progressoNovo;
     localStorage.setItem('historicoProgressoMidia', JSON.stringify(historico));
+
+    const historicoPorItem = JSON.parse(localStorage.getItem('historicoProgressoMidiaItens') || '{}');
+    if (!historicoPorItem[hoje] || typeof historicoPorItem[hoje] !== 'object') {
+      historicoPorItem[hoje] = { items: {} };
+    }
+    if (!historicoPorItem[hoje].items || typeof historicoPorItem[hoje].items !== 'object') {
+      historicoPorItem[hoje].items = {};
+    }
+
+    const itemKey = String(midia.id);
+    const progressOnDate = Number(historicoPorItem[hoje].items[itemKey]) || 0;
+    historicoPorItem[hoje].items[itemKey] = progressOnDate + progressoNovo;
+    localStorage.setItem('historicoProgressoMidiaItens', JSON.stringify(historicoPorItem));
+
+    if (window.rpgSystem && typeof window.rpgSystem.gainXP === 'function') {
+      const isFilme = midia && midia.tipoMidia === 'filme';
+      const xpBase = isFilme
+        ? Math.max(2, Math.min(40, Math.floor(progressoNovo / 12) + 2))
+        : Math.max(4, Math.min(40, progressoNovo * 4));
+      window.rpgSystem.gainXP('cinema', xpBase);
+      if (typeof window.recordBibliotecaXp === 'function') window.recordBibliotecaXp('intelligence', xpBase);
+    }
+  };
+
+  const getItemProgressHistory = (itemId) => {
+    const historicoPorItem = JSON.parse(localStorage.getItem('historicoProgressoMidiaItens') || '{}');
+    const itemKey = String(itemId);
+    const progressByDate = {};
+
+    Object.entries(historicoPorItem).forEach(([date, data]) => {
+      if (!data || typeof data !== 'object') return;
+      const value = Number(data.items && data.items[itemKey]) || 0;
+      if (value > 0) progressByDate[date] = value;
+    });
+
+    return progressByDate;
+  };
+
+  const renderItemReadingActivityChart = (midia) => {
+    const chartContainer = document.getElementById('item-reading-activity-chart');
+    const emptyMessage = document.getElementById('item-reading-activity-empty');
+    if (!chartContainer || !emptyMessage) return;
+
+    chartContainer.innerHTML = '';
+    if (!midia || !midia.id) {
+      emptyMessage.textContent = 'Mídia inválida para exibir atividade.';
+      return;
+    }
+
+    if (midia.tipoMidia !== 'serie' && midia.tipoMidia !== 'anime') {
+      emptyMessage.textContent = 'Gráfico individual habilitado para séries e animes.';
+      return;
+    }
+
+    const progressByDate = getItemProgressHistory(midia.id);
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), 0, 1);
+    let hasActivity = false;
+
+    for (let i = 0; i < 365; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dateString = currentDate.toISOString().split('T')[0];
+      const valueOnDate = Number(progressByDate[dateString]) || 0;
+
+      const dayElement = document.createElement('div');
+      dayElement.className = 'item-github-day';
+      if (valueOnDate > 0) {
+        hasActivity = true;
+        dayElement.classList.add(valueOnDate >= 5 ? 'level-high' : 'level-low');
+      }
+
+      const dateFormatted = currentDate.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+      dayElement.title = `${dateFormatted}: ${valueOnDate} episódios de progresso`;
+      chartContainer.appendChild(dayElement);
+    }
+
+    emptyMessage.textContent = hasActivity
+      ? ''
+      : 'Ainda não há histórico de progresso para esta série.';
   };
 
   const salvarMidias = () => {
@@ -386,14 +436,24 @@ document.addEventListener("DOMContentLoaded", () => {
     renderizarGenreStats && renderizarGenreStats();
   };
 
-  const getRatingStars = (rating = 0) => {
-      let starsHtml = '';
-      for (let i = 1; i <= 5; i++) {
-          starsHtml += `<i class="${i <= rating ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
-      }
-      return starsHtml;
+  const clampRating = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return 0;
+    return Math.max(0, Math.min(5, Math.round(num * 10) / 10));
   };
-
+  const getStarFillPercent = (rating, starIndex) => {
+    const remaining = clampRating(rating) - (starIndex - 1);
+    return Math.max(0, Math.min(100, remaining * 100));
+  };
+  const getRatingStars = (rating = 0) => {
+    const safeRating = clampRating(rating);
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      const fillPercent = getStarFillPercent(safeRating, i).toFixed(1);
+      starsHtml += `<i class="fa-solid fa-star rating-star" style="--star-fill:${fillPercent}%"></i>`;
+    }
+    return starsHtml;
+  };
   const updateMidiaCounts = () => {
     const assistindo = midias.filter(midia => !midia.lido && midia.paginaAtual > 0).length;
     const assistido = midias.filter(midia => midia.lido).length;
@@ -784,8 +844,18 @@ document.addEventListener("DOMContentLoaded", () => {
     salvarMidias();
   };
 
-  const abrirModal = (modal) => modal.classList.add('show');
-  const fecharTodosModais = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+  const setHeaderHiddenByModal = (hidden) => {
+    document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
+  };
+  const abrirModal = (modal) => {
+    if (!modal) return;
+    modal.classList.add('show');
+    setHeaderHiddenByModal(true);
+  };
+  const fecharTodosModais = () => {
+    document.querySelectorAll('.modal').forEach((m) => m.classList.remove('show'));
+    setHeaderHiddenByModal(false);
+  };
 
   const abrirModalExclusao = (id) => {
     midiaIdParaExcluir = id;
@@ -826,7 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let generosString = Array.isArray(midia.generos) ? midia.generos.join(', ') : (typeof midia.generos === 'string' ? midia.generos : '');
     document.getElementById('details-generos').value = generosString;
-    updateStarRating(midia.nota || 0);
+    updateStarRating(parseFloat(midia.nota) || 0);
     toggleFavoriteBtn.classList.toggle('active', midia.isFavorite);
 
     const outrasMidiasContainer = document.getElementById('other-books-by-author'); // Mantendo ID
@@ -867,13 +937,17 @@ document.addEventListener("DOMContentLoaded", () => {
       sagaSectionContainer.style.display = 'none';
     }
 
+    renderItemReadingActivityChart(midia);
     abrirModal(bookDetailsModal);
   };
 
   const updateStarRating = (rating) => {
-    detailsNotaStars.dataset.rating = rating;
-    detailsNotaStars.querySelectorAll('i').forEach(star => {
-        star.classList.toggle('filled', parseInt(star.dataset.value) <= rating);
+    const safeRating = clampRating(rating);
+    detailsNotaStars.dataset.rating = safeRating.toFixed(1);
+    detailsNotaStars.querySelectorAll('i[data-value]').forEach((star) => {
+      const starIndex = parseInt(star.dataset.value, 10) || 0;
+      const fillPercent = getStarFillPercent(safeRating, starIndex).toFixed(1);
+      star.style.setProperty('--star-fill', `${fillPercent}%`);
     });
   };
 
@@ -952,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
       midia.resenha = document.getElementById('details-resenha').value.trim();
       midia.dataInicio = document.getElementById('details-data-inicio').value;
       midia.dataConclusao = document.getElementById('details-data-conclusao').value;
-      midia.nota = parseInt(detailsNotaStars.dataset.rating) || 0;
+      midia.nota = parseFloat(detailsNotaStars.dataset.rating) || 0;
       
       midia.saga = {
           nome: document.getElementById('details-saga-nome').value.trim(),
@@ -1000,7 +1074,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   detailsNotaStars.addEventListener('click', (e) => {
     const star = e.target.closest('i[data-value]');
-    if(star) updateStarRating(parseInt(star.dataset.value));
+    if (!star) return;
+    const rect = star.getBoundingClientRect();
+    const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const partial = rect.width > 0 ? (clickX / rect.width) : 0;
+    const base = (parseInt(star.dataset.value, 10) || 1) - 1;
+    updateStarRating(base + partial);
   });
 
   bookDetailsModal.addEventListener('click', (e) => {
@@ -1156,3 +1235,5 @@ document.addEventListener('click', function(e){
     modal.classList.remove('show');
   }
 });
+
+

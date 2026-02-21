@@ -1,4 +1,4 @@
-// Lógica de Dropdown (Global)
+﻿// Lógica de Dropdown (Global)
 document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
     const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
     if (toggle) {

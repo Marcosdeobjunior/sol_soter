@@ -1,38 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
-document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
-  // O gatilho pode ser o cabeçalho do dropdown ou o perfil
-  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
-
-  if (toggle) {
-    toggle.addEventListener('click', (event) => {
-      // Impede que o clique no link dentro do dropdown feche o menu imediatamente
-      if (event.target.tagName === 'A') return;
-
-      // Fecha outros menus abertos
-      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
-        if (activeDropdown !== dropdownContainer) {
-          activeDropdown.classList.remove('active');
-        }
-      });
-
-      // Abre/fecha o menu atual
-      dropdownContainer.classList.toggle('active');
-    });
-  }
-});
-
-// Fecha todos os dropdowns ao clicar fora
-document.addEventListener('click', e => {
-  // Se o clique não foi dentro de um dropdown, fecha todos
-  if (!e.target.closest('.dropdown')) {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  }
-});
-
-
-// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
+﻿// --- NOVIDADE: ATUALIZA O SALDO QUANDO A PÁGINA CARREGA ---
 document.addEventListener('DOMContentLoaded', () => {
     // Chama a função do script global para mostrar o saldo
     if (typeof atualizarSaldoGlobal === 'function') {
@@ -429,6 +395,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     historico[hoje].pagesRead += paginasNovas;
     localStorage.setItem('historicoProgressoMangas', JSON.stringify(historico));
+
+    const historicoPorItem = JSON.parse(localStorage.getItem('historicoProgressoMangasItens') || '{}');
+    if (!historicoPorItem[hoje] || typeof historicoPorItem[hoje] !== 'object') {
+      historicoPorItem[hoje] = { items: {} };
+    }
+    if (!historicoPorItem[hoje].items || typeof historicoPorItem[hoje].items !== 'object') {
+      historicoPorItem[hoje].items = {};
+    }
+
+    const itemKey = String(livro.id);
+    const pagesOnDate = Number(historicoPorItem[hoje].items[itemKey]) || 0;
+    historicoPorItem[hoje].items[itemKey] = pagesOnDate + paginasNovas;
+    localStorage.setItem('historicoProgressoMangasItens', JSON.stringify(historicoPorItem));
+
+    if (window.rpgSystem && typeof window.rpgSystem.gainXP === 'function') {
+      const xpBase = Math.max(2, Math.min(40, Math.floor(paginasNovas / 5) + 2));
+      window.rpgSystem.gainXP('mangas', xpBase);
+      if (typeof window.recordBibliotecaXp === 'function') window.recordBibliotecaXp('intelligence', xpBase);
+    }
+  };
+
+  const getItemReadingHistory = (itemId) => {
+    const historicoPorItem = JSON.parse(localStorage.getItem('historicoProgressoMangasItens') || '{}');
+    const itemKey = String(itemId);
+    const pagesByDate = {};
+
+    Object.entries(historicoPorItem).forEach(([date, data]) => {
+      if (!data || typeof data !== 'object') return;
+      const pagesRead = Number(data.items && data.items[itemKey]) || 0;
+      if (pagesRead > 0) pagesByDate[date] = pagesRead;
+    });
+
+    return pagesByDate;
+  };
+
+  const renderItemReadingActivityChart = (livro) => {
+    const chartContainer = document.getElementById('item-reading-activity-chart');
+    const emptyMessage = document.getElementById('item-reading-activity-empty');
+    if (!chartContainer || !emptyMessage) return;
+
+    chartContainer.innerHTML = '';
+    if (!livro || !livro.id) {
+      emptyMessage.textContent = 'Mangá inválido para exibir atividade.';
+      return;
+    }
+
+    const pagesByDate = getItemReadingHistory(livro.id);
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), 0, 1);
+    let hasActivity = false;
+
+    for (let i = 0; i < 365; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dateString = currentDate.toISOString().split('T')[0];
+      const pagesOnDate = Number(pagesByDate[dateString]) || 0;
+
+      const dayElement = document.createElement('div');
+      dayElement.className = 'item-github-day';
+      if (pagesOnDate > 0) {
+        hasActivity = true;
+        dayElement.classList.add(pagesOnDate > 30 ? 'level-high' : 'level-low');
+      }
+
+      const dateFormatted = currentDate.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+      dayElement.title = `${dateFormatted}: ${pagesOnDate} páginas lidas`;
+      chartContainer.appendChild(dayElement);
+    }
+
+    emptyMessage.textContent = hasActivity
+      ? ''
+      : 'Ainda não há histórico de leitura para este mangá.';
   };
 
   
@@ -481,14 +523,24 @@ const salvarLivros = () => {
     renderizarGenreStats(); // NOVO: Atualiza as estatísticas de gênero
   };
 
-  const getRatingStars = (rating = 0) => {
-      let starsHtml = '';
-      for (let i = 1; i <= 5; i++) {
-          starsHtml += `<i class="${i <= rating ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
-      }
-      return starsHtml;
+  const clampRating = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return 0;
+    return Math.max(0, Math.min(5, Math.round(num * 10) / 10));
   };
-
+  const getStarFillPercent = (rating, starIndex) => {
+    const remaining = clampRating(rating) - (starIndex - 1);
+    return Math.max(0, Math.min(100, remaining * 100));
+  };
+  const getRatingStars = (rating = 0) => {
+    const safeRating = clampRating(rating);
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      const fillPercent = getStarFillPercent(safeRating, i).toFixed(1);
+      starsHtml += `<i class="fa-solid fa-star rating-star" style="--star-fill:${fillPercent}%"></i>`;
+    }
+    return starsHtml;
+  };
   const updateBookCounts = () => {
     const lendo = livros.filter(livro => !livro.lido && livro.paginaAtual > 0).length;
     const lido = livros.filter(livro => livro.lido).length;
@@ -769,8 +821,18 @@ const salvarLivros = () => {
     salvarLivros();
   };
 
-  const abrirModal = (modal) => modal.classList.add('show');
-  const fecharTodosModais = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+  const setHeaderHiddenByModal = (hidden) => {
+    document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
+  };
+  const abrirModal = (modal) => {
+    if (!modal) return;
+    modal.classList.add('show');
+    setHeaderHiddenByModal(true);
+  };
+  const fecharTodosModais = () => {
+    document.querySelectorAll('.modal').forEach((m) => m.classList.remove('show'));
+    setHeaderHiddenByModal(false);
+  };
 
   const abrirModalExclusao = (id) => {
     livroIdParaExcluir = id;
@@ -797,7 +859,7 @@ const salvarLivros = () => {
 
     let generosString = Array.isArray(livro.generos) ? livro.generos.join(', ') : (typeof livro.generos === 'string' ? livro.generos : '');
     document.getElementById('details-generos').value = generosString;
-    updateStarRating(livro.nota || 0);
+    updateStarRating(parseFloat(livro.nota) || 0);
     toggleFavoriteBtn.classList.toggle('active', livro.isFavorite);
 
     const outrosLivrosContainer = document.getElementById('other-books-by-author');
@@ -838,13 +900,17 @@ const salvarLivros = () => {
       sagaSectionContainer.style.display = 'none';
     }
 
+    renderItemReadingActivityChart(livro);
     abrirModal(bookDetailsModal);
   };
 
   const updateStarRating = (rating) => {
-    detailsNotaStars.dataset.rating = rating;
-    detailsNotaStars.querySelectorAll('i').forEach(star => {
-        star.classList.toggle('filled', parseInt(star.dataset.value) <= rating);
+    const safeRating = clampRating(rating);
+    detailsNotaStars.dataset.rating = safeRating.toFixed(1);
+    detailsNotaStars.querySelectorAll('i[data-value]').forEach((star) => {
+      const starIndex = parseInt(star.dataset.value, 10) || 0;
+      const fillPercent = getStarFillPercent(safeRating, starIndex).toFixed(1);
+      star.style.setProperty('--star-fill', `${fillPercent}%`);
     });
   };
 
@@ -884,7 +950,7 @@ const salvarLivros = () => {
       livro.resenha = document.getElementById('details-resenha').value.trim();
       livro.dataInicio = document.getElementById('details-data-inicio').value;
       livro.dataConclusao = document.getElementById('details-data-conclusao').value;
-      livro.nota = parseInt(detailsNotaStars.dataset.rating) || 0;
+      livro.nota = parseFloat(detailsNotaStars.dataset.rating) || 0;
       
       livro.saga = {
           nome: document.getElementById('details-saga-nome').value.trim(),
@@ -933,7 +999,12 @@ const salvarLivros = () => {
 
   detailsNotaStars.addEventListener('click', (e) => {
     const star = e.target.closest('i[data-value]');
-    if(star) updateStarRating(parseInt(star.dataset.value));
+    if (!star) return;
+    const rect = star.getBoundingClientRect();
+    const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const partial = rect.width > 0 ? (clickX / rect.width) : 0;
+    const base = (parseInt(star.dataset.value, 10) || 1) - 1;
+    updateStarRating(base + partial);
   });
 
   bookDetailsModal.addEventListener('click', (e) => {
@@ -1003,3 +1074,5 @@ if (addBookForm) {
     if (statusMangaContainer) statusMangaContainer.style.display = 'none';
   });
 }
+
+

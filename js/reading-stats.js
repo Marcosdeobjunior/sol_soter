@@ -1,4 +1,4 @@
-class ReadingStats {
+﻿class ReadingStats {
   constructor() {
     this.goalTarget = 24; // Meta anual padrão
     this.initializeEventListeners();
@@ -22,6 +22,10 @@ class ReadingStats {
         if (e.target === statsModal) this.closeStatsModal();
       });
     }
+  }
+
+  setHeaderHiddenByStatsModal(hidden) {
+    document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
   }
 
   // NOVO: Obtém o histórico de progresso do localStorage
@@ -246,6 +250,7 @@ class ReadingStats {
 
     modal.classList.add('show');
     modal.style.display = 'flex';
+    this.setHeaderHiddenByStatsModal(true);
   }
 
   closeStatsModal() {
@@ -254,6 +259,7 @@ class ReadingStats {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+    this.setHeaderHiddenByStatsModal(false);
     // Limpar tooltips
     this.hideTooltip();
   }
@@ -305,5 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.readingStats = new ReadingStats();
   window.readingStats.refresh(); // Chamar refresh para garantir que tudo seja atualizado na carga inicial
 });
+
+
 
 

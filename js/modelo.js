@@ -1,4 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
+﻿// Lógica de Dropdown aprimorada para todos os menus
 document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
   // O gatilho pode ser o cabeçalho do dropdown ou o perfil
   const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');

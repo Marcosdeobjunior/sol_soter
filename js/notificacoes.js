@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
         this.togglePanel();
       });
 
+      window.addEventListener('resize', () => {
+        if (this.panel.classList.contains('active')) this.alignPanelPointer();
+      });
+
       document.addEventListener('click', (e) => {
         if (!this.panel.contains(e.target)) this.closePanel();
       });
@@ -29,10 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     togglePanel() {
       this.panel.classList.toggle('active');
+      if (this.panel.classList.contains('active')) {
+        requestAnimationFrame(() => this.alignPanelPointer());
+      }
     }
 
     closePanel() {
       this.panel.classList.remove('active');
+    }
+
+    alignPanelPointer() {
+      if (!this.bell || !this.panel) return;
+      const bellRect = this.bell.getBoundingClientRect();
+      const panelRect = this.panel.getBoundingClientRect();
+      if (!panelRect.width) return;
+
+      const centerX = bellRect.left + (bellRect.width / 2) - panelRect.left;
+      const triangleHalf = 9;
+      const clamped = Math.max(triangleHalf, Math.min(panelRect.width - triangleHalf, centerX));
+      this.panel.style.setProperty('--notification-pointer-x', `${clamped}px`);
     }
 
     setupPanelActions() {
@@ -111,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const financas = this.getFinancasNotifications();
       const conquistas = this.getConquistasNotifications();
       const estudos = this.getEstudosNotifications();
+      const biblioteca = this.getBibliotecaNotifications();
 
       const allNotifications = [
         ...metas,
@@ -119,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ...financas,
         ...conquistas,
         ...estudos,
+        ...biblioteca,
       ];
 
       this.notifications = allNotifications.filter(
@@ -262,6 +283,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     getConquistasNotifications() {
       return [];
+    }
+
+    getBibliotecaNotifications() {
+      const toInt = (value) => parseInt(value || 0, 10) || 0;
+      const parseDate = (value) => {
+        if (!value) return null;
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+      };
+      const daysDiff = (from, to) => {
+        const a = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+        const b = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+        return Math.floor((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+      };
+
+      const livros = JSON.parse(localStorage.getItem('livrosTracker') || '[]');
+      const midias = JSON.parse(localStorage.getItem('midiasTracker') || '[]');
+      const mangas = JSON.parse(localStorage.getItem('mangasTracker') || '[]');
+      const historicoLivrosPorItem = JSON.parse(localStorage.getItem('historicoProgressoLivros') || '{}');
+      const historicoMangaPorItem = JSON.parse(localStorage.getItem('historicoProgressoMangasItens') || '{}');
+      const historicoMidiaPorItem = JSON.parse(localStorage.getItem('historicoProgressoMidiaItens') || '{}');
+
+      const normalizeBooks = (items, source) => (items || []).map((item) => ({
+        source,
+        id: String(item && item.id ? item.id : item && item.titulo ? item.titulo : ''),
+        title: (item && item.titulo) || 'Item sem título',
+        done: Boolean(item && item.lido),
+        startDate: parseDate(item && item.dataInicio),
+      }));
+
+      const allItems = [
+        ...normalizeBooks(livros, 'livraria'),
+        ...normalizeBooks(midias, 'cinema'),
+        ...normalizeBooks(mangas, 'mangas'),
+      ].filter((item) => !item.done);
+
+      const getLastProgressDate = (entry) => {
+        const historyObj = entry.source === 'livraria'
+          ? historicoLivrosPorItem
+          : entry.source === 'mangas'
+            ? historicoMangaPorItem
+            : historicoMidiaPorItem;
+
+        let latest = null;
+        Object.entries(historyObj || {}).forEach(([dateKey, payload]) => {
+          let value = 0;
+          if (entry.source === 'livraria') value = toInt(payload && payload.books && payload.books[entry.id]);
+          else value = toInt(payload && payload.items && payload.items[entry.id]);
+          if (value <= 0) return;
+          if (!latest || String(dateKey) > String(latest)) latest = String(dateKey);
+        });
+        return latest;
+      };
+
+      const today = new Date();
+      const riskItems = allItems
+        .map((entry) => {
+          const lastProgressKey = getLastProgressDate(entry);
+          let inactiveDays = null;
+          if (lastProgressKey) {
+            inactiveDays = daysDiff(today, new Date(`${lastProgressKey}T00:00:00`));
+          } else if (entry.startDate) {
+            inactiveDays = daysDiff(today, entry.startDate);
+          }
+          return { ...entry, inactiveDays };
+        })
+        .filter((entry) => Number.isFinite(entry.inactiveDays) && entry.inactiveDays >= 10)
+        .sort((a, b) => b.inactiveDays - a.inactiveDays)
+        .slice(0, 3);
+
+      return riskItems.map((entry) => ({
+        id: `biblioteca-risco-${entry.source}-${entry.id}`,
+        icon: 'fa-triangle-exclamation',
+        type: 'biblioteca-risco',
+        text: `"${entry.title}" está em risco de abandono.`,
+        timestamp: `${entry.inactiveDays} dia(s) sem progresso`,
+        url: 'biblioteca.html',
+      }));
     }
 
     render() {

@@ -1,28 +1,4 @@
-// Lógica de Dropdown aprimorada para todos os menus
-document.querySelectorAll('.dropdown').forEach(dropdownContainer => {
-  const toggle = dropdownContainer.querySelector('.dropdown-header, .profile');
-  if (toggle) {
-    toggle.addEventListener('click', (event) => {
-      if (event.target.tagName === 'A') return;
-      document.querySelectorAll('.dropdown.active').forEach(activeDropdown => {
-        if (activeDropdown !== dropdownContainer) {
-          activeDropdown.classList.remove('active');
-        }
-      });
-      dropdownContainer.classList.toggle('active');
-    });
-  }
-});
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dropdown')) {
-    document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-      dropdown.classList.remove('active');
-    });
-  }
-});
-
-// Atualiza o saldo
+﻿// Atualiza o saldo
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof atualizarSaldoGlobal === 'function') {
         atualizarSaldoGlobal();
@@ -510,4 +486,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderAll();
 });
+
 

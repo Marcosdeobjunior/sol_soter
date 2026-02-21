@@ -1,4 +1,4 @@
-class MangaStats {
+﻿class MangaStats {
   constructor() {
     this.goalTarget = 24; // Meta anual padrão
     this.initializeEventListeners();
@@ -22,6 +22,10 @@ class MangaStats {
         if (e.target === statsModal) this.closeStatsModal();
       });
     }
+  }
+
+  setHeaderHiddenByStatsModal(hidden) {
+    document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
   }
 
   // NOVO: Obtém o histórico de progresso do localStorage
@@ -246,6 +250,7 @@ class MangaStats {
 
     modal.classList.add('show');
     modal.style.display = 'flex';
+    this.setHeaderHiddenByStatsModal(true);
   }
 
   closeStatsModal() {
@@ -254,6 +259,7 @@ class MangaStats {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+    this.setHeaderHiddenByStatsModal(false);
     // Limpar tooltips
     this.hideTooltip();
   }
@@ -305,3 +311,5 @@ document.addEventListener('DOMContentLoaded', () => {
   window.mangaStats = new MangaStats();
   window.mangaStats.refresh(); // Chamar refresh para garantir que tudo seja atualizado na carga inicial
 });
+
+

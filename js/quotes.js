@@ -1,4 +1,4 @@
-class QuotesManager {
+﻿class QuotesManager {
   constructor() {
     this.quotes = this.loadQuotes();
     this.currentQuoteIndex = 0;
