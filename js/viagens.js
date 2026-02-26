@@ -38,6 +38,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let isEditing = false;
   let editingIndex = -1;
 
+  const syncPopupUiState = () => {
+    const overlays = Array.from(document.querySelectorAll(".popup-overlay"));
+    const anyOpen = overlays.some((el) => {
+      if (!el) return false;
+      const inlineVisible = el.style.display && el.style.display !== "none";
+      const computedVisible = window.getComputedStyle(el).display !== "none";
+      return inlineVisible || computedVisible;
+    });
+    document.body.classList.toggle("trips-modal-open", anyOpen);
+  };
+
   // Variáveis de paginação
   const CARDS_PER_PAGE = 6; // <-- AJUSTADO DE 15 PARA 6
   let currentPage = 1;
@@ -56,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
       attribution: "© OpenStreetMap contributors",
       noWrap: false,
     }).addTo(map);
+
+    // Recalcula o tamanho após o CSS aplicar layout final (evita mapa "cortado")
+    requestAnimationFrame(() => {
+      setTimeout(() => map.invalidateSize(), 80);
+    });
   }
 
   // Função para obter coordenadas de um destino
@@ -295,6 +311,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Atualizar marcadores do mapa
   async function updateMapMarkers() {
+    if (map) {
+      map.invalidateSize();
+    }
     clearMapMarkers();
 
     for (let i = 0; i < travels.length; i++) {
@@ -610,18 +629,23 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<p><i class="fas fa-calendar-alt"></i> ${formatDate(travel.startDate)} - ${formatDate(travel.endDate)}</p>`
         : "";
       
-      const categoryHtml = travel.category
-        ? `<p class="travel-category" style="font-weight: 600;">${travel.category}</p>`
+      const headerCategoryHtml = travel.category
+        ? `<span class="travel-category-inline">${travel.category}</span>`
         : "";
       const localDescHtml = (travel.localDescription || travel.descricaoLocal || travel.descricao)
         ? `<p><i class="fas fa-map-marked-alt"></i> ${travel.localDescription || travel.descricaoLocal || travel.descricao}</p>`
         : "";
+      const cover = travel.image || travel.imagem || "";
+      const mediaHtml = cover
+        ? `<div class="travel-card-media" style="background-image:linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.3)), url('${String(cover).replace(/'/g, "%27")}');" aria-hidden="true"></div>`
+        : `<div class="travel-card-media travel-card-media--placeholder" aria-hidden="true"><i class="fas fa-map-location-dot"></i></div>`;
 
       card.innerHTML = `
         <div class="travel-card-header">
-          <h4>${travel.destination}${flagHtml}</h4>
+          <h4>${travel.destination}${flagHtml}${headerCategoryHtml}</h4>
           <i class="${icon} travel-card-icon"></i>
         </div>
+        ${mediaHtml}
         
         <div class="travel-card-details">
           ${dateHtml}
@@ -629,7 +653,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ${budgetHtml}
           ${weatherHtml}
           ${eventsHtml}
-          ${categoryHtml}
           ${localDescHtml}
         </div>
       `;
@@ -653,6 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const popup = document.getElementById(popupId);
     if (popup) {
       popup.style.display = "flex";
+      syncPopupUiState();
     }
   }
 
@@ -664,6 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (popupId === "add-travel-popup") {
         resetFormToAddMode();
       }
+      syncPopupUiState();
     }
   }
 
@@ -689,6 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (overlay.id === "add-travel-popup") {
           resetFormToAddMode();
         }
+        syncPopupUiState();
       }
     });
   });
@@ -869,6 +895,12 @@ document.addEventListener("DOMContentLoaded", () => {
   loadTravels(); // Carregar dados salvos
   initMap();
   renderTravels();
+
+  window.addEventListener("resize", () => {
+    if (map) {
+      map.invalidateSize();
+    }
+  });
 });
 
 

@@ -275,16 +275,36 @@
   renderAchievements() {
     const container = document.getElementById("rpg-achievements");
     if (!container) return;
-    const achievements = this.rpg.meta.achievements || [];
-    if (!achievements.length) {
+    const achievements = (this.rpg.meta.achievements || []).map((a) => ({
+      label: a.label,
+      at: a.at,
+      source: "rpg",
+    }));
+    let sonhosAchievements = [];
+    try {
+      const sonhosRaw = JSON.parse(localStorage.getItem("conquistas-objetivos") || "[]");
+      if (Array.isArray(sonhosRaw)) {
+        sonhosAchievements = sonhosRaw.map((c) => ({
+          label: c?.titulo || "Conquista de Sonhos",
+          at: c?.data || new Date().toISOString(),
+          source: "sonhos",
+        }));
+      }
+    } catch (_err) {
+      sonhosAchievements = [];
+    }
+
+    const allAchievements = [...achievements, ...sonhosAchievements]
+      .filter((a) => a && a.label)
+      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+
+    if (!allAchievements.length) {
       container.innerHTML = '<div class="badge-item"><strong>Sem conquistas</strong><span>Ganhe XP para desbloquear.</span></div>';
       return;
     }
-    container.innerHTML = achievements
-      .slice()
-      .reverse()
+    container.innerHTML = allAchievements
       .slice(0, 12)
-      .map((a) => `<div class="badge-item"><strong>${a.label}</strong><span>${this.formatDate(a.at)}</span></div>`)
+      .map((a) => `<div class="badge-item"><strong>${a.label}</strong><span>${this.formatDate(a.at)}${a.source === "sonhos" ? " • Sonhos" : ""}</span></div>`)
       .join("");
   }
 

@@ -2,6 +2,7 @@
   constructor() {
     this.quotes = this.loadQuotes();
     this.currentQuoteIndex = 0;
+    this.quoteSwapTimeout = null;
     this.initializeEventListeners();
   }
 
@@ -42,10 +43,21 @@
   }
 
   initializeEventListeners() {
-    // Botão de editar citações
-    const editBtn = document.querySelector('.edit-quotes-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => this.openEditModal());
+    // Card de citação abre a tela de edição
+    const quoteContainer = document.getElementById('quote-display');
+    if (quoteContainer && !quoteContainer.dataset.editBound) {
+      quoteContainer.dataset.editBound = 'true';
+      quoteContainer.setAttribute('role', 'button');
+      quoteContainer.setAttribute('tabindex', '0');
+      quoteContainer.setAttribute('aria-label', 'Abrir editor de citações');
+
+      quoteContainer.addEventListener('click', () => this.openEditModal());
+      quoteContainer.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.openEditModal();
+        }
+      });
     }
 
     // Modal de edição
@@ -81,24 +93,54 @@
     return this.quotes[randomIndex];
   }
 
+  renderQuoteContent(quoteContainer, quote) {
+    quoteContainer.innerHTML = `
+      <div class="quote-content-inner quote-content-enter">
+        <p class="quote-text">"${quote.text}"</p>
+        <p class="quote-author">- ${quote.author}</p>
+      </div>
+    `;
+  }
+
+  openModalAnimated(modal) {
+    if (!modal) return;
+    modal.classList.remove('closing');
+    modal.classList.add('show');
+  }
+
+  closeModalAnimated(modal) {
+    if (!modal) return;
+    if (!modal.classList.contains('show') || modal.classList.contains('closing')) {
+      modal.classList.remove('show');
+      return;
+    }
+    modal.classList.add('closing');
+    setTimeout(() => {
+      modal.classList.remove('closing', 'show');
+    }, 220);
+  }
+
   displayQuote() {
     const quoteContainer = document.getElementById('quote-display');
-    if (quoteContainer) {
-      const randomQuote = this.getRandomQuote();
-      quoteContainer.innerHTML = `
-        <p class="quote-text">"${randomQuote.text}"</p>
-        <p class="quote-author">- ${randomQuote.author}</p>
-        <button class="edit-quotes-btn" title="Editar citações">
-          <i class="fas fa-edit"></i>
-        </button>
-      `;
-      
-      // Re-adicionar event listener para o botão de editar
-      const editBtn = quoteContainer.querySelector('.edit-quotes-btn');
-      if (editBtn) {
-        editBtn.addEventListener('click', () => this.openEditModal());
-      }
+    if (!quoteContainer) return;
+
+    const randomQuote = this.getRandomQuote();
+    const hasRenderedQuote = !!quoteContainer.querySelector('.quote-content-inner');
+
+    if (!hasRenderedQuote) {
+      this.renderQuoteContent(quoteContainer, randomQuote);
+      return;
     }
+
+    quoteContainer.classList.remove('quote-transition-out');
+    void quoteContainer.offsetWidth; // reinicia a animação
+    quoteContainer.classList.add('quote-transition-out');
+
+    clearTimeout(this.quoteSwapTimeout);
+    this.quoteSwapTimeout = setTimeout(() => {
+      this.renderQuoteContent(quoteContainer, randomQuote);
+      quoteContainer.classList.remove('quote-transition-out');
+    }, 170);
   }
 
   openEditModal() {
@@ -109,15 +151,13 @@
     }
 
     this.renderQuotesList();
-    modal.classList.add('show');
-    modal.style.display = 'flex';
+    this.openModalAnimated(modal);
   }
 
   closeEditModal() {
     const modal = document.getElementById('edit-quotes-modal');
     if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
+      this.closeModalAnimated(modal);
     }
   }
 

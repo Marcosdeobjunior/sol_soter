@@ -163,12 +163,27 @@ header {
 .dropdown-menu li a {
   padding: 10px 15px;
   display: block;
-  transition: background 0.2s;
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s;
   color: var(--texto-principal);
 }
+.dropdown-menu li a::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  bottom: 6px;
+  width: 0;
+  height: 2px;
+  background: #d5d80f;
+  transition: width 0.24s ease;
+}
 .dropdown-menu li a:hover {
-  background: var(--fundo-overlay);
-  color: var(--acento-amarelo);
+  background: transparent;
+  color: var(--texto-principal);
+}
+.dropdown-menu li a:hover::after {
+  width: calc(100% - 30px);
 }
 .dropdown.active > .dropdown-menu {
   display: block;
@@ -1434,12 +1449,27 @@ header {
 .dropdown-menu li a {
   padding: 10px 15px;
   display: block;
-  transition: background 0.2s;
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s;
   color: var(--texto-principal);
 }
+.dropdown-menu li a::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  bottom: 6px;
+  width: 0;
+  height: 2px;
+  background: #d5d80f;
+  transition: width 0.24s ease;
+}
 .dropdown-menu li a:hover {
-  background: var(--fundo-overlay);
-  color: var(--acento-amarelo);
+  background: transparent;
+  color: var(--texto-principal);
+}
+.dropdown-menu li a:hover::after {
+  width: calc(100% - 30px);
 }
 .dropdown.active > .dropdown-menu {
   display: block;

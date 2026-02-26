@@ -9,8 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressEl = document.getElementById('ent-stage-progress');
   const footEl = document.getElementById('ent-stage-foot');
   const detailsEl = document.getElementById('ent-stage-details');
+  const stageEl = document.getElementById('ent-stage');
 
-  if (!navItems.length || !mediaEl || !pillEl || !titleEl || !ratingEl || !favoriteEl || !metaEl || !progressEl || !footEl || !detailsEl) return;
+  if (!navItems.length || !mediaEl || !pillEl || !titleEl || !ratingEl || !favoriteEl || !metaEl || !progressEl || !footEl || !detailsEl || !stageEl) return;
 
   const ls = (key, fallback) => {
     try {
@@ -323,14 +324,24 @@ document.addEventListener('DOMContentLoaded', () => {
     renderActivityChart(data);
   };
 
+  const animateStageSwap = () => {
+    stageEl.classList.remove('ent-stage-switching');
+    void stageEl.offsetWidth;
+    stageEl.classList.add('ent-stage-switching');
+  };
+
   navItems.forEach((item) => {
     item.addEventListener('click', () => {
       navItems.forEach((i) => i.classList.remove('active'));
       item.classList.add('active');
       render(item.dataset.entKey);
+      animateStageSwap();
     });
   });
 
   const first = navItems.find((i) => i.classList.contains('active')) || navItems[0];
-  if (first) render(first.dataset.entKey);
+  if (first) {
+    render(first.dataset.entKey);
+    animateStageSwap();
+  }
 });

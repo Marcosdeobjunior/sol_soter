@@ -50,14 +50,14 @@
   if (!slidesData.length) {
     slidesData.push(
       {
-        title: 'Seu prÃ³ximo sonho comeÃ§a aqui',
+        title: 'Seu próximo sonho começa aqui',
         description: 'Cadastre sonhos para ver suas imagens em destaque neste carrossel.',
         image: 'img/default_dream.png',
         category: 'Sonho',
       },
       {
         title: 'Visualize seus objetivos',
-        description: 'Use a pÃ¡gina de Sonhos para adicionar imagens e acompanhar o progresso.',
+        description: 'Use a página de Sonhos para adicionar imagens e acompanhar o progresso.',
         image: 'img/soldesoter_logo.png',
         category: 'Sonho',
       }
@@ -136,4 +136,5 @@
   render(0);
   start();
 });
+
 

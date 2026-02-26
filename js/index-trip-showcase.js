@@ -212,6 +212,21 @@ document.addEventListener('DOMContentLoaded', () => {
     balloonEl.style.setProperty('--trip-balloon-pointer-x', `${clamped}px`);
   };
 
+  let filterTransitionTimer = null;
+  const clearFilterTransitionClasses = () => {
+    balloonEl.classList.remove('trip-filter-transition-out', 'trip-filter-transition-in');
+  };
+  const playFilterTransitionIn = () => {
+    balloonEl.classList.remove('trip-filter-transition-out');
+    void balloonEl.offsetWidth;
+    balloonEl.classList.add('trip-filter-transition-in');
+    if (filterTransitionTimer) clearTimeout(filterTransitionTimer);
+    filterTransitionTimer = setTimeout(() => {
+      balloonEl.classList.remove('trip-filter-transition-in');
+    }, 520);
+  };
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const renderBalloon = async (key) => {
     renderToken += 1;
     const token = renderToken;
@@ -256,11 +271,16 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   cards.forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', async () => {
+      if (activeGroup === card.dataset.tripFilter) return;
       cards.forEach((c) => c.classList.remove('active'));
       card.classList.add('active');
+      clearFilterTransitionClasses();
+      balloonEl.classList.add('trip-filter-transition-out');
+      await wait(140);
       activeGroup = card.dataset.tripFilter;
-      void renderBalloon(activeGroup);
+      await renderBalloon(activeGroup);
+      playFilterTransitionIn();
       requestAnimationFrame(() => alignBalloonPointer(card));
     });
   });

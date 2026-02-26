@@ -48,7 +48,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const genreStatsContainer = document.getElementById('genre-stats-container');
   
   // NOVOS ELEMENTOS PARA FILTROS DE ORGANIZAÇÃO
+  const sortFiltersWrapper = document.querySelector('.sort-filters-container');
+  const sortFiltersToggle = document.querySelector('.sort-filters-toggle');
   const sortFiltersContainer = document.querySelector('.sort-filters-options');
+
+  function setSortFiltersOpen(isOpen) {
+    if (!sortFiltersWrapper || !sortFiltersToggle) return;
+    sortFiltersWrapper.classList.toggle('open', isOpen);
+    sortFiltersToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+  const appendGridPlaceholders = (listaElement, renderedCount, totalSlots) => {
+    if (!listaElement || renderedCount <= 0) return;
+    const placeholders = Math.max(0, totalSlots - renderedCount);
+    for (let i = 0; i < placeholders; i += 1) {
+      const li = document.createElement('li');
+      li.className = 'book-item book-item-placeholder';
+      li.setAttribute('aria-hidden', 'true');
+      listaElement.appendChild(li);
+    }
+  };
 
   let livros = JSON.parse(localStorage.getItem('mangasTracker')) || [];
   // MIGRAÇÃO: se não houver mangasTracker, tentar migrar do antigo 'livrosTracker' (apenas itens de tipo 'manga' ou com statusManga)
@@ -608,6 +626,7 @@ const salvarLivros = () => {
         </div>`;
       listaElement.appendChild(li);
     });
+    appendGridPlaceholders(listaElement, livrosPaginados.length, LIVROS_POR_PAGINA);
 
     // NOVO: Renderizar controles de paginação
     renderizarPaginacao(tabId, livrosOrdenados.length, paginaAtual);
@@ -824,19 +843,41 @@ const salvarLivros = () => {
   const setHeaderHiddenByModal = (hidden) => {
     document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
   };
+  const MODAL_CLOSE_ANIM_MS = 220;
+  const fecharModal = (modal, { immediate = false } = {}) => {
+    if (!modal) return;
+    if (immediate) {
+      modal.classList.remove('closing', 'show');
+      return;
+    }
+    if (!modal.classList.contains('show') || modal.classList.contains('closing')) {
+      modal.classList.remove('show');
+      return;
+    }
+    modal.classList.add('closing');
+    setTimeout(() => {
+      modal.classList.remove('closing', 'show');
+    }, MODAL_CLOSE_ANIM_MS);
+  };
   const abrirModal = (modal) => {
     if (!modal) return;
+    modal.classList.remove('closing');
     modal.classList.add('show');
     setHeaderHiddenByModal(true);
   };
-  const fecharTodosModais = () => {
-    document.querySelectorAll('.modal').forEach((m) => m.classList.remove('show'));
-    setHeaderHiddenByModal(false);
+  const fecharTodosModais = (options = {}) => {
+    const { immediate = false } = options;
+    document.querySelectorAll('.modal').forEach((m) => fecharModal(m, { immediate }));
+    if (immediate) {
+      setHeaderHiddenByModal(false);
+      return;
+    }
+    setTimeout(() => setHeaderHiddenByModal(false), MODAL_CLOSE_ANIM_MS);
   };
 
   const abrirModalExclusao = (id) => {
     livroIdParaExcluir = id;
-    fecharTodosModais();
+    fecharTodosModais({ immediate: true });
     abrirModal(confirmDeleteModal);
   };
 
@@ -1030,6 +1071,27 @@ const salvarLivros = () => {
       const button = e.target.closest('.sort-filter-btn');
       if (button) {
         switchSortFilter(button.dataset.sort);
+        setSortFiltersOpen(false);
+      }
+    });
+  }
+
+  if (sortFiltersWrapper && sortFiltersToggle) {
+    sortFiltersToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSortFiltersOpen(!sortFiltersWrapper.classList.contains('open'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!sortFiltersWrapper.contains(e.target)) {
+        setSortFiltersOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        setSortFiltersOpen(false);
       }
     });
   }
@@ -1070,7 +1132,7 @@ if (addBookForm) {
     livros.unshift(novoLivro);
     salvarLivros();
     addBookForm.reset();
-    if (addBookModal) addBookModal.classList.remove('show');
+    fecharTodosModais();
     if (statusMangaContainer) statusMangaContainer.style.display = 'none';
   });
 }

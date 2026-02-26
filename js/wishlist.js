@@ -47,6 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const shoppingCartModal = document.getElementById('shoppingCartModal');
     const shoppingCartBtn = document.getElementById('shoppingCartBtn');
     const closeShoppingCartModalBtn = shoppingCartModal.querySelector('.close-btn');
+    const shoppingListViewModal = document.getElementById('shoppingListViewModal');
+    const closeShoppingListViewModalBtn = document.getElementById('closeShoppingListViewModal');
+    const shoppingListViewTitle = document.getElementById('shoppingListViewTitle');
+    const shoppingListViewGrid = document.getElementById('shoppingListViewGrid');
+    const shoppingListModalDeleteBtn = document.getElementById('shoppingListModalDeleteBtn');
+    const shoppingListAddItemsModal = document.getElementById('shoppingListAddItemsModal');
+    const closeShoppingListAddItemsModalBtn = document.getElementById('closeShoppingListAddItemsModal');
+    const shoppingListAddItemsGrid = document.getElementById('shoppingListAddItemsGrid');
     
     const cartItemCountBadge = document.getElementById('cartItemCount');
 
@@ -64,11 +72,60 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CONTROLES ---
     const searchInput = document.getElementById('searchInput');
     const filterSelect = document.getElementById('filterSelect');
+    const shoppingListForm = document.getElementById('shoppingListForm');
+    const shoppingListNameInput = document.getElementById('shoppingListName');
+    const shoppingListsTabs = document.getElementById('shoppingListsTabs');
+    const shoppingListManager = document.getElementById('shoppingListManager');
+    const shoppingListItems = document.getElementById('shoppingListItems');
+    const shoppingListsCardsGrid = document.getElementById('shoppingListsCardsGrid');
+    const shoppingListItemSelect = document.getElementById('shoppingListItemSelect');
+    const addItemToShoppingListBtn = document.getElementById('addItemToShoppingListBtn');
+    const deleteShoppingListBtn = document.getElementById('deleteShoppingListBtn');
+    const wishlistViewTabs = Array.from(document.querySelectorAll('.wishlist-view-tab'));
+    const wishlistItemsView = document.getElementById('wishlistItemsView');
+    const wishlistListsView = document.getElementById('wishlistListsView');
 
     // --- CARREGAMENTO DE DADOS ---
     let wishlistItems = JSON.parse(localStorage.getItem('wishlistItems')) || [];
     let purchasedItems = JSON.parse(localStorage.getItem('purchasedItems')) || [];
     let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    let shoppingLists = (() => {
+        try {
+            const raw = JSON.parse(localStorage.getItem('wishlistShoppingListsV1') || '[]');
+            if (!Array.isArray(raw)) return [];
+            return raw
+                .filter(list => list && typeof list.name === 'string')
+                .map(list => ({
+                    id: list.id || `list-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    name: String(list.name).trim().slice(0, 40) || 'Lista',
+                    itemKeys: Array.isArray(list.itemKeys) ? [...new Set(list.itemKeys.map(String))] : []
+                }));
+        } catch {
+            return [];
+        }
+    })();
+    let selectedShoppingListId = shoppingLists[0]?.id || null;
+    let activeWishlistView = 'items';
+    let activeShoppingListModalId = null;
+
+    const pageModals = [
+        modal,
+        historyModal,
+        shoppingCartModal,
+        shoppingListViewModal,
+        shoppingListAddItemsModal
+    ].filter(Boolean);
+
+    const syncWishlistHeaderWithModals = () => {
+        const anyOpen = pageModals.some(m => m.classList.contains('active'));
+        document.body.classList.toggle('wishlist-modal-open', anyOpen);
+    };
+
+    pageModals.forEach((m) => {
+        const observer = new MutationObserver(syncWishlistHeaderWithModals);
+        observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+    });
+    syncWishlistHeaderWithModals();
 
     // --- LÓGICA DO BADGE DO CARRINHO ---
     const updateCartBadge = () => {
@@ -90,11 +147,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     shoppingCartBtn.addEventListener('click', () => shoppingCartModal.classList.add('active'));
     closeShoppingCartModalBtn.addEventListener('click', () => shoppingCartModal.classList.remove('active'));
+    if (closeShoppingListViewModalBtn) {
+        closeShoppingListViewModalBtn.addEventListener('click', () => shoppingListViewModal.classList.remove('active'));
+    }
+    if (closeShoppingListAddItemsModalBtn) {
+        closeShoppingListAddItemsModalBtn.addEventListener('click', () => shoppingListAddItemsModal.classList.remove('active'));
+    }
 
     window.addEventListener('click', (e) => {
         if (e.target == modal) modal.classList.remove('active');
         if (e.target == historyModal) historyModal.classList.remove('active');
         if (e.target == shoppingCartModal) shoppingCartModal.classList.remove('active');
+        if (e.target == shoppingListViewModal) shoppingListViewModal.classList.remove('active');
+        if (e.target == shoppingListAddItemsModal) shoppingListAddItemsModal.classList.remove('active');
     });
 
     // --- LÓGICA GERAL ---
@@ -102,13 +167,197 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
         localStorage.setItem('purchasedItems', JSON.stringify(purchasedItems));
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        localStorage.setItem('wishlistShoppingListsV1', JSON.stringify(shoppingLists));
     };
 
     const renderAll = () => {
+        renderWishlistViewTabs();
+        renderShoppingLists();
         renderWishlist();
         renderPurchaseHistory();
         renderCart();
     }
+
+    const renderWishlistViewTabs = () => {
+        wishlistViewTabs.forEach(btn => {
+            const isActive = btn.dataset.view === activeWishlistView;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', String(isActive));
+        });
+        if (wishlistItemsView) wishlistItemsView.hidden = activeWishlistView !== 'items';
+        if (wishlistListsView) wishlistListsView.hidden = activeWishlistView !== 'lists';
+    };
+
+    const getSelectedShoppingList = () =>
+        shoppingLists.find(list => list.id === selectedShoppingListId) || null;
+
+    const syncShoppingListsWithWishlist = () => {
+        const validKeys = new Set(wishlistItems.map(item => item.name));
+        shoppingLists = shoppingLists.map(list => ({
+            ...list,
+            itemKeys: list.itemKeys.filter(key => validKeys.has(key))
+        }));
+        if (selectedShoppingListId && !shoppingLists.some(list => list.id === selectedShoppingListId)) {
+            selectedShoppingListId = shoppingLists[0]?.id || null;
+        }
+    };
+
+    const renderShoppingLists = () => {
+        syncShoppingListsWithWishlist();
+
+        if (shoppingListsTabs) {
+            shoppingListsTabs.innerHTML = '';
+            if (shoppingLists.length === 0) {
+                shoppingListsTabs.innerHTML = `<p class="shopping-lists-empty">Nenhuma lista criada ainda.</p>`;
+            } else {
+                shoppingLists.forEach(list => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `shopping-list-tab ${list.id === selectedShoppingListId ? 'active' : ''}`;
+                    btn.dataset.listId = list.id;
+                    btn.innerHTML = `
+                      <span>${list.name}</span>
+                      <span class="shopping-list-tab-count">${list.itemKeys.length}</span>
+                    `;
+                    shoppingListsTabs.appendChild(btn);
+                });
+            }
+        }
+
+        if (shoppingListItemSelect) {
+            const selectedBefore = shoppingListItemSelect.value;
+            shoppingListItemSelect.innerHTML = `<option value="">Selecione um item da wishlist</option>`;
+            wishlistItems
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.name;
+                    option.textContent = `${item.name} - R$ ${Number(item.price || 0).toFixed(2)}`;
+                    shoppingListItemSelect.appendChild(option);
+                });
+            if ([...shoppingListItemSelect.options].some(opt => opt.value === selectedBefore)) {
+                shoppingListItemSelect.value = selectedBefore;
+            }
+        }
+
+        // Gerenciador antigo oculto: adição/remoção agora acontece no popup da lista
+        if (shoppingListManager) shoppingListManager.hidden = true;
+        if (shoppingListItems) shoppingListItems.innerHTML = '';
+
+        if (shoppingListsCardsGrid) {
+            shoppingListsCardsGrid.innerHTML = '';
+            if (shoppingLists.length === 0) {
+                shoppingListsCardsGrid.innerHTML = `<p class="shopping-lists-empty shopping-lists-empty-grid">Nenhuma lista criada ainda.</p>`;
+            } else {
+                shoppingLists.forEach(list => {
+                    const listItems = list.itemKeys
+                        .map(key => wishlistItems.find(item => item.name === key))
+                        .filter(Boolean);
+                    const cover = listItems[0]?.image || 'img/placeholder.png';
+                    const totalItems = listItems.length;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'shopping-list-card';
+                    card.dataset.listId = list.id;
+                    card.innerHTML = `
+                      <div class="shopping-list-card-cover">
+                        <img src="${cover}" alt="${list.name}" onerror="this.onerror=null;this.src='img/placeholder.png';">
+                      </div>
+                      <div class="shopping-list-card-body">
+                        <h4 class="shopping-list-card-title">${list.name}</h4>
+                        <p class="shopping-list-card-meta">${totalItems} item${totalItems === 1 ? '' : 'ns'} na lista</p>
+                      </div>
+                    `;
+                    shoppingListsCardsGrid.appendChild(card);
+                });
+            }
+        }
+    };
+
+    const renderShoppingListPopup = (listId) => {
+        const list = shoppingLists.find(l => l.id === listId);
+        if (!list || !shoppingListViewGrid || !shoppingListViewTitle || !shoppingListViewModal) return;
+        activeShoppingListModalId = listId;
+        const items = list.itemKeys
+            .map(key => wishlistItems.find(item => item.name === key))
+            .filter(Boolean);
+
+        shoppingListViewTitle.textContent = list.name;
+        shoppingListViewGrid.innerHTML = '';
+        items.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.classList.add('wishlist-item', 'wishlist-item--list-manage');
+            itemElement.dataset.key = item.name;
+            itemElement.innerHTML = `
+                <button type="button" class="wishlist-item-remove-overlay" data-key="${item.name}" title="Remover da lista" aria-label="Remover ${item.name} da lista">
+                  <i class="fas fa-trash"></i>
+                </button>
+                <div class="item-stock">Estoque: ${item.quantity}</div>
+                <div class="priority-badge priority-${item.priority}">${item.priority}</div>
+                <div class="item-image">
+                    <img src="${item.image || 'img/placeholder.png'}" alt="${item.name}" onerror="this.onerror=null;this.src='img/placeholder.png';">
+                </div>
+                <div class="item-info">
+                    <h4 class="item-name">${item.name}</h4>
+                    <p class="item-price">R$ ${parseFloat(item.price).toFixed(2)}</p>
+                </div>
+            `;
+            shoppingListViewGrid.appendChild(itemElement);
+        });
+
+        const addCard = document.createElement('button');
+        addCard.type = 'button';
+        addCard.className = 'wishlist-add-card';
+        addCard.id = 'shoppingListPopupAddCard';
+        addCard.innerHTML = `
+          <span class="wishlist-add-card-icon">+</span>
+          <span class="wishlist-add-card-label">Adicionar item</span>
+        `;
+        shoppingListViewGrid.appendChild(addCard);
+
+        if (!items.length) {
+            const empty = document.createElement('p');
+            empty.className = 'shopping-lists-empty shopping-lists-empty-grid shopping-lists-empty-inline';
+            empty.textContent = 'Esta lista não possui itens ainda.';
+            shoppingListViewGrid.insertBefore(empty, addCard);
+        }
+        shoppingListViewModal.classList.add('active');
+    };
+
+    const renderShoppingListAddItemsPopup = (listId) => {
+        const list = shoppingLists.find(l => l.id === listId);
+        if (!list || !shoppingListAddItemsGrid || !shoppingListAddItemsModal) return;
+        const availableItems = wishlistItems
+            .filter(item => !list.itemKeys.includes(item.name))
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        shoppingListAddItemsGrid.innerHTML = '';
+        if (!availableItems.length) {
+            shoppingListAddItemsGrid.innerHTML = `<p style="text-align:center; color: var(--texto-secundario); grid-column: 1 / -1;">Todos os itens da wishlist já estão nesta lista.</p>`;
+        } else {
+            availableItems.forEach(item => {
+                const itemElement = document.createElement('button');
+                itemElement.type = 'button';
+                itemElement.className = 'wishlist-item wishlist-item--selectable';
+                itemElement.dataset.key = item.name;
+                itemElement.innerHTML = `
+                    <div class="item-stock">Estoque: ${item.quantity}</div>
+                    <div class="priority-badge priority-${item.priority}">${item.priority}</div>
+                    <div class="item-image">
+                        <img src="${item.image || 'img/placeholder.png'}" alt="${item.name}" onerror="this.onerror=null;this.src='img/placeholder.png';">
+                    </div>
+                    <div class="item-info">
+                        <h4 class="item-name">${item.name}</h4>
+                        <p class="item-price">R$ ${parseFloat(item.price).toFixed(2)}</p>
+                    </div>
+                `;
+                shoppingListAddItemsGrid.appendChild(itemElement);
+            });
+        }
+        shoppingListAddItemsModal.classList.add('active');
+    };
 
     // --- RENDERIZAÇÃO DO CARRINHO ---
     const renderCart = () => {
@@ -371,6 +620,152 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    if (shoppingListForm) {
+        shoppingListForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = (shoppingListNameInput.value || '').trim();
+            if (!name) return;
+            const exists = shoppingLists.some(list => list.name.toLowerCase() === name.toLowerCase());
+            if (exists) {
+                alert('Já existe uma lista com esse nome.');
+                return;
+            }
+            const newList = {
+                id: `list-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                name,
+                itemKeys: []
+            };
+            shoppingLists.push(newList);
+            selectedShoppingListId = newList.id;
+            saveData();
+            renderShoppingLists();
+            shoppingListForm.reset();
+        });
+    }
+
+    if (shoppingListsTabs) {
+        shoppingListsTabs.addEventListener('click', (e) => {
+            const btn = e.target.closest('.shopping-list-tab');
+            if (!btn) return;
+            selectedShoppingListId = btn.dataset.listId;
+            renderShoppingLists();
+        });
+    }
+
+    if (addItemToShoppingListBtn) {
+        addItemToShoppingListBtn.addEventListener('click', () => {
+            const activeList = getSelectedShoppingList();
+            const itemKey = shoppingListItemSelect?.value;
+            if (!activeList) {
+                alert('Crie uma lista primeiro.');
+                return;
+            }
+            if (!itemKey) {
+                alert('Selecione um item da wishlist.');
+                return;
+            }
+            if (activeList.itemKeys.includes(itemKey)) {
+                alert('Esse item já está nesta lista.');
+                return;
+            }
+            activeList.itemKeys.push(itemKey);
+            saveData();
+            renderShoppingLists();
+        });
+    }
+
+    if (deleteShoppingListBtn) {
+        deleteShoppingListBtn.addEventListener('click', () => {
+            const activeList = getSelectedShoppingList();
+            if (!activeList) return;
+            if (!confirm(`Excluir a lista "${activeList.name}"?`)) return;
+            shoppingLists = shoppingLists.filter(list => list.id !== activeList.id);
+            selectedShoppingListId = shoppingLists[0]?.id || null;
+            saveData();
+            renderShoppingLists();
+        });
+    }
+
+    if (shoppingListModalDeleteBtn) {
+        shoppingListModalDeleteBtn.addEventListener('click', () => {
+            if (!activeShoppingListModalId) return;
+            const activeList = shoppingLists.find(list => list.id === activeShoppingListModalId);
+            if (!activeList) return;
+            if (!confirm(`Excluir a lista "${activeList.name}"?`)) return;
+            shoppingLists = shoppingLists.filter(list => list.id !== activeList.id);
+            selectedShoppingListId = shoppingLists[0]?.id || null;
+            activeShoppingListModalId = null;
+            saveData();
+            renderShoppingLists();
+            shoppingListViewModal?.classList.remove('active');
+            shoppingListAddItemsModal?.classList.remove('active');
+        });
+    }
+
+    if (shoppingListItems) {
+        shoppingListItems.addEventListener('click', (e) => {
+            const btn = e.target.closest('.shopping-list-item-remove');
+            if (!btn) return;
+            const activeList = getSelectedShoppingList();
+            if (!activeList) return;
+            const key = btn.dataset.key;
+            activeList.itemKeys = activeList.itemKeys.filter(itemKey => itemKey !== key);
+            saveData();
+            renderShoppingLists();
+        });
+    }
+
+    if (shoppingListsCardsGrid) {
+        shoppingListsCardsGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.shopping-list-card');
+            if (!card) return;
+            renderShoppingListPopup(card.dataset.listId);
+        });
+    }
+
+    if (shoppingListViewGrid) {
+        shoppingListViewGrid.addEventListener('click', (e) => {
+            const addCard = e.target.closest('#shoppingListPopupAddCard');
+            if (addCard) {
+                renderShoppingListAddItemsPopup(activeShoppingListModalId);
+                return;
+            }
+
+            const removeBtn = e.target.closest('.wishlist-item-remove-overlay');
+            if (!removeBtn || !activeShoppingListModalId) return;
+            const list = shoppingLists.find(l => l.id === activeShoppingListModalId);
+            if (!list) return;
+            const key = removeBtn.dataset.key;
+            list.itemKeys = list.itemKeys.filter(itemKey => itemKey !== key);
+            saveData();
+            renderShoppingLists();
+            renderShoppingListPopup(activeShoppingListModalId);
+        });
+    }
+
+    if (shoppingListAddItemsGrid) {
+        shoppingListAddItemsGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.wishlist-item--selectable');
+            if (!card || !activeShoppingListModalId) return;
+            const list = shoppingLists.find(l => l.id === activeShoppingListModalId);
+            if (!list) return;
+            const itemKey = card.dataset.key;
+            if (!itemKey || list.itemKeys.includes(itemKey)) return;
+            list.itemKeys.push(itemKey);
+            saveData();
+            renderShoppingLists();
+            renderShoppingListPopup(activeShoppingListModalId);
+            renderShoppingListAddItemsPopup(activeShoppingListModalId);
+        });
+    }
+
+    wishlistViewTabs.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            activeWishlistView = btn.dataset.view || 'items';
+            renderWishlistViewTabs();
+        });
+    });
+
     // --- EVENTOS DA WISHLIST ---
     wishlistGrid.addEventListener('click', (e) => {
         const target = e.target;
@@ -387,6 +782,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nextOrder = Array.isArray(order) ? order.filter(k => k !== key) : [];
                     localStorage.setItem('wishlist-order-wishlist-v1', JSON.stringify(nextOrder));
                 } catch {}
+                shoppingLists = shoppingLists.map(list => ({
+                    ...list,
+                    itemKeys: list.itemKeys.filter(itemKey => itemKey !== key)
+                }));
                 saveData();
                 renderAll();
             }

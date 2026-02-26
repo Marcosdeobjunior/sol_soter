@@ -60,6 +60,14 @@ class SonhosManager {
         this.atualizarPainelExecutivo();
         this.verificarNotificacoes();
         this.iniciarVerificacaoPeriodicaNotificacoes();
+        this.sincronizarAlturaAbasComSonhos();
+        window.addEventListener('resize', () => {
+            if (this._tabHeightResizeRaf) cancelAnimationFrame(this._tabHeightResizeRaf);
+            this._tabHeightResizeRaf = requestAnimationFrame(() => {
+                this.sincronizarAlturaAbasComSonhos();
+                this._tabHeightResizeRaf = null;
+            });
+        });
         window.addEventListener('storage', (event) => {
             if (event.key === 'sol-de-soter-rpg') {
                 this.renderizarGamificacao();
@@ -182,6 +190,14 @@ class SonhosManager {
 
 	        // Formulários
         document.getElementById('form-sonho').addEventListener('submit', (e) => this.salvarSonho(e));
+        const modalSonhoCloseBtn = document.querySelector('#modal-sonho .modal-close');
+        if (modalSonhoCloseBtn) {
+            modalSonhoCloseBtn.addEventListener('click', () => this.fecharModalSonho());
+        }
+        const modalSonhoCancelBtn = document.querySelector('#modal-sonho .form-actions .btn-secondary');
+        if (modalSonhoCancelBtn) {
+            modalSonhoCancelBtn.addEventListener('click', () => this.fecharModalSonho());
+        }
         const imgInput = document.getElementById('sonho-imagem');
         if (imgInput) {
             imgInput.addEventListener('change', (e) => {
@@ -200,6 +216,14 @@ class SonhosManager {
             });
         }
         document.getElementById('form-meta').addEventListener('submit', (e) => this.salvarMeta(e));
+        const modalMetaCloseBtn = document.querySelector('#modal-meta .modal-close');
+        if (modalMetaCloseBtn) {
+            modalMetaCloseBtn.addEventListener('click', () => this.fecharModalMeta());
+        }
+        const modalMetaCancelBtn = document.querySelector('#modal-meta .form-actions .btn-secondary');
+        if (modalMetaCancelBtn) {
+            modalMetaCancelBtn.addEventListener('click', () => this.fecharModalMeta());
+        }
         document.getElementById('meta-sonho').addEventListener('change', () => this.atualizarSelectDependencias());
         const chartSonhoSelect = document.getElementById('chart-sonho-select');
         if (chartSonhoSelect) {
@@ -316,26 +340,100 @@ class SonhosManager {
 	    }
 	    // ===== FIM DOS HANDLERS DE AÇÃO DE CARD =====
 
+    sincronizarAlturaAbasComSonhos() {
+        const tabsWrap = document.querySelector('.content-tabs');
+        const tabSonhos = document.getElementById('tab-sonhos');
+        const tabMetas = document.getElementById('tab-metas');
+        if (!tabsWrap || !tabSonhos) return;
+
+        const sonhosAtiva = tabSonhos.classList.contains('active');
+        const metasAtiva = tabMetas && tabMetas.classList.contains('active');
+
+        let restoreDisplay = null;
+        let restoreVisibility = null;
+        let restorePointer = null;
+
+        if (!sonhosAtiva) {
+            restoreDisplay = tabSonhos.style.display;
+            restoreVisibility = tabSonhos.style.visibility;
+            restorePointer = tabSonhos.style.pointerEvents;
+            tabSonhos.style.display = 'block';
+            tabSonhos.style.visibility = 'hidden';
+            tabSonhos.style.pointerEvents = 'none';
+        }
+
+        const tabButtons = tabsWrap.querySelector('.tab-buttons');
+        const buttonsHeight = tabButtons ? Math.ceil(tabButtons.getBoundingClientRect().height) : 0;
+        const sonhosHeight = Math.ceil(tabSonhos.getBoundingClientRect().height);
+        const targetMinHeight = Math.max(0, buttonsHeight + sonhosHeight);
+
+        if (targetMinHeight > 0) {
+            tabsWrap.style.minHeight = `${targetMinHeight}px`;
+        }
+
+        if (!sonhosAtiva) {
+            tabSonhos.style.display = restoreDisplay || '';
+            tabSonhos.style.visibility = restoreVisibility || '';
+            tabSonhos.style.pointerEvents = restorePointer || '';
+            if (metasAtiva) {
+                tabSonhos.classList.remove('active');
+            }
+        }
+    }
+
 
 	    // ===== GERENCIAMENTO DE ABAS =====
     trocarAba(aba) {
+        if (aba === 'conquistas') {
+            aba = 'metas';
+        }
+
+        const conteudoAba = document.getElementById(`tab-${aba}`);
+        if (!conteudoAba) return;
+        if (conteudoAba.classList.contains('active')) return;
+
+        const conteudoAtual = document.querySelector('.tab-content.active');
+        if (this._tabSwitchTimer) {
+            clearTimeout(this._tabSwitchTimer);
+            this._tabSwitchTimer = null;
+        }
+
         // Atualizar botões
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         const botaoAba = document.querySelector(`[data-tab="${aba}"]`);
         if (botaoAba) botaoAba.classList.add('active');
 
-        // Atualizar conteúdo
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        const conteudoAba = document.getElementById(`tab-${aba}`);
-        if (conteudoAba) conteudoAba.classList.add('active');
+        const ativarNovaAba = () => {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active', 'tab-entering', 'tab-leaving');
+            });
+            conteudoAba.classList.add('active');
+            // reinicia a animacao de entrada
+            void conteudoAba.offsetWidth;
+            conteudoAba.classList.add('tab-entering');
 
-        // Renderizar conteúdo específico se necessário
-        if (aba === 'sonhos') {
-            this.renderizarSonhos();
-        } else if (aba === 'metas') {
-            this.renderizarMetas();
-        } else if (aba === 'conquistas') {
-            this.renderizarConquistas();
+            // Renderizar conteúdo específico se necessário
+            if (aba === 'sonhos') {
+                this.renderizarSonhos();
+            } else if (aba === 'metas') {
+                this.renderizarMetas();
+            }
+            this.sincronizarAlturaAbasComSonhos();
+
+            this._tabSwitchTimer = setTimeout(() => {
+                conteudoAba.classList.remove('tab-entering');
+                this._tabSwitchTimer = null;
+            }, 260);
+        };
+
+        if (conteudoAtual) {
+            conteudoAtual.classList.remove('tab-entering');
+            conteudoAtual.classList.add('tab-leaving');
+            this._tabSwitchTimer = setTimeout(() => {
+                ativarNovaAba();
+            }, 120);
+        } else {
+            ativarNovaAba();
         }
     }
 
@@ -739,6 +837,11 @@ class SonhosManager {
     }
 
     // ===== GERENCIAMENTO DE SONHOS =====
+    atualizarVisibilidadeHeaderModal() {
+        const algumModalAtivo = !!document.querySelector('#modal-sonho.active, #modal-meta.active');
+        document.body.classList.toggle('modal-open-hide-header', algumModalAtivo);
+    }
+
     abrirModalSonho(sonho = null) {
         this.sonhoEditando = sonho;
         const modal = document.getElementById('modal-sonho');
@@ -754,12 +857,14 @@ class SonhosManager {
         }
 
         modal.classList.add('active');
+        this.atualizarVisibilidadeHeaderModal();
         document.getElementById('sonho-titulo').focus();
     }
 
 	    fecharModalSonho() {
 	        document.getElementById('modal-sonho').classList.remove('active');
 	        this.sonhoEditando = null;
+            this.atualizarVisibilidadeHeaderModal();
 	    }
 
     preencherFormularioSonho(sonho) {
@@ -1054,6 +1159,7 @@ class SonhosManager {
         emptyState.style.display = 'none';
 
         container.innerHTML = sonhosAtivos.map(sonho => this.criarCardSonho(sonho)).join('');
+        this.sincronizarAlturaAbasComSonhos();
     }
 
     // ===== FUNÇÃO DE RENDERIZAÇÃO DE CARD ATUALIZADA =====
@@ -1249,12 +1355,14 @@ class SonhosManager {
         }
 
         modal.classList.add('active');
+        this.atualizarVisibilidadeHeaderModal();
         document.getElementById('meta-sonho').focus();
     }
 
     fecharModalMeta() {
         document.getElementById('modal-meta').classList.remove('active');
         this.metaEditando = null;
+        this.atualizarVisibilidadeHeaderModal();
     }
 
     preencherFormularioMeta(meta) {
@@ -1485,9 +1593,14 @@ class SonhosManager {
                         <i class="fas fa-chevron-right"></i>
                         ${sonhoTitulo}
                     </div>
-                    <span class="metas-header-summary">
-                        ${dados.concluidas} / ${dados.total} metas
-                    </span>
+                    <div class="metas-header-side">
+                        <span class="metas-header-summary">
+                            ${dados.concluidas} / ${dados.total} metas
+                        </span>
+                        <div class="metas-header-progress" aria-hidden="true">
+                            <span style="width: ${dados.total ? Math.round((dados.concluidas / dados.total) * 100) : 0}%"></span>
+                        </div>
+                    </div>
                 </button>
                 <div class="metas-grupo-content">
                     ${dados.metas.map(meta => this.criarItemMeta(meta)).join('')}
@@ -1501,20 +1614,38 @@ class SonhosManager {
         const statusClass = `status-${meta.status}`;
         const statusTexto = this.getNomeStatus(meta.status);
         const metaDependencia = meta.dependeDe ? this.metas.find((m) => m.id === meta.dependeDe) : null;
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const prazoDate = new Date(meta.prazo);
+        prazoDate.setHours(0, 0, 0, 0);
+        const diffDias = Math.round((prazoDate - hoje) / 86400000);
+        const prazoClass = meta.status === 'concluida'
+            ? 'prazo-concluido'
+            : diffDias < 0
+                ? 'prazo-atrasado'
+                : diffDias <= 7
+                    ? 'prazo-proximo'
+                    : 'prazo-normal';
+        const prazoLabel = meta.status === 'concluida'
+            ? `Concluída • ${prazoFormatado}`
+            : diffDias < 0
+                ? `Atrasada • ${prazoFormatado}`
+                : diffDias === 0
+                    ? `Vence hoje • ${prazoFormatado}`
+                    : diffDias <= 7
+                        ? `${diffDias}d restantes • ${prazoFormatado}`
+                        : prazoFormatado;
         
         return `
-	            <div class="meta-item" data-meta-id="${meta.id}">
+	            <div class="meta-item meta-item-compact ${meta.status === 'concluida' ? 'is-concluida' : ''}" data-meta-id="${meta.id}">
                 <div class="meta-header">
                     <div class="meta-info">
                         <h4>${meta.titulo}</h4>
-                        <span class="meta-sonho-ref">${this.getNomeTipo(meta.tipo)}</span>
+                        <div class="meta-chip-row">
+                            <span class="meta-sonho-ref">${this.getNomeTipo(meta.tipo)}</span>
+                            <span class="meta-status ${statusClass}">${statusTexto}</span>
+                        </div>
                     </div>
-                    <div class="meta-status ${statusClass}">${statusTexto}</div>
-                </div>
-                ${meta.descricao ? `<p class="meta-descricao">${meta.descricao}</p>` : ''}
-                ${metaDependencia ? `<p class="meta-descricao">Dependência: <strong>${metaDependencia.titulo}</strong></p>` : ''}
-                <div class="meta-footer">
-                    <span class="meta-prazo">📅 ${prazoFormatado}</span>
                     <div class="meta-actions">
 	                        ${meta.status !== 'concluida' ? `
 	                            ${meta.status === 'progresso' ? `
@@ -1532,6 +1663,16 @@ class SonhosManager {
 	                        <button class="btn-icon delete" data-meta-id="${meta.id}" title="Excluir">
                             <i class="fas fa-trash"></i>
                         </button>
+                    </div>
+                </div>
+                ${meta.descricao ? `<p class="meta-descricao">${meta.descricao}</p>` : ''}
+                <div class="meta-footer">
+                    <div class="meta-meta-line">
+                        <span class="meta-prazo meta-prazo-chip ${prazoClass}">
+                            <i class="fas fa-calendar-alt"></i>
+                            ${prazoLabel}
+                        </span>
+                        ${metaDependencia ? `<span class="meta-dependencia-chip"><i class="fas fa-link"></i> ${metaDependencia.titulo}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -2167,6 +2308,7 @@ function copiarLink() {
 	    document.querySelectorAll('.modal').forEach(modal => {
 	        modal.classList.remove('active');
 	    });
+        document.body.classList.remove('modal-open-hide-header');
 	    // Limpa o estado de edição
 	    if (window.sonhosManager) {
 	        window.sonhosManager.sonhoEditando = null;
@@ -2180,6 +2322,11 @@ function copiarLink() {
 	document.addEventListener('DOMContentLoaded', () => {
 	    sonhosManager = new SonhosManager();
 	    window.sonhosManager = sonhosManager; // <<< CORREÇÃO APLICADA AQUI
+        window.abrirModalSonho = () => sonhosManager.abrirModalSonho();
+        window.fecharModalSonho = () => sonhosManager.fecharModalSonho();
+        window.abrirModalMeta = () => sonhosManager.abrirModalMeta();
+        window.fecharModalMeta = () => sonhosManager.fecharModalMeta();
+        window.fecharModais = () => sonhosManager.fecharModais();
 	    
 	    // Atualizar saldo global se disponível
 	    if (typeof atualizarSaldoGlobal === 'function') {

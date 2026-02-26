@@ -76,6 +76,43 @@ class TaskPlanner {
     return JSON.parse(localStorage.getItem("sol-de-soter-tasks-archive")) || [];
   }
 
+  getAcademiaTrainingsForDate(date) {
+    let trainingDays = {};
+    let daySessions = {};
+    try {
+      trainingDays =
+        JSON.parse(localStorage.getItem("academia-training-days-v1")) || {};
+    } catch (_) {}
+    try {
+      daySessions =
+        JSON.parse(localStorage.getItem("academia-day-sessions-v1")) || {};
+    } catch (_) {}
+
+    const dayMap = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+    const weekdayKey = dayMap[date.getDay()];
+    if (!trainingDays || !trainingDays[weekdayKey]) return [];
+
+    const sessions = Array.isArray(daySessions?.[weekdayKey])
+      ? daySessions[weekdayKey]
+      : [];
+    const firstSession = sessions[0] || null;
+    const title =
+      firstSession && (firstSession.title || firstSession.nome)
+        ? `Treino: ${firstSession.title || firstSession.nome}`
+        : "Treino do dia";
+
+    return [
+      {
+        id: `academia-${weekdayKey}-${date.toISOString().slice(0, 10)}`,
+        title,
+        date: date.toISOString().slice(0, 10),
+        completed: false,
+        category: "health",
+        type: "academia",
+      },
+    ];
+  }
+
   getAllItems() {
     // Mapeamento para unificar formato
     const formatSonho = (s) => ({
@@ -233,6 +270,7 @@ class TaskPlanner {
       );
       const dayEl = document.createElement("div");
       dayEl.className = "calendar-day";
+      dayEl.dataset.date = date.toISOString().slice(0, 10);
       if (date.getTime() === today.getTime()) dayEl.classList.add("today");
 
       dayEl.innerHTML = `<div class="calendar-day-number">${day}</div><div class="calendar-tasks"></div>`;
@@ -244,12 +282,49 @@ class TaskPlanner {
         this.selectedDate = date;
         this.openTaskModal();
       };
+      this.bindCalendarDayDropEvents(dayEl);
       calendar.appendChild(dayEl);
     }
   }
 
+  bindCalendarDayDropEvents(dayEl) {
+    if (!dayEl) return;
+    dayEl.addEventListener("dragover", (e) => {
+      const dragId = e.dataTransfer?.getData("text/task-id");
+      if (!dragId) return;
+      e.preventDefault();
+      dayEl.classList.add("drag-over");
+    });
+    dayEl.addEventListener("dragleave", (e) => {
+      if (!dayEl.contains(e.relatedTarget)) {
+        dayEl.classList.remove("drag-over");
+      }
+    });
+    dayEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dayEl.classList.remove("drag-over");
+      const taskId = e.dataTransfer?.getData("text/task-id");
+      const targetDate = dayEl.dataset.date;
+      if (!taskId || !targetDate) return;
+      this.moveCalendarTaskToDate(taskId, targetDate);
+    });
+  }
+
+  moveCalendarTaskToDate(taskId, targetDate) {
+    const task = this.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    if (task.recurring || task.parent) return;
+    if (!targetDate || task.date === targetDate) return;
+    task.date = targetDate;
+    this.selectedDate = new Date(`${targetDate}T00:00:00`);
+    this.saveTasks();
+  }
+
   renderCalendarTasks(date, container) {
-    const tasks = this.getTasksForDate(date);
+    const tasks = [
+      ...this.getTasksForDate(date),
+      ...this.getAcademiaTrainingsForDate(date),
+    ];
     tasks.slice(0, 4).forEach((task) => {
       const el = document.createElement("div");
       let catClass = "cal-task-other";
@@ -260,14 +335,131 @@ class TaskPlanner {
       if (task.category === "financeiro") catClass = "cal-task-finance";
       if (task.type === "sonho") catClass = "cal-task-sonho";
       if (task.type === "meta") catClass = "cal-task-meta";
+      if (task.type === "academia") catClass = "cal-task-academia";
+
+      const categoryMetaMap = {
+        work: { label: "Trabalho", icon: "fa-briefcase" },
+        personal: { label: "Pessoal", icon: "fa-user" },
+        health: { label: "Saude", icon: "fa-dumbbell" },
+        study: { label: "Estudo", icon: "fa-book" },
+        financeiro: { label: "Financeiro", icon: "fa-wallet" },
+        sonho: { label: "Sonho", icon: "fa-star" },
+        meta: { label: "Meta", icon: "fa-bullseye" },
+        other: { label: "Geral", icon: "fa-layer-group" },
+      };
+      const priorityNormMap = {
+        low: "low",
+        baixa: "low",
+        medium: "medium",
+        media: "medium",
+        high: "high",
+        alta: "high",
+      };
+      const priorityToneMap = {
+        low: "cal-priority-low",
+        medium: "cal-priority-medium",
+        high: "cal-priority-high",
+      };
+      const difficultyMap = {
+        easy: { rank: "C", label: "Facil" },
+        medium: { rank: "A", label: "Media" },
+        hard: { rank: "S+", label: "Dificil" },
+      };
+      const rpgAttrMap = {
+        strength: { icon: "fa-dumbbell" },
+        wisdom: { icon: "fa-scroll" },
+        intelligence: { icon: "fa-brain" },
+        productivity: { icon: "fa-bolt" },
+        sonho: { icon: "fa-scroll" },
+        meta: { icon: "fa-bolt" },
+      };
+      const catMeta =
+        categoryMetaMap[task.category] ||
+        categoryMetaMap[task.type] ||
+        categoryMetaMap.other;
+      const normalizedPriority = priorityNormMap[String(task.priority || "").toLowerCase()] || "";
+      const priorityToneClass = priorityToneMap[normalizedPriority] || "";
+      const difficultyMeta = difficultyMap[task.difficulty] || null;
+      const xpBase =
+        task.type === "task"
+          ? (typeof this.rpg.getTaskXP === "function"
+              ? this.rpg.getTaskXP(task.difficulty || "medium")
+              : ({ easy: 10, medium: 20, hard: 35 }[task.difficulty || "medium"] || 20))
+          : task.type === "meta"
+          ? 25
+          : task.type === "sonho"
+          ? 40
+          : task.type === "estudo"
+          ? 18
+          : task.type === "academia"
+          ? 22
+          : 12;
+      const rpgKey =
+        task.type === "task"
+          ? task.rpgCategory || "productivity"
+          : task.type === "sonho"
+          ? "sonho"
+          : task.type === "meta"
+          ? "meta"
+          : task.category === "study"
+          ? "intelligence"
+          : "productivity";
+      const rpgMeta = rpgAttrMap[rpgKey] || rpgAttrMap.productivity;
+      const isMovableTask =
+        task.type === "task" && !task.recurring && !task.parent;
 
       el.className = `calendar-task ${catClass} ${
         task.completed ? "completed" : ""
+      } ${priorityToneClass} ${isMovableTask ? "calendar-task-draggable" : ""} ${
+        task.type === "task" && (task.recurring || task.parent)
+          ? "calendar-task-locked"
+          : ""
       }`;
-      el.textContent = task.title;
+      el.draggable = isMovableTask;
+      if (isMovableTask) {
+        el.addEventListener("dragstart", (ev) => {
+          el.classList.add("is-dragging");
+          if (ev.dataTransfer) {
+            ev.dataTransfer.setData("text/task-id", String(task.id));
+            ev.dataTransfer.effectAllowed = "move";
+          }
+        });
+        el.addEventListener("dragend", () => {
+          el.classList.remove("is-dragging");
+          document
+            .querySelectorAll(".calendar-day.drag-over")
+            .forEach((d) => d.classList.remove("drag-over"));
+        });
+      }
+      el.innerHTML = `
+        <div class="calendar-task-head">
+          <span class="calendar-task-cat-icon" aria-hidden="true"><i class="fas ${catMeta.icon}"></i></span>
+          <span class="calendar-task-title">${task.title}</span>
+        </div>
+        <div class="calendar-task-badges">
+          <span class="calendar-badge calendar-badge-cat">${catMeta.label}</span>
+          ${
+            difficultyMeta
+              ? `<span class="calendar-badge calendar-badge-difficulty difficulty-${task.difficulty || "medium"}"><strong>${difficultyMeta.rank}</strong></span>`
+              : ""
+          }
+          ${
+            normalizedPriority
+              ? `<span class="calendar-badge calendar-badge-priority">${normalizedPriority === "low" ? "Baixa" : normalizedPriority === "medium" ? "Media" : "Alta"}</span>`
+              : ""
+          }
+          ${
+            task.type === "task" && (task.recurring || task.parent)
+              ? `<span class="calendar-badge calendar-badge-lock" title="Tarefa recorrente não pode ser movida"><i class="fas fa-lock"></i></span>`
+              : ""
+          }
+          <span class="calendar-badge calendar-badge-xp"><i class="fas ${rpgMeta.icon}"></i>+${xpBase}</span>
+        </div>
+      `;
       el.onclick = (e) => {
         e.stopPropagation();
         if (task.type === "task") this.editTask(task.id);
+        else if (task.type === "academia") window.location.href = "academia.html";
         else this.navigateToItem(task.type, task.id);
       };
       container.appendChild(el);
@@ -372,6 +564,36 @@ class TaskPlanner {
       ? new Date(item.date + "T00:00:00").toLocaleDateString("pt-BR")
       : "Sem data";
 
+    const categoryMetaMap = {
+      work: { label: "Trabalho", icon: "fa-briefcase" },
+      personal: { label: "Pessoal", icon: "fa-user" },
+      health: { label: "Saude", icon: "fa-dumbbell" },
+      study: { label: "Estudo", icon: "fa-book" },
+      financeiro: { label: "Financeiro", icon: "fa-wallet" },
+      sonho: { label: "Sonho", icon: "fa-star" },
+      meta: { label: "Meta", icon: "fa-bullseye" },
+      other: { label: "Geral", icon: "fa-layer-group" },
+    };
+    const priorityMetaMap = {
+      low: { label: "Baixa", colorClass: "priority-tone-low" },
+      medium: { label: "Media", colorClass: "priority-tone-medium" },
+      high: { label: "Alta", colorClass: "priority-tone-high" },
+    };
+    const difficultyMetaMap = {
+      easy: { rank: "C", label: "Facil" },
+      medium: { rank: "A", label: "Media" },
+      hard: { rank: "S+", label: "Dificil" },
+    };
+    const rpgAttrMap = {
+      strength: { label: "Forca", icon: "fa-dumbbell" },
+      wisdom: { label: "Sabedoria", icon: "fa-scroll" },
+      intelligence: { label: "Intelecto", icon: "fa-brain" },
+      productivity: { label: "Produtividade", icon: "fa-bolt" },
+      livraria: { label: "Intelecto", icon: "fa-brain" },
+      sonho: { label: "Sabedoria", icon: "fa-scroll" },
+      meta: { label: "Produtividade", icon: "fa-bolt" },
+    };
+
     let catClass = "cat-other";
     if (item.category === "work") catClass = "cat-work";
     else if (item.category === "personal") catClass = "cat-personal";
@@ -382,6 +604,46 @@ class TaskPlanner {
     const priorityClass = item.priority ? `${item.priority}-priority` : "";
     const completedClass = item.completed ? "completed" : "";
     const isClickable = ["sonho", "meta", "estudo"].includes(item.type);
+    const categoryMeta = categoryMetaMap[item.category] || categoryMetaMap.other;
+    const priorityMeta = priorityMetaMap[item.priority] || null;
+    const difficultyMeta = difficultyMetaMap[item.difficulty] || null;
+    const rpgCategoryKey =
+      item.type === "task"
+        ? item.rpgCategory || "productivity"
+        : item.type === "sonho"
+        ? "sonho"
+        : item.type === "meta"
+        ? "meta"
+        : item.category === "study"
+        ? "intelligence"
+        : "productivity";
+    const rpgMeta = rpgAttrMap[rpgCategoryKey] || rpgAttrMap.productivity;
+    const xpValue =
+      item.type === "task"
+        ? (typeof this.rpg.getTaskXP === "function"
+            ? this.rpg.getTaskXP(item.difficulty || "medium")
+            : ({ easy: 10, medium: 20, hard: 35 }[item.difficulty || "medium"] || 20))
+        : item.type === "meta"
+        ? 25
+        : item.type === "sonho"
+        ? 40
+        : item.type === "estudo"
+        ? 18
+        : 12;
+    const difficultyBadge = difficultyMeta
+      ? `<span class="task-pill task-difficulty-pill difficulty-${item.difficulty || "medium"}" title="Dificuldade ${difficultyMeta.label}">
+           <span class="rank">${difficultyMeta.rank}</span>
+           <span class="label">${difficultyMeta.label}</span>
+         </span>`
+      : "";
+    const priorityBadge = priorityMeta
+      ? `<span class="task-pill task-priority-pill ${priorityMeta.colorClass}" title="Prioridade ${priorityMeta.label}">
+           <i class="fas fa-flag"></i>${priorityMeta.label}
+         </span>`
+      : "";
+    const xpBadge = `<span class="task-pill task-xp-pill" title="XP da tarefa">
+        <i class="fas ${rpgMeta.icon}"></i> +${xpValue} XP
+      </span>`;
 
     const editBtn =
       item.type === "task"
@@ -405,16 +667,22 @@ class TaskPlanner {
         : ""
     }">
             <div class="task-header">
-                <span class="task-title">${item.title}</span>
+                <div class="task-title-wrap">
+                  <span class="task-category-icon" aria-hidden="true"><i class="fas ${categoryMeta.icon}"></i></span>
+                  <span class="task-title">${item.title}</span>
+                </div>
                 <div class="task-actions">
                     ${checkBtn}
                     ${editBtn}
                 </div>
             </div>
+            <div class="task-badges-row">
+                <span class="task-category-tag">${categoryMeta.label}</span>
+                ${difficultyBadge}
+                ${priorityBadge}
+                ${xpBadge}
+            </div>
             <div class="task-meta">
-                <span class="task-category-tag">${
-                  item.category || "Geral"
-                }</span>
                 <span><i class="far fa-calendar"></i> ${dateStr}</span>
                 ${
                   item.time
@@ -667,7 +935,13 @@ class TaskPlanner {
   }
 
   // --- MODAL ---
+  closeTaskModal() {
+    document.getElementById("task-modal").classList.remove("active");
+    document.body.classList.remove("task-modal-open");
+  }
+
   openTaskModal() {
+    document.body.classList.add("task-modal-open");
     document.getElementById("task-modal").classList.add("active");
     document.getElementById("task-form").reset();
     document.getElementById("recurring-options").style.display = "none";
@@ -706,7 +980,7 @@ class TaskPlanner {
     } else {
       this.addTask(data);
     }
-    document.getElementById("task-modal").classList.remove("active");
+    this.closeTaskModal();
   }
 
   navigateToItem(type, id) {
@@ -750,9 +1024,9 @@ class TaskPlanner {
     document.getElementById("add-task-btn").onclick = () =>
       this.openTaskModal();
     document.getElementById("close-modal").onclick = () =>
-      document.getElementById("task-modal").classList.remove("active");
+      this.closeTaskModal();
     document.getElementById("cancel-task").onclick = () =>
-      document.getElementById("task-modal").classList.remove("active");
+      this.closeTaskModal();
     document.getElementById("task-form").onsubmit = (e) =>
       this.handleFormSubmit(e);
     document.getElementById("archive-tasks-btn").onclick = () =>

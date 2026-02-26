@@ -39,7 +39,7 @@
 }
 
 .notification-panel {
-  display: none; /* Oculto por padrão */
+  display: block;
   position: absolute;
   top: 100%;
   right: 0;
@@ -51,10 +51,15 @@
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45);
   z-index: 1001; /* Acima de outros elementos */
   overflow: visible;
-  transform: translateY(10px);
+  pointer-events: none;
+  transform: translateY(-6px) scale(0.985);
+  transform-origin: top right;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.22s ease,
+    visibility 0.2s step-end;
 }
 .notification-panel::before {
   content: "";
@@ -70,10 +75,14 @@
 }
 
 .notification-panel.active {
-  display: block;
+  pointer-events: auto;
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.2s ease,
+    transform 0.22s ease,
+    visibility 0s step-start;
 }
 
 .notification-panel-header {

@@ -42,7 +42,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const genreStatsContainer = document.getElementById("genre-stats-container");
   
   // NOVOS ELEMENTOS PARA FILTROS DE ORGANIZAÇÃO
+  const sortFiltersWrapper = document.querySelector(".sort-filters-container");
+  const sortFiltersToggle = document.querySelector(".sort-filters-toggle");
   const sortFiltersContainer = document.querySelector(".sort-filters-options");
+
+  function setSortFiltersOpen(isOpen) {
+    if (!sortFiltersWrapper || !sortFiltersToggle) return;
+    sortFiltersWrapper.classList.toggle("open", isOpen);
+    sortFiltersToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
+  const appendGridPlaceholders = (listaElement, renderedCount, totalSlots) => {
+    if (!listaElement || renderedCount <= 0) return;
+    const placeholders = Math.max(0, totalSlots - renderedCount);
+    for (let i = 0; i < placeholders; i += 1) {
+      const li = document.createElement("li");
+      li.className = "book-item book-item-placeholder";
+      li.setAttribute("aria-hidden", "true");
+      listaElement.appendChild(li);
+    }
+  };
 
   let midias = JSON.parse(localStorage.getItem("midiasTracker")) || [];
   let midiaIdParaExcluir = null;
@@ -528,6 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
       listaElement.appendChild(li);
     });
+    appendGridPlaceholders(listaElement, midiasPaginadas.length, MIDIAS_POR_PAGINA);
 
     // NOVO: Renderizar controles de paginação
     renderizarPaginacao(tabId, midiasOrdenadas.length, paginaAtual);
@@ -847,19 +866,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const setHeaderHiddenByModal = (hidden) => {
     document.body.classList.toggle('modal-open-hide-header', Boolean(hidden));
   };
+  const MODAL_CLOSE_ANIM_MS = 220;
+  const fecharModal = (modal, { immediate = false } = {}) => {
+    if (!modal) return;
+    if (immediate) {
+      modal.classList.remove('closing', 'show');
+      return;
+    }
+    if (!modal.classList.contains('show') || modal.classList.contains('closing')) {
+      modal.classList.remove('show');
+      return;
+    }
+    modal.classList.add('closing');
+    setTimeout(() => {
+      modal.classList.remove('closing', 'show');
+    }, MODAL_CLOSE_ANIM_MS);
+  };
   const abrirModal = (modal) => {
     if (!modal) return;
+    modal.classList.remove('closing');
     modal.classList.add('show');
     setHeaderHiddenByModal(true);
   };
-  const fecharTodosModais = () => {
-    document.querySelectorAll('.modal').forEach((m) => m.classList.remove('show'));
-    setHeaderHiddenByModal(false);
+  const fecharTodosModais = (options = {}) => {
+    const { immediate = false } = options;
+    document.querySelectorAll('.modal').forEach((m) => fecharModal(m, { immediate }));
+    if (immediate) {
+      setHeaderHiddenByModal(false);
+      return;
+    }
+    setTimeout(() => setHeaderHiddenByModal(false), MODAL_CLOSE_ANIM_MS);
   };
 
   const abrirModalExclusao = (id) => {
     midiaIdParaExcluir = id;
-    fecharTodosModais();
+    fecharTodosModais({ immediate: true });
     abrirModal(confirmDeleteModal);
   };
 
@@ -1105,6 +1146,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = e.target.closest('.sort-filter-btn');
       if (button) {
         switchSortFilter(button.dataset.sort);
+        setSortFiltersOpen(false);
+      }
+    });
+  }
+
+  if (sortFiltersWrapper && sortFiltersToggle) {
+    sortFiltersToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setSortFiltersOpen(!sortFiltersWrapper.classList.contains("open"));
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!sortFiltersWrapper.contains(e.target)) {
+        setSortFiltersOpen(false);
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        setSortFiltersOpen(false);
       }
     });
   }
@@ -1153,6 +1215,7 @@ function openBookDetails(id) {
   const midia = midias.find(m => m.id == id);
   if (!midia) return;
   const modal = document.getElementById('book-details-modal');
+  modal.classList.remove('closing');
   modal.classList.add('show');
   document.getElementById('details-capa').src = midia.capaUrl || 'img/default_cover.png';
   document.getElementById('details-titulo').value = midia.titulo || '';
@@ -1232,7 +1295,10 @@ document.addEventListener('click', function(e){
     }
     salvarMidias();
     alert('Alterações salvas com sucesso.');
-    modal.classList.remove('show');
+    modal.classList.add('closing');
+    setTimeout(() => {
+      modal.classList.remove('closing', 'show');
+    }, 220);
   }
 });
 

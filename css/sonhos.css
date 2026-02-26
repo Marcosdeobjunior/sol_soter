@@ -26,7 +26,7 @@
   --cat-outros: #a6adc8; /* Cinza */
 
   /* Cores RPG (Atributos) */
-  --rpg-str: #f38ba8; /* For�a (Red) */
+  --rpg-str: #f38ba8; /* Força (Red) */
   --rpg-int: #89b4fa; /* Intelecto (Blue) */
   --rpg-wis: #f9e2af; /* Sabedoria (Yellow) */
   --rpg-prod: #a6e3a1; /* Produtividade (Green) */
@@ -377,7 +377,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  pointer-events: none; /* Permite clicar atrav�s */
+  pointer-events: none; /* Permite clicar através */
 }
 
 .rpg-toast {
@@ -475,7 +475,7 @@ footer {
     width: 32px;
     height: 32px;
   }
-  /* Esconde o saldo em telas menores para focar na navega��o */
+  /* Esconde o saldo em telas menores para focar na navegação */
   .saldo-display {
     display: none;
   }
@@ -562,7 +562,7 @@ footer {
 }
 
 /* =============================================
-   P�GINA DE SONHOS E OBJETIVOS
+   PÁGINA DE SONHOS E OBJETIVOS
    ============================================= */
 
 .sonhos-main {
@@ -577,7 +577,7 @@ footer {
   margin: 0 auto;
 }
 
-/* ===== CABE�ALHO DA P�GINA ===== */
+/* ===== CABEÇALHO DA PÁGINA ===== */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -626,7 +626,7 @@ footer {
   margin: 0;
 }
 
-/* ===== BOT�ES ===== */
+/* ===== BOTÕES ===== */
 .btn-primary,
 .btn-secondary {
   padding: 12px 24px;
@@ -664,7 +664,7 @@ footer {
   border-color: var(--texto-principal);
 }
 
-/* ===== ESTAT�STICAS ===== */
+/* ===== ESTATÍSTICAS ===== */
 .stats-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -825,14 +825,14 @@ footer {
 .filtro-item select {
   width: 100%;
   padding: 12px 15px;
-  background-color: var(--input-bg); /* Fundo s�lido e escuro */
-  border: 1px solid #555; /* Borda mais vis�vel */
+  background-color: var(--input-bg); /* Fundo sólido e escuro */
+  border: 1px solid #555; /* Borda mais visível */
   border-radius: 8px;
   color: #ffffff; /* Texto branco puro para leitura */
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  appearance: none; /* Remove estilo padr�o do navegador */
+  appearance: none; /* Remove estilo padrão do navegador */
   background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2389b4fa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
   background-position: right 15px top 50%;
@@ -846,7 +846,7 @@ footer {
   background-color: #252525;
 }
 
-/* Garante que as op��es dentro do select sejam leg�veis */
+/* Garante que as opções dentro do select sejam legíveis */
 .filtro-item select option {
   background-color: var(--fundo-superficie);
   color: #fff;
@@ -894,7 +894,7 @@ footer {
   color: var(--texto-invertido);
 }
 
-/* Cores de Categoria - Mantidas para distin��o visual */
+/* Cores de Categoria - Mantidas para distinção visual */
 .categoria-pessoal {
   background: #f38ba8;
 }
@@ -1028,7 +1028,7 @@ footer {
 
 .progresso-fill {
   height: 100%;
-  /* Degrad� vibrante do azul para o verde */
+  /* Degradê vibrante do azul para o verde */
   background: linear-gradient(90deg, var(--acento-azul), var(--acento-verde));
   border-radius: 6px;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1586,7 +1586,7 @@ footer {
   border-top: 1px solid var(--borda);
 }
 
-/* ===== P�GINA ATIVA NO MENU ===== */
+/* ===== PÁGINA ATIVA NO MENU ===== */
 .nav-menu .active-page {
   background: var(--fundo-overlay) !important;
   color: var(--acento-azul) !important;
@@ -1667,7 +1667,7 @@ footer {
   max-height: 250px;
 }
 
-/* ===== GAMIFICA��O ===== */
+/* ===== GAMIFICAÇÃO ===== */
 .gamificacao-container {
   display: flex;
   flex-direction: column;
@@ -1942,7 +1942,7 @@ footer {
   background: var(--translucido-hover);
 }
 
-/* ===== NOTIFICA��ES ===== */
+/* ===== NOTIFICAÇÕES ===== */
 .notificacoes-container {
   position: fixed;
   top: 80px;
@@ -2189,4 +2189,849 @@ footer {
   }
 }
 .sonho-imagem-preview { width: 100%; height: 160px; border:1px solid var(--borda); border-radius:8px; margin-top:8px; background-size: cover; background-position: center; }
+
+/* =============================================
+   REDESIGN SONHOS (BASEADO NA INDEX)
+   ============================================= */
+
+.sonhos-page {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(137, 180, 250, 0.08), transparent 36%),
+    radial-gradient(circle at 88% 18%, rgba(203, 166, 247, 0.07), transparent 32%),
+    radial-gradient(circle at 50% 88%, rgba(249, 226, 175, 0.05), transparent 34%),
+    var(--fundo-base);
+}
+
+.sonhos-page .sonhos-main {
+  background: transparent;
+  padding: 34px 18px 46px;
+}
+
+.sonhos-page .sonhos-container {
+  max-width: 1500px;
+}
+
+.sonhos-page .page-header {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(145deg, rgba(52, 52, 52, 0.92), rgba(34, 34, 34, 0.94));
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 28px 28px;
+}
+
+.sonhos-page .page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 25%, rgba(137, 180, 250, 0.14), transparent 42%),
+    radial-gradient(circle at 82% 20%, rgba(203, 166, 247, 0.14), transparent 38%);
+  pointer-events: none;
+}
+
+.sonhos-page .page-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.sonhos-page .header-icon {
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.sonhos-page .header-icon i {
+  color: #d5d80f;
+}
+
+.sonhos-page .header-text h1 {
+  font-family: var(--fonte-nav);
+  font-size: clamp(1.35rem, 2.4vw, 2.15rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sonhos-page .header-text p {
+  max-width: 700px;
+  line-height: 1.45;
+}
+
+.sonhos-page .btn-primary,
+.sonhos-page .btn-secondary {
+  border-radius: 12px;
+  font-family: var(--fonte-nav);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sonhos-page .btn-primary {
+  background: linear-gradient(135deg, #d5d80f, #bfc20a);
+  color: #111111;
+  box-shadow: 0 10px 18px rgba(213, 216, 15, 0.18);
+}
+
+.sonhos-page .btn-primary:hover {
+  background: linear-gradient(135deg, #dfe21c, #c8cb0b);
+  box-shadow: 0 12px 20px rgba(213, 216, 15, 0.24);
+}
+
+.sonhos-page .btn-secondary {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sonhos-page .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.sonhos-page .stats-overview,
+.sonhos-page .executive-panel {
+  gap: 16px;
+}
+
+.sonhos-page .stat-card,
+.sonhos-page .exec-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background:
+    linear-gradient(155deg, rgba(56, 56, 56, 0.94), rgba(36, 36, 36, 0.96));
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.sonhos-page .stat-card:hover,
+.sonhos-page .exec-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(203, 166, 247, 0.24);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.28);
+}
+
+.sonhos-page .stats-overview .stat-card .stat-icon {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.sonhos-page .stats-overview .stat-card .stat-icon i {
+  color: var(--acento-roxo);
+}
+
+.sonhos-page .stat-content h3 {
+  color: #ffffff;
+  font-family: var(--fonte-nav);
+  letter-spacing: 0.02em;
+}
+
+.sonhos-page .exec-card strong {
+  color: #ffffff;
+  font-family: var(--fonte-nav);
+}
+
+.sonhos-page .dashboard-section,
+.sonhos-page .content-tabs {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(160deg, rgba(46, 46, 46, 0.94), rgba(31, 31, 31, 0.96));
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+
+.sonhos-page .dashboard-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sonhos-page .dashboard-header h3 {
+  font-family: var(--fonte-nav);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.sonhos-page .charts-grid {
+  gap: 16px;
+}
+
+.sonhos-page .chart-card {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: none;
+}
+
+.sonhos-page .chart-card:hover {
+  border-color: rgba(137, 180, 250, 0.22);
+  transform: translateY(-3px);
+}
+
+.sonhos-page .chart-card h4 {
+  font-family: var(--fonte-nav);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+.sonhos-page .tab-buttons {
+  gap: 10px;
+  padding: 14px 16px 0;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sonhos-page .tab-btn {
+  border-radius: 12px 12px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--texto-secundario);
+  font-family: var(--fonte-nav);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+}
+
+.sonhos-page .tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sonhos-page .tab-btn.active {
+  color: #111111;
+  background: #d5d80f;
+  border-color: rgba(213, 216, 15, 0.35);
+  box-shadow: 0 -1px 0 rgba(213, 216, 15, 0.4);
+}
+
+.sonhos-page .tab-content {
+  padding: 18px;
+  background: transparent;
+  will-change: opacity, transform;
+}
+
+.sonhos-page .tab-content.tab-entering {
+  animation: sonhosTabFadeIn 0.24s cubic-bezier(.22,.9,.23,1) both;
+}
+
+.sonhos-page .tab-content.active.tab-leaving {
+  animation: sonhosTabFadeOut 0.12s ease both;
+}
+
+@keyframes sonhosTabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: saturate(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: saturate(1);
+  }
+}
+
+@keyframes sonhosTabFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sonhos-page .tab-content.tab-entering,
+  .sonhos-page .tab-content.active.tab-leaving {
+    animation: none;
+  }
+}
+
+.sonhos-page .sonhos-filtros {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px;
+  gap: 14px;
+}
+
+.sonhos-page .filtro-item label {
+  font-family: var(--fonte-nav);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.sonhos-page .filtro-item {
+  position: relative;
+}
+
+.sonhos-page .filtro-item::after {
+  content: "\25BE";
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.sonhos-page .filtro-item select,
+.sonhos-page .chart-filter-select {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+  background-image: none;
+  padding-right: 34px;
+}
+
+.sonhos-page .filtro-item select:focus,
+.sonhos-page .chart-filter-select:focus {
+  border-color: rgba(137, 180, 250, 0.35);
+  box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.12);
+}
+
+.sonhos-page .sonhos-grid {
+  gap: 18px;
+}
+
+.sonhos-page .sonho-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(160deg, rgba(50, 50, 50, 0.96), rgba(31, 31, 31, 0.98));
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.sonhos-page .sonho-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(203, 166, 247, 0.22);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.26);
+}
+
+.sonhos-page .sonho-card .sonho-img {
+  height: 190px;
+}
+
+.sonhos-page .sonho-categoria {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-family: var(--fonte-nav);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.sonhos-page .sonho-prioridade {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  font-family: var(--fonte-nav);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.sonhos-page .categoria-pessoal {
+  background: linear-gradient(135deg, rgba(243, 139, 168, 0.2), rgba(243, 139, 168, 0.1));
+  border-color: rgba(243, 139, 168, 0.35);
+  color: #ffd7e2;
+}
+.sonhos-page .categoria-profissional {
+  background: linear-gradient(135deg, rgba(137, 180, 250, 0.2), rgba(137, 180, 250, 0.1));
+  border-color: rgba(137, 180, 250, 0.35);
+  color: #d7e8ff;
+}
+.sonhos-page .categoria-financeiro {
+  background: linear-gradient(135deg, rgba(166, 227, 161, 0.2), rgba(166, 227, 161, 0.1));
+  border-color: rgba(166, 227, 161, 0.35);
+  color: #ddf8da;
+}
+.sonhos-page .categoria-saude {
+  background: linear-gradient(135deg, rgba(250, 179, 135, 0.2), rgba(250, 179, 135, 0.1));
+  border-color: rgba(250, 179, 135, 0.35);
+  color: #ffe2cf;
+}
+.sonhos-page .categoria-relacionamento {
+  background: linear-gradient(135deg, rgba(245, 194, 231, 0.2), rgba(245, 194, 231, 0.1));
+  border-color: rgba(245, 194, 231, 0.35);
+  color: #ffe2f7;
+}
+.sonhos-page .categoria-educacao {
+  background: linear-gradient(135deg, rgba(203, 166, 247, 0.2), rgba(203, 166, 247, 0.1));
+  border-color: rgba(203, 166, 247, 0.35);
+  color: #efdfff;
+}
+.sonhos-page .categoria-viagem {
+  background: linear-gradient(135deg, rgba(148, 226, 213, 0.2), rgba(148, 226, 213, 0.1));
+  border-color: rgba(148, 226, 213, 0.35);
+  color: #dcfffa;
+}
+.sonhos-page .categoria-hobby {
+  background: linear-gradient(135deg, rgba(249, 226, 175, 0.2), rgba(249, 226, 175, 0.1));
+  border-color: rgba(249, 226, 175, 0.35);
+  color: #fff2c9;
+}
+
+.sonhos-page .progresso-bar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.sonhos-page .progresso-fill {
+  background: linear-gradient(90deg, var(--acento-azul), var(--acento-roxo));
+  border-radius: 999px;
+}
+
+.sonhos-page .btn-icon {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sonhos-page .btn-icon:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.sonhos-page .metas-container,
+.sonhos-page .conquistas-container {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.015);
+  padding: 14px;
+}
+
+.sonhos-page .meta-item,
+.sonhos-page .conquista-item {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: none;
+}
+
+.sonhos-page .meta-item:hover,
+.sonhos-page .conquista-item:hover {
+  border-color: rgba(137, 180, 250, 0.2);
+}
+
+.sonhos-page .metas-grupo {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(160deg, rgba(45, 45, 45, 0.7), rgba(31, 31, 31, 0.8));
+  margin-bottom: 16px;
+}
+
+.sonhos-page .metas-grupo-header {
+  padding: 16px 18px;
+  background: transparent;
+  gap: 14px;
+}
+
+.sonhos-page .metas-grupo-header:hover,
+.sonhos-page .metas-grupo-header.active {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sonhos-page .metas-header-titulo {
+  font-family: var(--fonte-nav);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  flex: 1;
+  min-width: 0;
+}
+
+.sonhos-page .metas-header-titulo i {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.sonhos-page .metas-header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 132px;
+}
+
+.sonhos-page .metas-header-summary {
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sonhos-page .metas-header-progress {
+  width: 132px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.sonhos-page .metas-header-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--acento-azul), var(--acento-roxo));
+}
+
+.sonhos-page .metas-grupo-content {
+  background: rgba(255, 255, 255, 0.015);
+  padding: 0 14px;
+}
+
+.sonhos-page .metas-grupo-content .meta-item:first-child {
+  margin-top: 14px;
+}
+
+.sonhos-page .metas-grupo-content .meta-item:last-child {
+  margin-bottom: 14px;
+}
+
+.sonhos-page .meta-item.meta-item-compact {
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.012));
+  display: grid;
+  gap: 10px;
+}
+
+.sonhos-page .meta-item.meta-item-compact.is-concluida {
+  opacity: 0.9;
+}
+
+.sonhos-page .meta-item.meta-item-compact .meta-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 0;
+}
+
+.sonhos-page .meta-item .meta-info h4 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+
+.sonhos-page .meta-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sonhos-page .meta-sonho-ref {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--fonte-nav);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #d9e8ff;
+  background: rgba(137, 180, 250, 0.12);
+  border: 1px solid rgba(137, 180, 250, 0.22);
+}
+
+.sonhos-page .meta-status {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--fonte-nav);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.sonhos-page .status-pendente {
+  background: rgba(250, 179, 135, 0.12);
+  color: #ffe1cf;
+  border-color: rgba(250, 179, 135, 0.24);
+}
+
+.sonhos-page .status-progresso {
+  background: rgba(137, 180, 250, 0.12);
+  color: #dcebff;
+  border-color: rgba(137, 180, 250, 0.24);
+}
+
+.sonhos-page .status-pausada {
+  background: rgba(203, 166, 247, 0.12);
+  color: #f0e0ff;
+  border-color: rgba(203, 166, 247, 0.24);
+}
+
+.sonhos-page .status-concluida {
+  background: rgba(166, 227, 161, 0.12);
+  color: #e4ffe2;
+  border-color: rgba(166, 227, 161, 0.24);
+}
+
+.sonhos-page .meta-descricao {
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+.sonhos-page .meta-footer {
+  display: block;
+}
+
+.sonhos-page .meta-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sonhos-page .meta-prazo.meta-prazo-chip,
+.sonhos-page .meta-dependencia-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.73rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.sonhos-page .meta-prazo-chip i,
+.sonhos-page .meta-dependencia-chip i {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.sonhos-page .meta-prazo-chip.prazo-atrasado {
+  border-color: rgba(243, 139, 168, 0.3);
+  background: rgba(243, 139, 168, 0.09);
+  color: #ffd4df;
+}
+
+.sonhos-page .meta-prazo-chip.prazo-proximo {
+  border-color: rgba(250, 179, 135, 0.3);
+  background: rgba(250, 179, 135, 0.09);
+  color: #ffe2cf;
+}
+
+.sonhos-page .meta-prazo-chip.prazo-concluido {
+  border-color: rgba(166, 227, 161, 0.28);
+  background: rgba(166, 227, 161, 0.08);
+  color: #defcdb;
+}
+
+.sonhos-page .meta-dependencia-chip {
+  max-width: 100%;
+}
+
+.sonhos-page .meta-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.sonhos-page .meta-item .btn-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.sonhos-page .empty-state {
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(160deg, rgba(42, 42, 42, 0.88), rgba(30, 30, 30, 0.9));
+}
+
+.sonhos-page .empty-state .empty-icon {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.sonhos-page .modal-content {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(160deg, rgba(48, 48, 48, 0.98), rgba(30, 30, 30, 0.99));
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.34);
+}
+
+.sonhos-page .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.sonhos-page .modal-header h2 {
+  font-family: var(--fonte-nav);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+}
+
+.sonhos-page .modal-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--texto-secundario);
+}
+
+.sonhos-page .modal-close:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sonhos-page .form-group label {
+  font-family: var(--fonte-nav);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.sonhos-page .form-group input,
+.sonhos-page .form-group select,
+.sonhos-page .form-group textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+}
+
+.sonhos-page #modal-sonho .form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.78)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 38px;
+}
+
+.sonhos-page #modal-sonho .form-group select option {
+  background: #f3f4f7;
+  color: #1f2430;
+}
+
+.sonhos-page .form-group input:focus,
+.sonhos-page .form-group select:focus,
+.sonhos-page .form-group textarea:focus {
+  border-color: rgba(137, 180, 250, 0.32);
+  box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.12);
+}
+
+.sonhos-page .form-group input::placeholder,
+.sonhos-page .form-group textarea::placeholder {
+  color: var(--texto-secundario);
+}
+
+.sonhos-page footer {
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(224, 224, 224, 0.68);
+}
+
+@media (max-width: 980px) {
+  .sonhos-page .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .sonhos-page .header-content {
+    align-items: flex-start;
+  }
+
+  .sonhos-page .tab-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .sonhos-page .sonhos-main {
+    padding: 20px 10px 28px;
+  }
+
+  .sonhos-page .page-header {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .sonhos-page .header-content {
+    gap: 12px;
+  }
+
+  .sonhos-page .header-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .sonhos-page .stats-overview,
+  .sonhos-page .executive-panel,
+  .sonhos-page .charts-grid {
+    gap: 12px;
+  }
+
+  .sonhos-page .tab-btn {
+    width: 100%;
+    border-radius: 12px;
+    border-bottom: 1px solid transparent;
+  }
+
+  .sonhos-page .metas-grupo-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .sonhos-page .metas-header-side {
+    width: 100%;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  .sonhos-page .metas-header-progress {
+    width: 100%;
+  }
+
+  .sonhos-page .meta-item.meta-item-compact .meta-header {
+    grid-template-columns: 1fr;
+  }
+
+  .sonhos-page .meta-actions {
+    justify-content: flex-start;
+  }
+}
+
+body.modal-open-hide-header header {
+  display: none !important;
+}
+
+
 

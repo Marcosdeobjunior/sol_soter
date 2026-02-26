@@ -17,7 +17,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <link
       rel="shortcut icon"
       href="img/soldesoter_logo.png"
@@ -27,8 +27,16 @@
     <link rel="stylesheet" href="css/sonhos.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
+        <link rel="stylesheet" href="css/app-shell.css" />
   </head>
-  <body>
+  <body class="index-page sonhos-page">
+    <div class="index-bg-shapes" aria-hidden="true">
+      <span class="shape s1"></span>
+      <span class="shape s2"></span>
+      <span class="shape s3"></span>
+      <span class="shape s4"></span>
+      <span class="shape s5"></span>
+    </div>
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
@@ -59,7 +67,7 @@
 
             <li class="dropdown">
               <div class="dropdown-header">
-                <a href="#">Pessoal</a>
+                <a>Pessoal</a>
                 <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
@@ -74,7 +82,7 @@
 
             <li class="dropdown">
               <div class="dropdown-header">
-                <a href="#">Estudos</a>
+                <a>Estudos</a>
                 <button class="dropdown-toggle">&#9660;</button>
               </div>
               <ul class="dropdown-menu">
@@ -354,10 +362,6 @@
                 <i class="fas fa-bullseye"></i>
                 Metas
               </button>
-              <button class="tab-btn" data-tab="conquistas">
-                <i class="fas fa-trophy"></i>
-                Conquistas
-              </button>
             </div>
 
             <div class="tab-content active" id="tab-sonhos">
@@ -429,26 +433,6 @@
                   <p>
                     Crie metas específicas para alcançar seus sonhos mais
                     rapidamente!
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="tab-content" id="tab-conquistas">
-              <div class="conquistas-container">
-                <div class="conquistas-timeline" id="conquistas-timeline"></div>
-                <div
-                  class="empty-state"
-                  id="empty-conquistas"
-                  style="display: none"
-                >
-                  <div class="empty-icon">
-                    <i class="fas fa-trophy"></i>
-                  </div>
-                  <h3>Nenhuma conquista ainda</h3>
-                  <p>
-                    Suas conquistas aparecerão aqui conforme você completa seus
-                    sonhos e metas!
                   </p>
                 </div>
               </div>
@@ -631,14 +615,22 @@
       <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
     </footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/saldo-global.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/notificacoes.js"></script>
-    <script src="js/sonhos.js"></script>
-    <script src="js/rpg.js"></script>
-  </body>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="js/saldo-global.js" defer></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/notificacoes.js" defer></script>
+    <script src="js/sonhos.js" defer></script>
+    <script src="js/rpg.js" defer></script>
+      <script src="js/app-shell.js" defer></script>
+        <script src="js/global-search.js" defer></script>
+        <script src="js/data-portability.js" defer></script>
+      </body>
 </html>
+
+
+
+
+
 
 
 
