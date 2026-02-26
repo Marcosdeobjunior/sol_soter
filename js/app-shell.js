@@ -28,6 +28,7 @@
     }
   };
 
+
   const makeImagesLazy = () => {
     document.querySelectorAll('img').forEach((img) => {
       if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
@@ -60,7 +61,7 @@
   };
 
   const watchModalState = () => {
-    const modalSelectors = '.modal, .app-overlay, .notification-panel.active, .notification-panel.open';
+    const modalSelectors = '.modal, .app-overlay';
     const sync = () => {
       const hasOpen = Array.from(document.querySelectorAll(modalSelectors)).some((el) => {
         if (el.classList.contains('modal') || el.classList.contains('app-overlay')) {
