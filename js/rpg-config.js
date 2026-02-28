@@ -28,6 +28,9 @@ class PerfilRPGPage {
 
   fillForm() {
     const cfg = this.rpg.getConfig();
+    const profile = this.rpg.getProfileMeta
+      ? this.rpg.getProfileMeta()
+      : (this.rpg.meta?.profile || {});
 
     document.getElementById("base-xp").value =
       cfg.progression.baseXpToNextLevel;
@@ -44,6 +47,7 @@ class PerfilRPGPage {
     document.getElementById("rank-ouro").value = cfg.ranks.ouroMax;
     document.getElementById("rank-diamante").value = cfg.ranks.diamanteMax;
     document.getElementById("rank-platina").value = cfg.ranks.platinaMax;
+    document.getElementById("profile-birth-date").value = profile.birthDate || "";
   }
 
   renderOverview() {
@@ -114,6 +118,16 @@ class PerfilRPGPage {
       };
 
       this.rpg.updateConfig(nextConfig);
+      const birthDate = document.getElementById("profile-birth-date").value || null;
+      if (this.rpg.updateProfileMeta) {
+        this.rpg.updateProfileMeta({ birthDate });
+      } else {
+        this.rpg.meta.profile = {
+          ...(this.rpg.meta.profile || {}),
+          birthDate,
+        };
+        if (typeof this.rpg.saveMeta === "function") this.rpg.saveMeta();
+      }
       this.fillForm();
       this.renderOverview();
       this.setFeedback("Configurações do RPG salvas com sucesso.", true);

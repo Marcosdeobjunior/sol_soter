@@ -179,7 +179,7 @@ class RPGSystem {
         streak: { current: 0, best: 0, lastDate: null },
         achievements: [],
         smartNotifications: [],
-        profile: { preset: "balanced", title: "Recruta de Sóter" },
+        profile: { preset: "balanced", title: "Recruta de Sóter", birthDate: null },
         classSystem: { selected: "adventurer" },
         talents: { points: 0, unlocked: [] },
         economy: { coins: 0, prestige: 0 },
@@ -222,7 +222,7 @@ class RPGSystem {
       streak: { current: 0, best: 0, lastDate: null },
       achievements: [],
       smartNotifications: [],
-      profile: { preset: "balanced", title: "Recruta de Sóter" },
+      profile: { preset: "balanced", title: "Recruta de Sóter", birthDate: null },
       classSystem: { selected: "adventurer" },
       talents: { points: 0, unlocked: [] },
       economy: { coins: 0, prestige: 0 },
@@ -301,6 +301,7 @@ class RPGSystem {
     this.meta.profile = {
       preset: this.meta.profile?.preset || "balanced",
       title: this.meta.profile?.title || "Recruta de Sóter",
+      birthDate: this.normalizeBirthDate(this.meta.profile?.birthDate),
     };
     this.meta.classSystem = {
       selected: this.meta.classSystem?.selected || "adventurer",
@@ -353,6 +354,34 @@ class RPGSystem {
 
   saveMeta() {
     localStorage.setItem("sol-de-soter-rpg-meta", JSON.stringify(this.meta));
+  }
+
+  normalizeBirthDate(value) {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
+    const date = new Date(`${trimmed}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().slice(0, 10);
+  }
+
+  getProfileMeta() {
+    return JSON.parse(JSON.stringify(this.meta.profile || {}));
+  }
+
+  updateProfileMeta(nextProfile = {}) {
+    const current = this.meta.profile || {};
+    this.meta.profile = {
+      ...current,
+      ...nextProfile,
+      birthDate: this.normalizeBirthDate(
+        Object.prototype.hasOwnProperty.call(nextProfile, "birthDate")
+          ? nextProfile.birthDate
+          : current.birthDate
+      ),
+    };
+    this.saveMeta();
+    this.updateUI();
   }
 
   getLocalDateKey(date = new Date()) {

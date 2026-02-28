@@ -1132,7 +1132,7 @@
               </li>
               <li class="academia-info-item">
                 <span class="academia-info-label">Idade:</span>
-                <span class="academia-info-value" id="academia-idade-valor">30 anos</span>
+                <span class="academia-info-value" id="academia-idade-valor">--</span>
               </li>
               <li class="academia-info-item">
                 <span class="academia-info-label">Peso:</span>
@@ -1323,7 +1323,7 @@
 
       const defaultProfile = {
         nome: "Marcos",
-        idade: "30 anos",
+        dataNascimento: "1995-01-01",
         altura: "1,75 m",
         peso: 80,
       };
@@ -1433,8 +1433,52 @@
         localStorage.setItem(key, JSON.stringify(value));
       }
 
+      function calcularIdade(dataNascimento) {
+        if (!dataNascimento || typeof dataNascimento !== "string") return null;
+        const nascimento = new Date(dataNascimento);
+        if (Number.isNaN(nascimento.getTime())) return null;
+        const hoje = new Date();
+        let idade = hoje.getFullYear() - nascimento.getFullYear();
+        const jaFezAniversario =
+          hoje.getMonth() > nascimento.getMonth() ||
+          (hoje.getMonth() === nascimento.getMonth() &&
+            hoje.getDate() >= nascimento.getDate());
+        if (!jaFezAniversario) idade -= 1;
+        return idade >= 0 ? idade : null;
+      }
+
+      function loadBirthDateFromRpgMeta() {
+        try {
+          const raw = localStorage.getItem("sol-de-soter-rpg-meta");
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          const birthDate = parsed?.profile?.birthDate;
+          if (typeof birthDate !== "string") return null;
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return null;
+          const date = new Date(`${birthDate}T00:00:00`);
+          if (Number.isNaN(date.getTime())) return null;
+          return birthDate;
+        } catch (_) {
+          return null;
+        }
+      }
+
       function loadProfile() {
-        return { ...defaultProfile, ...loadJson(STORAGE_KEYS.profile, {}) };
+        const profile = { ...defaultProfile, ...loadJson(STORAGE_KEYS.profile, {}) };
+        const birthDateFromRpg = loadBirthDateFromRpgMeta();
+        if (birthDateFromRpg) {
+          profile.dataNascimento = birthDateFromRpg;
+        } else if (!profile.dataNascimento && typeof profile.idade === "string") {
+          const idadeLegacy = parseInt(profile.idade, 10);
+          if (Number.isFinite(idadeLegacy) && idadeLegacy >= 0) {
+            const anoNascimento = new Date().getFullYear() - idadeLegacy;
+            profile.dataNascimento = `${anoNascimento}-01-01`;
+          }
+        }
+        if (!profile.dataNascimento) {
+          profile.dataNascimento = defaultProfile.dataNascimento;
+        }
+        return profile;
       }
 
       function saveProfile(profile) {
@@ -2114,7 +2158,10 @@
 
         if (nomeTituloEl) nomeTituloEl.textContent = profile.nome;
         if (nomeValorEl) nomeValorEl.textContent = profile.nome;
-        if (idadeValorEl) idadeValorEl.textContent = profile.idade;
+        if (idadeValorEl) {
+          const idade = calcularIdade(profile.dataNascimento);
+          idadeValorEl.textContent = Number.isFinite(idade) ? `${idade} anos` : "--";
+        }
         if (alturaValorEl) alturaValorEl.textContent = profile.altura;
         if (pesoInput) pesoInput.value = Number(profile.peso) || 0;
 

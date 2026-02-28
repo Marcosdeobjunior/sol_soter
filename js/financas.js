@@ -1238,9 +1238,11 @@ function criarElementoDia(data, outroMes) {
   });
 
   // 2. NOVO: Transações PROVISIONADAS (Recorrências)
-  // Apenas se for o mês atual
+  // Exibe no mês atual e nos meses futuros
   const hoje = new Date();
-  if (data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()) {
+  const inicioMesExibido = new Date(data.getFullYear(), data.getMonth(), 1);
+  const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  if (inicioMesExibido >= inicioMesAtual) {
     const recorrenciasDia = estado.recorrencias.filter(rec => {
       const diaExecucao = obterDiaExecucaoRecorrenciaNoMes(rec, data.getFullYear(), data.getMonth());
       return diaExecucao === data.getDate();
