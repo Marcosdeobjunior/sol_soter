@@ -1648,12 +1648,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalConcluidos = completedItems.length;
     const ratedCount = completedItems.filter(item => item.rating > 0).length;
+    const nowMonth = today.getMonth();
+    const nowYear = today.getFullYear();
+    const daysInCurrentMonth = new Date(nowYear, nowMonth + 1, 0).getDate();
+    const daysElapsedInMonth = today.getDate();
+    const monthPaceFactor = daysElapsedInMonth > 0 ? (daysInCurrentMonth / daysElapsedInMonth) : 1;
+    const projectedBooksMonth = Math.round(booksMonth * monthPaceFactor);
+    const annualCompleted = completedItems.filter((item) => item.completionDate && item.completionDate.getFullYear() === nowYear).length;
+    const annualTarget = 36;
+    const annualPct = annualTarget > 0 ? Math.min(100, Math.round((annualCompleted / annualTarget) * 100)) : 0;
+    const isMonthlyChallengeDone = metaBooksPct >= 100 && metaMediaPct >= 100 && metaMangaPct >= 100;
+    const isAnnualChallengeDone = annualCompleted >= annualTarget;
+
+    const authorStats = {};
+    const genreStats = {};
+    allItems.forEach((item) => {
+      const author = String(item.subtitle || '').trim();
+      if (author) authorStats[author] = (authorStats[author] || 0) + 1;
+      (item.genres || []).forEach((genre) => {
+        const key = String(genre || '').trim();
+        if (key) genreStats[key] = (genreStats[key] || 0) + 1;
+      });
+    });
+    const topAuthor = Object.entries(authorStats).sort((a, b) => b[1] - a[1])[0] || null;
+    const dominantGenre = Object.entries(genreStats).sort((a, b) => b[1] - a[1])[0] || null;
+    const last30Days = Array.from({ length: 30 }, (_, index) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - index);
+      return d.toISOString().slice(0, 10);
+    });
+    const pagesLast30 = last30Days.reduce((acc, dateKey) => {
+      const booksPages = toInt(historicoLivros[dateKey] && historicoLivros[dateKey].pagesRead);
+      const mangaPages = toInt(historicoManga[dateKey] && historicoManga[dateKey].pagesRead);
+      return acc + booksPages + mangaPages;
+    }, 0);
+    const avgPagesPerDay = Math.round(pagesLast30 / 30);
+
     const achievements = [
       { id: 'first_finish', icon: 'fa-flag-checkered', label: 'Primeiro Finalizado', unlocked: totalConcluidos >= 1 },
       { id: 'critic', icon: 'fa-star', label: 'Crítico Ativo', unlocked: ratedCount >= 10 },
       { id: 'consistency', icon: 'fa-fire', label: 'Streak 7 dias', unlocked: streak >= 7 },
       { id: 'marathon', icon: 'fa-bolt', label: 'Maratona Semanal', unlocked: estimatedWeekMinutes >= 300 },
-      { id: 'collector', icon: 'fa-layer-group', label: 'Colecionador (40 itens)', unlocked: allItems.length >= 40 }
+      { id: 'collector', icon: 'fa-layer-group', label: 'Colecionador (40 itens)', unlocked: allItems.length >= 40 },
+      { id: 'monthly_master', icon: 'fa-calendar-check', label: 'Desafio mensal concluído', unlocked: isMonthlyChallengeDone },
+      { id: 'annual_hero', icon: 'fa-trophy', label: `Desafio anual (${annualTarget})`, unlocked: isAnnualChallengeDone }
     ];
     syncBibliotecaAchievementsToRpg(achievements);
 
@@ -1893,6 +1931,38 @@ document.addEventListener('DOMContentLoaded', () => {
               }).join('')) || '<li><span>Sem avaliações suficientes.</span></li>'}
             </ul>
           </article>
+
+          <article class="ent-module ent-insights">
+            <div class="ent-module-title"><i class="fas fa-chart-simple"></i> Insights de leitura</div>
+            <ul class="ent-list">
+              <li><span>Autor mais lido</span><span class="meta">${topAuthor ? `${topAuthor[0]} (${topAuthor[1]})` : 'Sem dados'}</span></li>
+              <li><span>Gênero dominante</span><span class="meta">${dominantGenre ? `${dominantGenre[0]} (${dominantGenre[1]})` : 'Sem dados'}</span></li>
+              <li><span>Média diária (30d)</span><span class="meta">${avgPagesPerDay} pág/dia</span></li>
+              <li><span>Projeção de livros no mês</span><span class="meta">${projectedBooksMonth} livro(s)</span></li>
+            </ul>
+            <div class="ent-hint">Esses indicadores alimentam desafios e conquistas do RPG automaticamente.</div>
+          </article>
+
+          <article class="ent-module ent-challenges">
+            <div class="ent-module-title"><i class="fas fa-award"></i> Desafios gamificados</div>
+            <div class="ent-challenge-row">
+              <span>Desafio mensal</span>
+              <strong class="${isMonthlyChallengeDone ? 'ok' : ''}">${isMonthlyChallengeDone ? 'Concluído' : `${Math.round((metaBooksPct + metaMediaPct + metaMangaPct) / 3)}%`}</strong>
+            </div>
+            <div class="ent-progress mini"><span style="width:${Math.round((metaBooksPct + metaMediaPct + metaMangaPct) / 3)}%"></span></div>
+            <div class="ent-challenge-row">
+              <span>Desafio anual (${annualTarget})</span>
+              <strong class="${isAnnualChallengeDone ? 'ok' : ''}">${annualCompleted}/${annualTarget}</strong>
+            </div>
+            <div class="ent-progress mini"><span style="width:${annualPct}%"></span></div>
+            <div class="ent-badge-strip">
+              ${(achievements.slice(-2).map((ach) => `
+                <span class="ent-challenge-badge ${ach.unlocked ? 'unlocked' : ''}">
+                  <i class="fas ${ach.icon}"></i> ${ach.label}
+                </span>
+              `).join(''))}
+            </div>
+          </article>
         </div>
       </div>
 
@@ -1935,6 +2005,152 @@ document.addEventListener('DOMContentLoaded', () => {
 
     `;
 
+    const notifyEntertainmentToast = (message, tone = 'info', icon = 'fa-info-circle') => {
+      if (!message) return;
+      let stack = document.getElementById('ent-toast-stack');
+      if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'ent-toast-stack';
+        stack.className = 'ent-toast-stack';
+        document.body.appendChild(stack);
+      }
+      const toast = document.createElement('div');
+      toast.className = `ent-toast ${tone}`;
+      toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+      stack.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 220);
+      }, 1800);
+    };
+
+    const genrePalette = {
+      fantasia: { accent: '#b794f4', soft: '#d6bcfa' },
+      romance: { accent: '#f687b3', soft: '#fbb6ce' },
+      acao: { accent: '#f6ad55', soft: '#fbd38d' },
+      ação: { accent: '#f6ad55', soft: '#fbd38d' },
+      thriller: { accent: '#63b3ed', soft: '#90cdf4' },
+      suspense: { accent: '#63b3ed', soft: '#90cdf4' },
+      drama: { accent: '#68d391', soft: '#9ae6b4' },
+      comedia: { accent: '#f6e05e', soft: '#faf089' },
+      comédia: { accent: '#f6e05e', soft: '#faf089' },
+      aventura: { accent: '#4fd1c5', soft: '#81e6d9' },
+      shonen: { accent: '#fc8181', soft: '#feb2b2' },
+      seinen: { accent: '#a0aec0', soft: '#cbd5e0' },
+    };
+    const normalizeGenre = (value) =>
+      String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+    const resolveGenreInfo = (item, fallbackLabel) => {
+      const label = ((item && item.genres && item.genres[0]) || fallbackLabel || 'Geral');
+      const key = normalizeGenre(label);
+      const palette = genrePalette[key] || { accent: '#d5d80f', soft: '#f5f8a0' };
+      return { label, ...palette };
+    };
+
+    const summaryCards = Array.from(container.querySelectorAll('.ent-card')).slice(0, 3);
+    const summaryMeta = [
+      {
+        type: 'livraria',
+        item: livroAtual,
+        href: 'livraria.html',
+        total: livros.length,
+        done: livrosConcluidos,
+        pct: livroProgresso,
+        emptyMsg: 'Nenhum livro concluído ainda.',
+      },
+      {
+        type: 'cinema',
+        item: mediaAtual,
+        href: 'cinema.html',
+        total: midias.length,
+        done: midiasConcluidas,
+        pct: serieProgresso,
+        emptyMsg: 'Nenhuma mídia concluída ainda.',
+      },
+      {
+        type: 'mangas',
+        item: mangaAtual,
+        href: 'mangas.html',
+        total: mangas.length,
+        done: mangasConcluidos,
+        pct: mangaProgresso,
+        emptyMsg: 'Nenhum mangá concluído ainda.',
+      },
+    ];
+
+    summaryCards.forEach((card, index) => {
+      const meta = summaryMeta[index];
+      if (!meta) return;
+      const genreInfo = resolveGenreInfo(meta.item, meta.type);
+
+      card.classList.add('ent-card-stagger', `ent-card-${meta.type}`);
+      card.style.setProperty('--ent-accent', genreInfo.accent);
+      card.style.setProperty('--ent-accent-soft', genreInfo.soft);
+      card.style.animationDelay = `${index * 0.08}s`;
+
+      const subtitle = card.querySelector('.ent-card-sub');
+      if (subtitle && !subtitle.querySelector('.ent-genre-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'ent-genre-badge';
+        badge.textContent = genreInfo.label;
+        subtitle.prepend(badge);
+      }
+
+      const top = card.querySelector('.ent-card-top');
+      if (top && !top.querySelector('.ent-flip-btn')) {
+        const flipBtn = document.createElement('button');
+        flipBtn.type = 'button';
+        flipBtn.className = 'ent-flip-btn';
+        flipBtn.textContent = 'Resumo';
+        top.appendChild(flipBtn);
+
+        const back = document.createElement('div');
+        back.className = 'ent-card-back';
+        back.innerHTML = `
+          <h4>Resumo rápido</h4>
+          <p><strong>${meta.pct}%</strong> de progresso na seção.</p>
+          <p><strong>${meta.done}</strong> concluído(s) de <strong>${meta.total}</strong>.</p>
+          <a class="ent-link ent-card-back-link" href="${meta.href}">Abrir seção <i class="fas fa-arrow-right"></i></a>
+        `;
+        card.appendChild(back);
+
+        flipBtn.addEventListener('click', () => {
+          const flipped = card.classList.toggle('is-flipped');
+          flipBtn.textContent = flipped ? 'Voltar' : 'Resumo';
+        });
+      }
+
+      const list = card.querySelector('.ent-list-inline');
+      if (list && /Nenhum item conclu[ií]do/i.test(list.textContent || '')) {
+        list.innerHTML = `
+          <li class="ent-empty-rich">
+            <i class="fas fa-book-open"></i>
+            <div>
+              <strong>${meta.emptyMsg}</strong>
+              <p>Comece agora para destravar XP e badges no RPG.</p>
+              <a class="ent-inline-link ent-inline-link-purple" href="${meta.href}">Adicionar item</a>
+            </div>
+          </li>
+        `;
+      }
+    });
+
+    const animatedBars = container.querySelectorAll('.ent-progress span');
+    animatedBars.forEach((bar) => {
+      const target = bar.style.width || '0%';
+      bar.style.width = '0%';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.style.width = target;
+        });
+      });
+    });
+
     const moodButtons = container.querySelectorAll('.ent-mood-chip');
     const moodOutput = container.querySelector('#ent-mood-output');
     moodButtons.forEach((button) => {
@@ -1942,7 +2158,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const mood = button.dataset.entMood || 'equilibrado';
         moodButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-        if (moodOutput) moodOutput.innerHTML = renderMoodOutput(mood);
+        if (moodOutput) {
+          moodOutput.classList.remove('ent-fade-enter');
+          moodOutput.innerHTML = renderMoodOutput(mood);
+          void moodOutput.offsetWidth;
+          moodOutput.classList.add('ent-fade-enter');
+        }
+        notifyEntertainmentToast(`Filtro "${mood}" aplicado.`, 'info', 'fa-sliders');
       });
     });
     if (moodOutput) {
@@ -1952,7 +2174,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedMood = container.querySelector('.ent-mood-chip.active');
         if (!selectedMood || selectedMood.dataset.entMood !== 'aleatorio') return;
         const nextItem = pickRandomMoodItem(randomMoodCurrentKey);
-        if (nextItem) moodOutput.innerHTML = renderMoodOutput('aleatorio', nextItem);
+        if (nextItem) {
+          moodOutput.innerHTML = renderMoodOutput('aleatorio', nextItem);
+          notifyEntertainmentToast('Nova recomendação aleatória selecionada.', 'success', 'fa-dice');
+        }
       });
     }
     const queueTabButtons = container.querySelectorAll('.ent-queue-tab');
@@ -1964,7 +2189,17 @@ document.addEventListener('DOMContentLoaded', () => {
         queuePanels.forEach((panel) => panel.classList.remove('active'));
         button.classList.add('active');
         const panel = container.querySelector(`.ent-queue-panel[data-ent-queue-panel="${tab}"]`);
-        if (panel) panel.classList.add('active');
+        if (panel) {
+          panel.classList.add('active');
+          panel.classList.remove('ent-panel-enter', 'is-loading');
+          void panel.offsetWidth;
+          panel.classList.add('ent-panel-enter');
+          if ((panel.querySelectorAll('li').length || 0) > 7) {
+            panel.classList.add('is-loading');
+            setTimeout(() => panel.classList.remove('is-loading'), 170);
+          }
+        }
+        notifyEntertainmentToast(`Fila de ${tab} aberta.`, 'info', 'fa-layer-group');
       });
     });
   };

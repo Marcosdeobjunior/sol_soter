@@ -214,22 +214,7 @@ function alternarAba(nomeAba) {
 
 // Função para calcular e renderizar o saldo do dia
 function calcularSaldoDoDia() {
-  const hoje = new Date();
-  hoje.setHours(23, 59, 59, 999);
-
-  let saldo = estado.saldoInicial;
-
-  for (const transacao of estado.transacoes) {
-    if (transacao.data <= hoje) {
-      if (transacao.tipo === 'entrada') {
-        saldo += transacao.valor;
-      } else if (transacao.tipo === 'saida' || transacao.tipo === 'reserva') {
-        saldo -= transacao.valor;
-      }
-    }
-  }
-
-  return saldo;
+  return calcularSaldoDia(new Date());
 }
 
 
@@ -1032,6 +1017,53 @@ function salvarOrcamento() {
 
 
 // Funções de cálculo
+function existeLancamentoRealParaRecorrenciaNoDia(rec, ano, mes, diaExecucao) {
+  return estado.transacoes.some(t =>
+    t.tipo === rec.tipo &&
+    t.categoria === rec.categoria &&
+    t.data.getFullYear() === ano &&
+    t.data.getMonth() === mes &&
+    t.data.getDate() === diaExecucao
+  );
+}
+
+function calcularAjusteRecorrenciasAteData(dataLimite) {
+  const limite = new Date(dataLimite);
+  limite.setHours(23, 59, 59, 999);
+
+  const hoje = new Date();
+  const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioMesLimite = new Date(limite.getFullYear(), limite.getMonth(), 1);
+
+  // Recorrencias sao projetadas do mes atual em diante.
+  if (inicioMesLimite < inicioMesAtual) return 0;
+
+  let ajuste = 0;
+  const cursor = new Date(inicioMesAtual);
+
+  while (cursor <= inicioMesLimite) {
+    const ano = cursor.getFullYear();
+    const mes = cursor.getMonth();
+
+    estado.recorrencias.forEach(rec => {
+      if (rec.tipo !== 'entrada' && rec.tipo !== 'saida') return;
+
+      const diaExecucao = obterDiaExecucaoRecorrenciaNoMes(rec, ano, mes);
+      const dataExecucao = new Date(ano, mes, diaExecucao, 23, 59, 59, 999);
+      if (dataExecucao > limite) return;
+
+      if (existeLancamentoRealParaRecorrenciaNoDia(rec, ano, mes, diaExecucao)) return;
+
+      const valorRecorrencia = Number(rec.valor) || 0;
+      ajuste += rec.tipo === 'entrada' ? valorRecorrencia : -valorRecorrencia;
+    });
+
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  return ajuste;
+}
+
 function calcularSaldoDia(data) {
   const dataFimDia = new Date(data);
   dataFimDia.setHours(23, 59, 59, 999);
@@ -1045,6 +1077,7 @@ function calcularSaldoDia(data) {
       }
     }
   }
+  saldo += calcularAjusteRecorrenciasAteData(dataFimDia);
   return saldo;
 }
 
