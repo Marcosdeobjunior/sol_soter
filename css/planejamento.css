@@ -657,6 +657,93 @@ footer {
   padding-top: 8px;
 }
 
+.task-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+/* "Todas as Tarefas" com linguagem visual inspirada no calendário */
+.main-list-styled .task-item {
+  --task-accent: var(--cat-outros);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--task-accent);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 12px 13px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.main-list-styled .task-item:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.main-list-styled .task-item.cat-work {
+  --task-accent: var(--cat-trabalho);
+}
+.main-list-styled .task-item.cat-personal {
+  --task-accent: var(--cat-pessoal);
+}
+.main-list-styled .task-item.cat-health {
+  --task-accent: var(--cat-saude);
+}
+.main-list-styled .task-item.cat-study {
+  --task-accent: var(--cat-estudo);
+}
+.main-list-styled .task-item.cat-finance {
+  --task-accent: var(--cat-financeiro);
+}
+
+.main-list-styled .task-header {
+  margin-bottom: 6px;
+}
+
+.main-list-styled .task-category-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.main-list-styled .task-title {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.main-list-styled .task-badges-row {
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.main-list-styled .task-pill {
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+}
+
+.main-list-styled .task-category-tag {
+  border-color: color-mix(in srgb, var(--task-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--task-accent) 14%, transparent);
+  color: color-mix(in srgb, var(--task-accent) 72%, white);
+}
+
+.main-list-styled .task-meta {
+  gap: 12px;
+  font-size: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 7px;
+}
+
 .task-actions {
   display: flex;
   gap: 8px;
@@ -847,8 +934,65 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: visible;
+  max-height: none;
+}
+
+.calendar-tasks.has-overflow {
   overflow-y: auto;
-  max-height: 100px;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.calendar-task-page {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.calendar-tasks.has-overflow .calendar-task-page {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+#calendar {
+  position: relative;
+  user-select: none;
+}
+
+#calendar.is-marquee-selecting {
+  cursor: crosshair;
+}
+
+.calendar-selection-box {
+  position: absolute;
+  border: 1px solid rgba(122, 162, 247, 0.65);
+  background: rgba(122, 162, 247, 0.12);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.calendar-tasks.has-overflow::-webkit-scrollbar {
+  width: 7px;
+}
+
+.calendar-tasks.has-overflow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-tasks.has-overflow::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.calendar-tasks.has-overflow::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: content-box;
 }
 .calendar-task {
   --cal-accent: var(--cat-outros);
@@ -864,6 +1008,7 @@ footer {
   flex-direction: column;
   gap: 4px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .calendar-task-draggable {
   cursor: grab;
@@ -874,6 +1019,15 @@ footer {
 .calendar-task.is-dragging {
   opacity: 0.45;
   transform: scale(0.98);
+}
+.calendar-task.drag-over {
+  box-shadow: inset 0 0 0 1px rgba(213, 216, 15, 0.4);
+}
+.calendar-task-selected {
+  box-shadow:
+    inset 0 0 0 1px rgba(122, 162, 247, 0.7),
+    0 0 0 1px rgba(122, 162, 247, 0.35);
+  background: color-mix(in srgb, rgba(122, 162, 247, 0.18) 40%, rgba(255,255,255,0.03));
 }
 .calendar-task-locked {
   opacity: 0.9;
