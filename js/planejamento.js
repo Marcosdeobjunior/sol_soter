@@ -430,6 +430,7 @@ class TaskPlanner {
         completed: false,
         category: "health",
         type: "academia",
+        rpgCategory: "strength",
       },
     ];
   }
@@ -888,9 +889,10 @@ class TaskPlanner {
       const categoryMetaMap = {
         work: { label: "Trabalho", icon: "fa-briefcase" },
         personal: { label: "Pessoal", icon: "fa-user" },
-        health: { label: "Saude", icon: "fa-dumbbell" },
+        health: { label: "Saude", icon: "fa-hospital" },
         study: { label: "Estudo", icon: "fa-book" },
         financeiro: { label: "Financeiro", icon: "fa-wallet" },
+        academia: { label: "Treino", icon: "fa-dumbbell" },
         sonho: { label: "Sonho", icon: "fa-star" },
         meta: { label: "Meta", icon: "fa-bullseye" },
         other: { label: "Geral", icon: "fa-layer-group" },
@@ -917,12 +919,14 @@ class TaskPlanner {
         strength: { icon: "fa-dumbbell" },
         wisdom: { icon: "fa-scroll" },
         intelligence: { icon: "fa-brain" },
-        productivity: { icon: "fa-bolt" },
+        productivity: { icon: "fa-briefcase" },
         sonho: { icon: "fa-scroll" },
-        meta: { icon: "fa-bolt" },
+        meta: { icon: "fa-briefcase" },
       };
       const catMeta =
-        categoryMetaMap[task.category] ||
+        (task.type === "academia"
+          ? categoryMetaMap.academia
+          : categoryMetaMap[task.category]) ||
         categoryMetaMap[task.type] ||
         categoryMetaMap.other;
       const normalizedPriority = priorityNormMap[String(task.priority || "").toLowerCase()] || "";
@@ -945,6 +949,8 @@ class TaskPlanner {
       const rpgKey =
         task.type === "task"
           ? task.rpgCategory || "productivity"
+          : task.type === "academia"
+          ? "strength"
           : task.type === "sonho"
           ? "sonho"
           : task.type === "meta"
@@ -953,6 +959,15 @@ class TaskPlanner {
           ? "intelligence"
           : "productivity";
       const rpgMeta = rpgAttrMap[rpgKey] || rpgAttrMap.productivity;
+      const rpgToneMap = {
+        strength: "xp-strength",
+        wisdom: "xp-wisdom",
+        intelligence: "xp-intelligence",
+        productivity: "xp-productivity",
+        sonho: "xp-wisdom",
+        meta: "xp-productivity",
+      };
+      const xpToneClass = rpgToneMap[rpgKey] || "xp-productivity";
       const isMovableTask =
         task.type === "task" && !task.recurring && !task.parent;
       const isSelected =
@@ -1047,7 +1062,7 @@ class TaskPlanner {
               ? `<span class="calendar-badge calendar-badge-lock" title="Tarefa recorrente não pode ser movida"><i class="fas fa-lock"></i></span>`
               : ""
           }
-          <span class="calendar-badge calendar-badge-xp"><i class="fas ${rpgMeta.icon}"></i>+${xpBase}</span>
+          <span class="calendar-badge calendar-badge-xp ${xpToneClass}"><i class="fas ${rpgMeta.icon}"></i>+${xpBase}</span>
         </div>
       `;
       el.onclick = (e) => {
@@ -1301,9 +1316,10 @@ class TaskPlanner {
     const categoryMetaMap = {
       work: { label: "Trabalho", icon: "fa-briefcase" },
       personal: { label: "Pessoal", icon: "fa-user" },
-      health: { label: "Saude", icon: "fa-dumbbell" },
+      health: { label: "Saude", icon: "fa-hospital" },
       study: { label: "Estudo", icon: "fa-book" },
       financeiro: { label: "Financeiro", icon: "fa-wallet" },
+      academia: { label: "Treino", icon: "fa-dumbbell" },
       sonho: { label: "Sonho", icon: "fa-star" },
       meta: { label: "Meta", icon: "fa-bullseye" },
       other: { label: "Geral", icon: "fa-layer-group" },
@@ -1322,10 +1338,10 @@ class TaskPlanner {
       strength: { label: "Forca", icon: "fa-dumbbell" },
       wisdom: { label: "Sabedoria", icon: "fa-scroll" },
       intelligence: { label: "Intelecto", icon: "fa-brain" },
-      productivity: { label: "Produtividade", icon: "fa-bolt" },
+      productivity: { label: "Produtividade", icon: "fa-briefcase" },
       livraria: { label: "Intelecto", icon: "fa-brain" },
       sonho: { label: "Sabedoria", icon: "fa-scroll" },
-      meta: { label: "Produtividade", icon: "fa-bolt" },
+      meta: { label: "Produtividade", icon: "fa-briefcase" },
     };
 
     let catClass = "cat-other";
@@ -1338,12 +1354,17 @@ class TaskPlanner {
     const priorityClass = item.priority ? `${item.priority}-priority` : "";
     const completedClass = item.completed ? "completed" : "";
     const isClickable = ["sonho", "meta", "estudo"].includes(item.type);
-    const categoryMeta = categoryMetaMap[item.category] || categoryMetaMap.other;
+    const categoryMeta =
+      (item.type === "academia"
+        ? categoryMetaMap.academia
+        : categoryMetaMap[item.category]) || categoryMetaMap.other;
     const priorityMeta = priorityMetaMap[item.priority] || null;
     const difficultyMeta = difficultyMetaMap[item.difficulty] || null;
     const rpgCategoryKey =
       item.type === "task"
         ? item.rpgCategory || "productivity"
+        : item.type === "academia"
+        ? "strength"
         : item.type === "sonho"
         ? "sonho"
         : item.type === "meta"
@@ -1352,6 +1373,15 @@ class TaskPlanner {
         ? "intelligence"
         : "productivity";
     const rpgMeta = rpgAttrMap[rpgCategoryKey] || rpgAttrMap.productivity;
+    const rpgToneMap = {
+      strength: "xp-strength",
+      wisdom: "xp-wisdom",
+      intelligence: "xp-intelligence",
+      productivity: "xp-productivity",
+      sonho: "xp-wisdom",
+      meta: "xp-productivity",
+    };
+    const xpToneClass = rpgToneMap[rpgCategoryKey] || "xp-productivity";
     const xpValue =
       item.type === "task"
         ? (typeof this.rpg.getTaskXP === "function"
@@ -1375,7 +1405,7 @@ class TaskPlanner {
            <i class="fas fa-flag"></i>${priorityMeta.label}
          </span>`
       : "";
-    const xpBadge = `<span class="task-pill task-xp-pill" title="XP da tarefa">
+    const xpBadge = `<span class="task-pill task-xp-pill ${xpToneClass}" title="XP da tarefa">
         <i class="fas ${rpgMeta.icon}"></i> +${xpValue} XP
       </span>`;
     const weatherMeta = item.date

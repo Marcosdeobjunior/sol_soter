@@ -11,7 +11,7 @@
   --borda: #3a3a3a;
 
   --acento-azul: #89b4fa;
-  --acento-amarelo: #f9e2af;
+  --acento-amarelo: #d5d80f;
   --acento-verde: #a6e3a1;
   --acento-vermelho: #f38ba8;
   --acento-roxo: #cba6f7;
@@ -42,12 +42,15 @@
   box-sizing: border-box;
 }
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: var(--fonte-base, "Russo One", sans-serif);
   background-color: var(--fundo-base);
   color: var(--texto-principal);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  padding-top: 92px;
+  position: relative;
+  isolation: isolate;
 }
 
 /* ===== RPG TOAST NOTIFICATIONS ===== */
@@ -140,6 +143,7 @@ footer {
 /* ============================================================ */
 
 .planejamento-main {
+  font-family: "Poppins", sans-serif;
   flex: 1;
   padding: 30px 20px;
   background: transparent;
@@ -255,7 +259,7 @@ footer {
   gap: 15px;
 }
 
-.stat-card {
+.stats-grid-sidebar .stat-card {
   background: var(--fundo-superficie);
   padding: 15px;
   border-radius: 10px;
@@ -267,37 +271,37 @@ footer {
   text-align: center;
   transition: transform 0.2s;
 }
-.stat-card:hover {
+.stats-grid-sidebar .stat-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
-.stat-icon {
+.stats-grid-sidebar .stat-icon {
   font-size: 1.5rem;
   margin-bottom: 8px;
 }
-.stat-number {
+.stats-grid-sidebar .stat-number {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--texto-principal);
   line-height: 1;
 }
-.stat-label {
+.stats-grid-sidebar .stat-label {
   font-size: 0.75rem;
   color: var(--texto-secundario);
   text-transform: uppercase;
   margin-top: 4px;
 }
 
-.total-icon i {
+.stats-grid-sidebar .total-icon i {
   color: var(--acento-azul);
 }
-.pending-icon i {
+.stats-grid-sidebar .pending-icon i {
   color: var(--acento-vermelho);
 }
-.completed-icon i {
+.stats-grid-sidebar .completed-icon i {
   color: var(--acento-verde);
 }
-.rate-icon i {
+.stats-grid-sidebar .rate-icon i {
   color: var(--acento-amarelo);
 }
 
@@ -542,6 +546,7 @@ footer {
 .cat-health .task-category-icon { color: var(--cat-saude); }
 .cat-study .task-category-icon { color: var(--cat-estudo); }
 .cat-finance .task-category-icon { color: var(--cat-financeiro); }
+.cat-other .task-category-icon { color: var(--cat-outros); }
 .task-title {
   font-size: 1.05rem;
   font-weight: 600;
@@ -645,6 +650,18 @@ footer {
 .task-xp-pill i {
   color: #d5d80f;
 }
+.task-xp-pill.xp-strength i {
+  color: var(--rpg-str);
+}
+.task-xp-pill.xp-intelligence i {
+  color: var(--rpg-int);
+}
+.task-xp-pill.xp-wisdom i {
+  color: var(--rpg-wis);
+}
+.task-xp-pill.xp-productivity i {
+  color: var(--rpg-prod);
+}
 
 .task-meta {
   display: flex;
@@ -697,6 +714,16 @@ footer {
 }
 .main-list-styled .task-item.cat-finance {
   --task-accent: var(--cat-financeiro);
+}
+.main-list-styled .task-item.cat-other {
+  --task-accent: var(--cat-outros);
+}
+
+/* Na seção "Todas as Tarefas", a cor principal é sempre a categoria */
+.main-list-styled .task-item.low-priority,
+.main-list-styled .task-item.medium-priority,
+.main-list-styled .task-item.high-priority {
+  border-left-color: var(--task-accent);
 }
 
 .main-list-styled .task-header {
@@ -1049,6 +1076,9 @@ footer {
   background: rgba(255,255,255,0.04);
   flex-shrink: 0;
 }
+.calendar-task-cat-icon i {
+  color: var(--cal-accent);
+}
 .calendar-task-title {
   min-width: 0;
   white-space: nowrap;
@@ -1105,6 +1135,18 @@ footer {
   color: #d5d80f;
   font-size: 0.56rem;
 }
+.calendar-badge-xp.xp-strength i {
+  color: var(--rpg-str);
+}
+.calendar-badge-xp.xp-intelligence i {
+  color: var(--rpg-int);
+}
+.calendar-badge-xp.xp-wisdom i {
+  color: var(--rpg-wis);
+}
+.calendar-badge-xp.xp-productivity i {
+  color: var(--rpg-prod);
+}
 .calendar-badge-lock i {
   color: rgba(255,255,255,0.8);
   font-size: 0.55rem;
@@ -1145,7 +1187,7 @@ footer {
   --cal-accent: var(--acento-laranja);
 }
 .cal-task-academia {
-  --cal-accent: var(--amarelo-principal, #f4c542);
+  --cal-accent: var(--cat-saude);
 }
 
 .calendar-task.completed {
