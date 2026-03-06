@@ -1,17 +1,5 @@
-﻿(function () {
+(function () {
   'use strict';
-
-  const ensureSkipLink = () => {
-    if (document.querySelector('.app-skip-link')) return;
-    const link = document.createElement('a');
-    link.href = '#main-content';
-    link.className = 'app-skip-link';
-    link.textContent = 'Ir para o conteúdo';
-    document.body.prepend(link);
-
-    const main = document.querySelector('main');
-    if (main && !main.id) main.id = 'main-content';
-  };
 
   const normalizeShell = () => {
     document.body.classList.add('app-shell');
@@ -79,9 +67,9 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     normalizeShell();
-    ensureSkipLink();
     makeImagesLazy();
     ensureAriaLabels();
     watchModalState();
   });
 })();
+

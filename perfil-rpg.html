@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Perfil RPG - Sol de Sóter</title>
+    <title>Perfil RPG - Sol de Soter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&family=Russo+One&display=swap"
@@ -13,11 +13,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
-    <link
-      rel="shortcut icon"
-      href="img/soldesoter_logo.png"
-      type="image/x-icon"
-    />
+    <link rel="icon" type="image/png" href="img/soldesoter_logo.png" />
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon" />
 
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
@@ -37,20 +34,14 @@
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
-          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Soter" />
         </a>
       </div>
 
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
-            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
-              <div class="nav-weather-main" id="nav-weather-current">
-                <i class="fas fa-cloud-sun"></i>
-                <span>Carregando clima...</span>
-              </div>
-            </li>
-            <li class="dropdown">
+<li class="dropdown">
               <div class="dropdown-header">
                 <a href="#">Biblioteca</a>
                 <button class="dropdown-toggle">&#9660;</button>
@@ -71,7 +62,7 @@
                 <li><a href="sonhos.html">Sonhos</a></li>
                 <li><a href="viagens.html">Viagens</a></li>
                 <li><a href="wishlist.html">Carrinho</a></li>
-                <li><a href="financas.html">Finanças</a></li>
+                <li><a href="financas.html">Financas</a></li>
                 <li><a href="planejamento.html">Planejamento</a></li>
                 <li><a href="academia.html">Academia</a></li>
               </ul>
@@ -101,12 +92,12 @@
           </button>
           <div id="notification-panel" class="notification-panel">
             <div class="notification-panel-header">
-              <h3>Notificações</h3>
+              <h3>Notificacoes</h3>
             </div>
             <ul id="notification-list" class="notification-list">
               <li class="empty-state">
                 <i class="fas fa-inbox"></i>
-                <p>Nenhuma notificação nova</p>
+                <p>Nenhuma notificacao nova</p>
               </li>
             </ul>
           </div>
@@ -130,7 +121,7 @@
               </div>
             </div>
             <div class="profile-avatar-wrapper">
-              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuario" />
               <span class="level-badge" id="header-level-badge">1</span>
             </div>
           </div>
@@ -143,7 +134,7 @@
                 ></span>
                 <div class="stat-details">
                   <span class="stat-name"
-                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                    >Forca (Lvl <span id="lvl-str">1</span>)</span
                   >
                   <div class="stat-bar-bg">
                     <div
@@ -260,7 +251,7 @@
 
           <div class="perfil-rpg-kpi">
             <div class="kpi">
-              <span class="kpi-label">Nível</span>
+              <span class="kpi-label">Nivel</span>
               <span id="perfil-level" class="kpi-value">1</span>
             </div>
             <div class="kpi">
@@ -272,7 +263,7 @@
               <span id="perfil-current-xp" class="kpi-value">0</span>
             </div>
             <div class="kpi">
-              <span class="kpi-label">XP Próx. Nível</span>
+              <span class="kpi-label">XP Prox. Nivel</span>
               <span id="perfil-next-xp" class="kpi-value">100</span>
             </div>
           </div>
@@ -287,21 +278,21 @@
               <strong id="perfil-total-stats">0</strong>
             </div>
             <div class="mini-kpi">
-              <span>Próximo Rank em</span>
+              <span>Proximo Rank em</span>
               <strong id="perfil-next-rank">-</strong>
             </div>
           </div>
 
           <div class="perfil-actions">
             <a class="perfil-btn primary" href="rpg-config.html">
-              <i class="fas fa-sliders-h"></i> Abrir Configuração RPG
+              <i class="fas fa-sliders-h"></i> Abrir Configuracao RPG
             </a>
             <button
               class="perfil-btn inventory-icon-btn"
               id="rpg-open-inventory"
               type="button"
-              aria-label="Abrir inventário"
-              title="Inventário"
+              aria-label="Abrir inventario"
+              title="Inventario"
             >
               <i class="fas fa-bag-shopping" aria-hidden="true"></i>
             </button>
@@ -313,29 +304,29 @@
           <ul class="perfil-rpg-stats perfil-status-list">
             <li>
               <div class="status-head">
-                <span class="status-label"><i class="fas fa-dumbbell"></i> Força</span>
-                <strong id="stat-strength">Lvl 1 · 0 XP</strong>
+                <span class="status-label"><i class="fas fa-dumbbell"></i> Forca</span>
+                <strong id="stat-strength">Lvl 1 - 0 XP</strong>
               </div>
               <div class="status-bar"><div id="stat-fill-strength" class="status-fill strength-fill"></div></div>
             </li>
             <li>
               <div class="status-head">
                 <span class="status-label"><i class="fas fa-brain"></i> Intelecto</span>
-                <strong id="stat-intelligence">Lvl 1 · 0 XP</strong>
+                <strong id="stat-intelligence">Lvl 1 - 0 XP</strong>
               </div>
               <div class="status-bar"><div id="stat-fill-intelligence" class="status-fill intelligence-fill"></div></div>
             </li>
             <li>
               <div class="status-head">
                 <span class="status-label"><i class="fas fa-hat-wizard"></i> Sabedoria</span>
-                <strong id="stat-wisdom">Lvl 1 · 0 XP</strong>
+                <strong id="stat-wisdom">Lvl 1 - 0 XP</strong>
               </div>
               <div class="status-bar"><div id="stat-fill-wisdom" class="status-fill wisdom-fill"></div></div>
             </li>
             <li>
               <div class="status-head">
                 <span class="status-label"><i class="fas fa-briefcase"></i> Produtividade</span>
-                <strong id="stat-productivity">Lvl 1 · 0 XP</strong>
+                <strong id="stat-productivity">Lvl 1 - 0 XP</strong>
               </div>
               <div class="status-bar"><div id="stat-fill-productivity" class="status-fill productivity-fill"></div></div>
             </li>
@@ -344,9 +335,9 @@
       </section>
 
       <section class="perfil-card">
-        <h2><i class="fas fa-chart-bar"></i> Gráfico de Evolução dos Status</h2>
+        <h2><i class="fas fa-chart-bar"></i> Grafico de Evoluo dos Status</h2>
         <p class="perfil-chart-subtitle">
-          Comparativo de níveis atuais por atributo.
+          Comparativo de niveis atuais por atributo.
         </p>
         <canvas id="rpg-status-chart" width="960" height="320"></canvas>
       </section>
@@ -370,7 +361,7 @@
               <strong id="rpg-streak-best">0 dias</strong>
             </div>
           </div>
-          <p class="jogador-sub" id="rpg-streak-last">Última atividade: -</p>
+          <p class="jogador-sub" id="rpg-streak-last">Ultima atividade: -</p>
         </article>
       </section>
 
@@ -381,7 +372,7 @@
         </article>
 
         <article class="perfil-card">
-          <h2><i class="fas fa-ranking-star"></i> Ranking por Áreas</h2>
+          <h2><i class="fas fa-ranking-star"></i> Ranking por Areas</h2>
           <ul class="ranking-list" id="rpg-area-ranking"></ul>
         </article>
       </section>
@@ -402,23 +393,23 @@
         </article>
 
         <article class="perfil-card">
-          <h2><i class="fas fa-project-diagram"></i> Árvore de Talentos</h2>
-          <p class="jogador-sub">Pontos disponíveis: <strong id="rpg-talent-points">0</strong></p>
+          <h2><i class="fas fa-project-diagram"></i> Arvore de Talentos</h2>
+          <p class="jogador-sub">Pontos disponiveis: <strong id="rpg-talent-points">0</strong></p>
           <div id="rpg-talent-tree" class="talent-grid"></div>
         </article>
       </section>
 
       <section class="perfil-rpg-grid">
         <article class="perfil-card">
-          <h2><i class="fas fa-scroll"></i> Títulos</h2>
-          <p class="jogador-sub">Título atual</p>
-          <h3 id="rpg-current-title">Recruta de Sóter</h3>
+          <h2><i class="fas fa-scroll"></i> Titulos</h2>
+          <p class="jogador-sub">Titulo atual</p>
+          <h3 id="rpg-current-title">Recruta de Soter</h3>
           <div id="rpg-title-list" class="title-list"></div>
         </article>
 
         <article class="perfil-card">
           <h2><i class="fas fa-dragon"></i> Boss Fight</h2>
-          <p class="jogador-sub" id="rpg-boss-name">Titã da Disciplina</p>
+          <p class="jogador-sub" id="rpg-boss-name">Tita da Disciplina</p>
           <div class="perfil-progress">
             <div class="perfil-progress-head">
               <span>HP do Boss</span>
@@ -447,7 +438,7 @@
 
       <section class="perfil-rpg-grid">
         <article class="perfil-card">
-          <h2><i class="fas fa-dragon"></i> Bosses por Área</h2>
+          <h2><i class="fas fa-dragon"></i> Bosses por Area</h2>
           <div id="rpg-area-bosses" class="area-bosses-grid"></div>
         </article>
 
@@ -461,7 +452,7 @@
         <article class="perfil-card">
           <h2><i class="fas fa-calendar"></i> Heatmap de Atividade</h2>
           <div id="rpg-heatmap" class="heatmap-grid"></div>
-          <p class="jogador-sub">Últimos 70 dias (mais escuro = mais XP).</p>
+          <p class="jogador-sub">Ultimos 70 dias (mais escuro = mais XP).</p>
         </article>
 
         <article class="perfil-card">
@@ -469,7 +460,7 @@
           <div class="preset-actions">
             <button class="perfil-btn" data-preset="balanced">Balanceado</button>
             <button class="perfil-btn" data-preset="study">Foco Estudo</button>
-            <button class="perfil-btn" data-preset="fitness">Foco Físico</button>
+            <button class="perfil-btn" data-preset="fitness">Foco Fisico</button>
             <button class="perfil-btn" data-preset="finance">Foco Financeiro</button>
           </div>
           <p class="jogador-sub" id="rpg-preset-desc">Preset atual: Balanceado</p>
@@ -490,12 +481,12 @@
         </article>
 
         <article class="perfil-card">
-          <h2><i class="fas fa-infinity"></i> Prestígio</h2>
-          <p class="jogador-sub">Tokens de prestígio: <strong id="rpg-prestige-tokens">0</strong></p>
-          <p class="jogador-sub">Desbloqueia a partir do nível 30 e concede bônus permanente de XP.</p>
+          <h2><i class="fas fa-infinity"></i> Prestigio</h2>
+          <p class="jogador-sub">Tokens de prestigio: <strong id="rpg-prestige-tokens">0</strong></p>
+          <p class="jogador-sub">Desbloqueia a partir do nivel 30 e concede bonus permanente de XP.</p>
           <div class="perfil-actions">
             <button class="perfil-btn warning" id="rpg-prestige-btn">
-              <i class="fas fa-redo"></i> Realizar Prestígio
+              <i class="fas fa-redo"></i> Realizar Prestigio
             </button>
           </div>
         </article>
@@ -515,7 +506,7 @@
 
       <section class="perfil-rpg-grid">
         <article class="perfil-card">
-          <h2><i class="fas fa-timeline"></i> Timeline de Evolução</h2>
+          <h2><i class="fas fa-timeline"></i> Timeline de Evoluo</h2>
           <ul id="rpg-timeline" class="battle-log"></ul>
         </article>
 
@@ -530,8 +521,8 @@
     <div id="rpg-inventory-modal" class="rpg-modal" aria-hidden="true">
       <div class="rpg-modal-card">
         <div class="rpg-modal-head">
-          <h3><i class="fas fa-bag-shopping"></i> Inventário Ativo</h3>
-          <button id="rpg-close-inventory" class="rpg-modal-close" type="button" aria-label="Fechar inventário">
+          <h3><i class="fas fa-bag-shopping"></i> Inventario Ativo</h3>
+          <button id="rpg-close-inventory" class="rpg-modal-close" type="button" aria-label="Fechar inventario">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -539,8 +530,15 @@
       </div>
     </div>
 
-    <footer>
-      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+        <footer class="site-footer">
+      <p class="site-footer-title">Sol de Soter</p>
+      <p class="site-footer-copy">&copy; 2025 Sol de Soter. Todos os direitos reservados.</p>
+      <nav class="site-footer-links" aria-label="Redes sociais">
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i> GitHub</a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      </nav>
+      <a class="site-footer-landing" href="livro-fantasia.html">Landing Page Livro: Sol de Soter</a>
     </footer>
 
     <script src="js/saldo-global.js" defer></script>
@@ -553,6 +551,9 @@
         <script src="js/data-portability.js" defer></script>
       </body>
 </html>
+
+
+
 
 
 

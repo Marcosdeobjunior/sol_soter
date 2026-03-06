@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Sol de Sóter</title>
+    <title>Dashboard - Sol de Soter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&family=Russo+One&display=swap"
@@ -18,14 +18,11 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
 
-    <link
-      rel="shortcut icon"
-      href="img/soldesoter_logo.png"
-      type="image/x-icon"
-    />
+    <link rel="icon" type="image/png" href="img/soldesoter_logo.png" />
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon" />
 
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/planejamento.css" />
+    <link rel="stylesheet" href="css/planejamento.css?v=20260305-1" />
     <link rel="stylesheet" href="css/notificacoes.css" />
         <link rel="stylesheet" href="css/app-shell.css" />
   </head>
@@ -42,20 +39,14 @@
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
-          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Soter" />
         </a>
       </div>
 
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
-            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
-              <div class="nav-weather-main" id="nav-weather-current">
-                <i class="fas fa-cloud-sun"></i>
-                <span>Carregando clima...</span>
-              </div>
-            </li>
-            <li class="dropdown">
+<li class="dropdown">
               <div class="dropdown-header">
                 <a href="biblioteca.html">Biblioteca</a>
                 <button class="dropdown-toggle">&#9660;</button>
@@ -76,7 +67,7 @@
                 <li><a href="sonhos.html">Sonhos</a></li>
                 <li><a href="viagens.html">Viagens</a></li>
                 <li><a href="wishlist.html">Carrinho</a></li>
-                <li><a href="financas.html">Finanças</a></li>
+                <li><a href="financas.html">Financas</a></li>
                 <li><a href="planejamento.html">Planejamento</a></li>
                 <li><a href="academia.html">Academia</a></li>
               </ul>
@@ -106,12 +97,12 @@
           </button>
           <div id="notification-panel" class="notification-panel">
             <div class="notification-panel-header">
-              <h3>Notificações</h3>
+              <h3>Notificacoes</h3>
             </div>
             <ul id="notification-list" class="notification-list">
               <li class="empty-state">
                 <i class="fas fa-inbox"></i>
-                <p>Nenhuma notificação nova</p>
+                <p>Nenhuma notificacao nova</p>
               </li>
             </ul>
           </div>
@@ -135,7 +126,7 @@
               </div>
             </div>
             <div class="profile-avatar-wrapper">
-              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuario" />
               <span class="level-badge" id="header-level-badge">1</span>
             </div>
           </div>
@@ -148,7 +139,7 @@
                 ></span>
                 <div class="stat-details">
                   <span class="stat-name"
-                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                    >Forca (Lvl <span id="lvl-str">1</span>)</span
                   >
                   <div class="stat-bar-bg">
                     <div
@@ -286,7 +277,7 @@
                 </div>
                 <div class="stat-content">
                   <span class="stat-number" id="completed-tasks">0</span>
-                  <span class="stat-label">Concluídos</span>
+                  <span class="stat-label">Concluidos</span>
                 </div>
               </div>
               <div class="stat-card">
@@ -324,18 +315,12 @@
                   <button class="filter-btn" data-filter="no-date">
                     Sem Data <span class="filter-count" id="count-no-date">0</span>
                   </button>
-                  <button class="filter-btn" data-filter="work">
-                    Trabalho <span class="filter-count" id="count-work">0</span>
-                  </button>
-                  <button class="filter-btn" data-filter="personal">
-                    Pessoal <span class="filter-count" id="count-personal">0</span>
-                  </button>
 
                   <div class="divider-vertical"></div>
                   <button
                     id="archive-tasks-btn"
                     class="filter-btn icon-only"
-                    title="Arquivar tarefas concluídas"
+                    title="Arquivar tarefas concluidas"
                   >
                     <i class="fas fa-archive"></i>
                   </button>
@@ -368,13 +353,13 @@
 
         <div class="big-calendar-wrapper">
           <div class="section-header">
-            <h2><i class="fas fa-calendar-alt"></i> Calendário Geral</h2>
+            <h2><i class="fas fa-calendar-alt"></i> Calendario Geral</h2>
             <div class="calendar-controls">
               <button id="prev-month" class="calendar-nav-btn">
                 <i class="fas fa-chevron-left"></i>
               </button>
               <button id="current-month" class="calendar-today-btn" type="button">
-                Mês atual
+                Mes atual
               </button>
               <span id="current-month-year"></span>
               <button id="next-month" class="calendar-nav-btn">
@@ -395,11 +380,11 @@
             </div>
             <form id="task-form">
               <div class="form-group">
-                <label for="task-title">Título da Tarefa</label>
+                <label for="task-title">Titulo da Tarefa</label>
                 <input type="text" id="task-title" required />
               </div>
               <div class="form-group">
-                <label for="task-description">Descrição</label>
+                <label for="task-description">Descricao</label>
                 <textarea id="task-description" rows="3"></textarea>
               </div>
               <div class="form-row">
@@ -408,11 +393,11 @@
                   <input type="date" id="task-date" />
                   <div class="form-checkbox">
                     <input type="checkbox" id="no-date-checkbox" />
-                    <label for="no-date-checkbox">Sem data específica</label>
+                    <label for="no-date-checkbox">Sem data especifica</label>
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="task-time">Horário</label>
+                  <label for="task-time">Horario</label>
                   <input type="time" id="task-time" />
                 </div>
               </div>
@@ -422,7 +407,7 @@
                   <select id="task-priority">
                     <option value="">Sem prioridade</option>
                     <option value="low">Baixa</option>
-                    <option value="medium" selected>Média</option>
+                    <option value="medium" selected>Media</option>
                     <option value="high">Alta</option>
                   </select>
                 </div>
@@ -439,7 +424,7 @@
                   <select id="task-category">
                     <option value="work">Trabalho</option>
                     <option value="personal">Pessoal</option>
-                    <option value="health">Saúde / Academia</option>
+                    <option value="health">Saude / Academia</option>
                     <option value="study">Estudos / Livraria</option>
                     <option value="financeiro">Financeiro</option>
                     <option value="other">Outros</option>
@@ -485,11 +470,30 @@
             </form>
           </div>
         </div>
+
+        <div id="task-hub-modal" class="modal">
+          <div class="modal-content task-hub-content">
+            <div class="modal-header">
+              <h3><i class="fas fa-diagram-project"></i> Hub da Tarefa</h3>
+              <button id="close-task-hub-modal" class="close-btn">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div id="task-hub-body" class="task-hub-body"></div>
+          </div>
+        </div>
       </div>
     </main>
 
-    <footer>
-      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+        <footer class="site-footer">
+      <p class="site-footer-title">Sol de Soter</p>
+      <p class="site-footer-copy">&copy; 2025 Sol de Soter. Todos os direitos reservados.</p>
+      <nav class="site-footer-links" aria-label="Redes sociais">
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i> GitHub</a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      </nav>
+      <a class="site-footer-landing" href="livro-fantasia.html">Landing Page Livro: Sol de Soter</a>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -497,12 +501,15 @@
     <script src="js/script.js" defer></script>
     <script src="js/notificacoes.js" defer></script>
     <script src="js/rpg.js" defer></script>
-    <script src="js/planejamento.js" defer></script>
+    <script src="js/planejamento.js?v=20260305-1" defer></script>
       <script src="js/app-shell.js" defer></script>
         <script src="js/global-search.js" defer></script>
         <script src="js/data-portability.js" defer></script>
       </body>
 </html>
+
+
+
 
 
 

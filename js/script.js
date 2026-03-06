@@ -2234,7 +2234,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderTopTrips();
       renderFavoritesCarousel();
     }
-    renderWeatherPirapora();
     if (hasDashboard) {
       renderDreamsSection();
       renderAcademiaSummary();

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Sol de Sóter</title>
+    <title>Dashboard - Sol de Soter</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Poppins:wght@400;600;700&family=Russo+One&display=swap"
@@ -17,11 +17,8 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link
-      rel="shortcut icon"
-      href="img/soldesoter_logo.png"
-      type="image/x-icon"
-    />
+    <link rel="icon" type="image/png" href="img/soldesoter_logo.png" />
+    <link rel="shortcut icon" href="img/soldesoter_logo.png" type="image/x-icon" />
 
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/notificacoes.css" />
@@ -39,20 +36,14 @@
     <header>
       <div class="logo-container">
         <a href="index.html" class="logo-link">
-          <img src="img/soldesoter_logo.png" alt="Logo Sol de Sóter" />
+          <img src="img/soldesoter_logo.png" alt="Logo Sol de Soter" />
         </a>
       </div>
 
       <div class="menu-profile">
         <nav class="navbar">
           <ul class="nav-menu">
-            <li class="nav-weather-item" id="nav-weather-widget" aria-label="Clima em Pirapora do Bom Jesus">
-              <div class="nav-weather-main" id="nav-weather-current">
-                <i class="fas fa-cloud-sun"></i>
-                <span>Carregando clima...</span>
-              </div>
-            </li>
-            <li class="dropdown">
+<li class="dropdown">
               <div class="dropdown-header">
                 <a href="biblioteca.html">Biblioteca</a>
                 <button class="dropdown-toggle">&#9660;</button>
@@ -73,7 +64,7 @@
                 <li><a href="sonhos.html">Sonhos</a></li>
                 <li><a href="viagens.html">Viagens</a></li>
                 <li><a href="wishlist.html">Carrinho</a></li>
-                <li><a href="financas.html">Finanças</a></li>
+                <li><a href="financas.html">Financas</a></li>
                 <li><a href="planejamento.html">Planejamento</a></li>
                 <li><a href="academia.html">Academia</a></li>
               </ul>
@@ -103,12 +94,12 @@
           </button>
           <div id="notification-panel" class="notification-panel">
             <div class="notification-panel-header">
-              <h3>Notificações</h3>
+              <h3>Notificacoes</h3>
             </div>
             <ul id="notification-list" class="notification-list">
               <li class="empty-state">
                 <i class="fas fa-inbox"></i>
-                <p>Nenhuma notificação nova</p>
+                <p>Nenhuma notificacao nova</p>
               </li>
             </ul>
           </div>
@@ -132,7 +123,7 @@
               </div>
             </div>
             <div class="profile-avatar-wrapper">
-              <img src="img/eu-gtp1.1.png" alt="Foto do Usuário" />
+              <img src="img/eu-gtp1.1.png" alt="Foto do Usuario" />
               <span class="level-badge" id="header-level-badge">1</span>
             </div>
           </div>
@@ -145,7 +136,7 @@
                 ></span>
                 <div class="stat-details">
                   <span class="stat-name"
-                    >Força (Lvl <span id="lvl-str">1</span>)</span
+                    >Forca (Lvl <span id="lvl-str">1</span>)</span
                   >
                   <div class="stat-bar-bg">
                     <div
@@ -241,9 +232,9 @@
               <button id="prev-page" class="pagination-btn">
                 <i class="fas fa-chevron-left"></i> Anterior
               </button>
-              <span id="page-info">Página 1 de 1</span>
+              <span id="page-info">Pagina 1 de 1</span>
               <button id="next-page" class="pagination-btn">
-                Próxima <i class="fas fa-chevron-right"></i>
+                Proxima <i class="fas fa-chevron-right"></i>
               </button>
             </div>
           </div>
@@ -272,33 +263,33 @@
         </button>
       </div>
       <form id="travel-form">
-        <label for="destination">Destino (Cidade, País, Restaurante, Museu, etc.):</label>
+        <label for="destination">Destino (Cidade, Pais, Restaurante, Museu, etc.):</label>
         <input type="text" id="destination" required>
 
         <label for="travel-type">Tipo de Local:</label>
         <select id="travel-type">
           <option value="">Selecione um tipo...</option>
           <option value="Desejo">Desejo (Wishlist)</option>
-          <option value="Cidade/País">Cidade/País</option>
+          <option value="Cidade/Pais">Cidade/Pais</option>
           <option value="Restaurante">Restaurante</option>
           <option value="Museu">Museu</option>
           <option value="Parque">Parque</option>
           <option value="Hotel">Hotel</option>
-          <option value="Ponto Turístico">Ponto Turístico</option>
+          <option value="Ponto Turistico">Ponto Turistico</option>
           <option value="Outro">Outro</option>
         </select>
 
-        <label for="start-date">Data de Início:</label>
+        <label for="start-date">Data de Inicio:</label>
         <input type="date" id="start-date">
 
-        <label for="end-date">Data de Término:</label>
+        <label for="end-date">Data de Termino:</label>
         <input type="date" id="end-date">
 
-        <label for="budget">Orçamento (R$):</label>
+        <label for="budget">Orcamento (R$):</label>
         <input type="number" id="budget" min="0" step="0.01">
 
-        <label for="local-description">Descrição do Local:</label>
-        <textarea id="local-description" rows="3" placeholder="Descreva o local, experiências esperadas, dicas e pontos de interesse."></textarea>
+        <label for="local-description">Descricao do Local:</label>
+        <textarea id="local-description" rows="3" placeholder="Descreva o local, experincias esperadas, dicas e pontos de interesse."></textarea>
 
         <label for="travel-image-url">Imagem (URL):</label>
         <input type="url" id="travel-image-url" placeholder="https://exemplo.com/imagem.jpg">
@@ -341,8 +332,15 @@
   </div>
     </main>
 
-    <footer>
-      <p>© 2025 Sol de Sóter. Todos os direitos reservados.</p>
+        <footer class="site-footer">
+      <p class="site-footer-title">Sol de Soter</p>
+      <p class="site-footer-copy">&copy; 2025 Sol de Soter. Todos os direitos reservados.</p>
+      <nav class="site-footer-links" aria-label="Redes sociais">
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i> GitHub</a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
+      </nav>
+      <a class="site-footer-landing" href="livro-fantasia.html">Landing Page Livro: Sol de Soter</a>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -356,6 +354,9 @@
         <script src="js/data-portability.js" defer></script>
       </body>
 </html>
+
+
+
 
 
 

@@ -53,15 +53,42 @@ class TaskPlanner {
     this.weatherForecastPromise = null;
     this.weatherHistoryByDate = {};
     this.weatherHistoryPromises = {};
+    this.activeTaskHubId = null;
+    this.returnToHubTaskId = null;
 
     // Usa o sistema global de RPG compartilhado entre páginas.
     this.rpg = getRPGSystem();
+    this.categoryMetaMap = {
+      work: { label: "Trabalho", icon: "fa-briefcase" },
+      personal: { label: "Pessoal", icon: "fa-user" },
+      health: { label: "Saude", icon: "fa-dumbbell" },
+      study: { label: "Estudo", icon: "fa-book" },
+      financeiro: { label: "Financeiro", icon: "fa-wallet" },
+      sonho: { label: "Sonho", icon: "fa-star" },
+      meta: { label: "Meta", icon: "fa-bullseye" },
+      other: { label: "Geral", icon: "fa-layer-group" },
+    };
+    this.difficultyMetaMap = {
+      easy: { rank: "C", label: "Facil" },
+      medium: { rank: "A", label: "Media" },
+      hard: { rank: "S+", label: "Dificil" },
+    };
+    this.rpgAttrMap = {
+      strength: { label: "Forca", icon: "fa-dumbbell" },
+      wisdom: { label: "Sabedoria", icon: "fa-scroll" },
+      intelligence: { label: "Intelecto", icon: "fa-brain" },
+      productivity: { label: "Produtividade", icon: "fa-briefcase" },
+      livraria: { label: "Intelecto", icon: "fa-brain" },
+      sonho: { label: "Sabedoria", icon: "fa-scroll" },
+      meta: { label: "Produtividade", icon: "fa-briefcase" },
+    };
 
     this.getAllItems();
     this.init();
   }
 
   init() {
+    this.normalizeTaskHierarchy();
     this.archiveOldTasks();
     this.renderCalendar();
     this.renderTasks();
@@ -397,6 +424,81 @@ class TaskPlanner {
     return JSON.parse(localStorage.getItem("sol-de-soter-tasks-archive")) || [];
   }
 
+  getTaskById(taskId) {
+    return this.tasks.find((t) => String(t.id) === String(taskId)) || null;
+  }
+
+  getCategoryMeta(item) {
+    return (
+      this.categoryMetaMap[item?.category] ||
+      this.categoryMetaMap[item?.type] ||
+      this.categoryMetaMap.other
+    );
+  }
+
+  getDifficultyMeta(difficulty) {
+    return this.difficultyMetaMap[difficulty] || null;
+  }
+
+  getRpgMeta(item) {
+    const key =
+      item.type === "task"
+        ? item.rpgCategory || "productivity"
+        : item.type === "sonho"
+        ? "sonho"
+        : item.type === "meta"
+        ? "meta"
+        : item.category === "study"
+        ? "intelligence"
+        : "productivity";
+    return this.rpgAttrMap[key] || this.rpgAttrMap.productivity;
+  }
+
+  getTaskXPValue(item) {
+    return item.type === "task"
+      ? typeof this.rpg.getTaskXP === "function"
+        ? this.rpg.getTaskXP(item.difficulty || "medium")
+        : ({ easy: 10, medium: 20, hard: 35 }[item.difficulty || "medium"] ||
+            20)
+      : item.type === "meta"
+      ? 25
+      : item.type === "sonho"
+      ? 40
+      : item.type === "estudo"
+      ? 18
+      : item.type === "academia"
+      ? 22
+      : 12;
+  }
+
+  normalizeTaskHierarchy() {
+    const byId = new Map(this.tasks.map((t) => [String(t.id), t]));
+    this.tasks.forEach((task) => {
+      if (task.parentTaskId && !byId.has(String(task.parentTaskId))) {
+        task.parentTaskId = null;
+      }
+      task.childTaskId = null;
+    });
+
+    this.tasks.forEach((task) => {
+      const parentId = task.parentTaskId ? String(task.parentTaskId) : null;
+      if (!parentId || parentId === String(task.id)) {
+        task.parentTaskId = null;
+        return;
+      }
+      const parent = byId.get(parentId);
+      if (!parent) {
+        task.parentTaskId = null;
+        return;
+      }
+      if (parent.childTaskId && String(parent.childTaskId) !== String(task.id)) {
+        task.parentTaskId = null;
+        return;
+      }
+      parent.childTaskId = String(task.id);
+    });
+  }
+
   getAcademiaTrainingsForDate(date) {
     let trainingDays = {};
     let daySessions = {};
@@ -489,6 +591,7 @@ class TaskPlanner {
   }
 
   saveTasks() {
+    this.normalizeTaskHierarchy();
     localStorage.setItem("sol-de-soter-tasks", JSON.stringify(this.tasks));
     this.pruneCalendarSelection();
     this.getAllItems();
@@ -496,6 +599,13 @@ class TaskPlanner {
     this.renderTasks();
     this.renderTodayColumn();
     this.renderCalendar();
+    if (this.activeTaskHubId) {
+      if (this.getTaskById(this.activeTaskHubId)) {
+        this.renderTaskHub(this.activeTaskHubId);
+      } else {
+        this.closeTaskHubModal();
+      }
+    }
   }
 
   // --- ARQUIVAMENTO ---
@@ -885,16 +995,6 @@ class TaskPlanner {
       if (task.type === "meta") catClass = "cal-task-meta";
       if (task.type === "academia") catClass = "cal-task-academia";
 
-      const categoryMetaMap = {
-        work: { label: "Trabalho", icon: "fa-briefcase" },
-        personal: { label: "Pessoal", icon: "fa-user" },
-        health: { label: "Saude", icon: "fa-dumbbell" },
-        study: { label: "Estudo", icon: "fa-book" },
-        financeiro: { label: "Financeiro", icon: "fa-wallet" },
-        sonho: { label: "Sonho", icon: "fa-star" },
-        meta: { label: "Meta", icon: "fa-bullseye" },
-        other: { label: "Geral", icon: "fa-layer-group" },
-      };
       const priorityNormMap = {
         low: "low",
         baixa: "low",
@@ -908,51 +1008,12 @@ class TaskPlanner {
         medium: "cal-priority-medium",
         high: "cal-priority-high",
       };
-      const difficultyMap = {
-        easy: { rank: "C", label: "Facil" },
-        medium: { rank: "A", label: "Media" },
-        hard: { rank: "S+", label: "Dificil" },
-      };
-      const rpgAttrMap = {
-        strength: { icon: "fa-dumbbell" },
-        wisdom: { icon: "fa-scroll" },
-        intelligence: { icon: "fa-brain" },
-        productivity: { icon: "fa-bolt" },
-        sonho: { icon: "fa-scroll" },
-        meta: { icon: "fa-bolt" },
-      };
-      const catMeta =
-        categoryMetaMap[task.category] ||
-        categoryMetaMap[task.type] ||
-        categoryMetaMap.other;
+      const catMeta = this.getCategoryMeta(task);
       const normalizedPriority = priorityNormMap[String(task.priority || "").toLowerCase()] || "";
       const priorityToneClass = priorityToneMap[normalizedPriority] || "";
-      const difficultyMeta = difficultyMap[task.difficulty] || null;
-      const xpBase =
-        task.type === "task"
-          ? (typeof this.rpg.getTaskXP === "function"
-              ? this.rpg.getTaskXP(task.difficulty || "medium")
-              : ({ easy: 10, medium: 20, hard: 35 }[task.difficulty || "medium"] || 20))
-          : task.type === "meta"
-          ? 25
-          : task.type === "sonho"
-          ? 40
-          : task.type === "estudo"
-          ? 18
-          : task.type === "academia"
-          ? 22
-          : 12;
-      const rpgKey =
-        task.type === "task"
-          ? task.rpgCategory || "productivity"
-          : task.type === "sonho"
-          ? "sonho"
-          : task.type === "meta"
-          ? "meta"
-          : task.category === "study"
-          ? "intelligence"
-          : "productivity";
-      const rpgMeta = rpgAttrMap[rpgKey] || rpgAttrMap.productivity;
+      const difficultyMeta = this.getDifficultyMeta(task.difficulty);
+      const xpBase = this.getTaskXPValue(task);
+      const rpgMeta = this.getRpgMeta(task);
       const isMovableTask =
         task.type === "task" && !task.recurring && !task.parent;
       const isSelected =
@@ -1034,7 +1095,7 @@ class TaskPlanner {
           <span class="calendar-badge calendar-badge-cat">${catMeta.label}</span>
           ${
             difficultyMeta
-              ? `<span class="calendar-badge calendar-badge-difficulty difficulty-${task.difficulty || "medium"}"><strong>${difficultyMeta.rank}</strong></span>`
+              ? `<span class="calendar-badge calendar-badge-difficulty difficulty-${task.difficulty || "medium"}"><strong>${difficultyMeta.rank}</strong><span>${difficultyMeta.label}</span></span>`
               : ""
           }
           ${
@@ -1047,7 +1108,7 @@ class TaskPlanner {
               ? `<span class="calendar-badge calendar-badge-lock" title="Tarefa recorrente não pode ser movida"><i class="fas fa-lock"></i></span>`
               : ""
           }
-          <span class="calendar-badge calendar-badge-xp"><i class="fas ${rpgMeta.icon}"></i>+${xpBase}</span>
+          <span class="calendar-badge calendar-badge-xp"><i class="fas ${rpgMeta.icon}"></i>+${xpBase} XP</span>
         </div>
       `;
       el.onclick = (e) => {
@@ -1062,7 +1123,7 @@ class TaskPlanner {
           this.renderCalendar();
           return;
         }
-        if (task.type === "task") this.editTask(task.id);
+        if (task.type === "task") this.openTaskHub(task.id);
         else if (task.type === "academia") window.location.href = "academia.html";
         else this.navigateToItem(task.type, task.id);
       };
@@ -1298,36 +1359,11 @@ class TaskPlanner {
       ? new Date(item.date + "T00:00:00").toLocaleDateString("pt-BR")
       : "Sem data";
 
-    const categoryMetaMap = {
-      work: { label: "Trabalho", icon: "fa-briefcase" },
-      personal: { label: "Pessoal", icon: "fa-user" },
-      health: { label: "Saude", icon: "fa-dumbbell" },
-      study: { label: "Estudo", icon: "fa-book" },
-      financeiro: { label: "Financeiro", icon: "fa-wallet" },
-      sonho: { label: "Sonho", icon: "fa-star" },
-      meta: { label: "Meta", icon: "fa-bullseye" },
-      other: { label: "Geral", icon: "fa-layer-group" },
-    };
     const priorityMetaMap = {
       low: { label: "Baixa", colorClass: "priority-tone-low" },
       medium: { label: "Media", colorClass: "priority-tone-medium" },
       high: { label: "Alta", colorClass: "priority-tone-high" },
     };
-    const difficultyMetaMap = {
-      easy: { rank: "C", label: "Facil" },
-      medium: { rank: "A", label: "Media" },
-      hard: { rank: "S+", label: "Dificil" },
-    };
-    const rpgAttrMap = {
-      strength: { label: "Forca", icon: "fa-dumbbell" },
-      wisdom: { label: "Sabedoria", icon: "fa-scroll" },
-      intelligence: { label: "Intelecto", icon: "fa-brain" },
-      productivity: { label: "Produtividade", icon: "fa-bolt" },
-      livraria: { label: "Intelecto", icon: "fa-brain" },
-      sonho: { label: "Sabedoria", icon: "fa-scroll" },
-      meta: { label: "Produtividade", icon: "fa-bolt" },
-    };
-
     let catClass = "cat-other";
     if (item.category === "work") catClass = "cat-work";
     else if (item.category === "personal") catClass = "cat-personal";
@@ -1338,32 +1374,11 @@ class TaskPlanner {
     const priorityClass = item.priority ? `${item.priority}-priority` : "";
     const completedClass = item.completed ? "completed" : "";
     const isClickable = ["sonho", "meta", "estudo"].includes(item.type);
-    const categoryMeta = categoryMetaMap[item.category] || categoryMetaMap.other;
+    const categoryMeta = this.getCategoryMeta(item);
     const priorityMeta = priorityMetaMap[item.priority] || null;
-    const difficultyMeta = difficultyMetaMap[item.difficulty] || null;
-    const rpgCategoryKey =
-      item.type === "task"
-        ? item.rpgCategory || "productivity"
-        : item.type === "sonho"
-        ? "sonho"
-        : item.type === "meta"
-        ? "meta"
-        : item.category === "study"
-        ? "intelligence"
-        : "productivity";
-    const rpgMeta = rpgAttrMap[rpgCategoryKey] || rpgAttrMap.productivity;
-    const xpValue =
-      item.type === "task"
-        ? (typeof this.rpg.getTaskXP === "function"
-            ? this.rpg.getTaskXP(item.difficulty || "medium")
-            : ({ easy: 10, medium: 20, hard: 35 }[item.difficulty || "medium"] || 20))
-        : item.type === "meta"
-        ? 25
-        : item.type === "sonho"
-        ? 40
-        : item.type === "estudo"
-        ? 18
-        : 12;
+    const difficultyMeta = this.getDifficultyMeta(item.difficulty);
+    const rpgMeta = this.getRpgMeta(item);
+    const xpValue = this.getTaskXPValue(item);
     const difficultyBadge = difficultyMeta
       ? `<span class="task-pill task-difficulty-pill difficulty-${item.difficulty || "medium"}" title="Dificuldade ${difficultyMeta.label}">
            <span class="rank">${difficultyMeta.rank}</span>
@@ -1382,10 +1397,9 @@ class TaskPlanner {
       ? `<span class="task-weather" data-weather-date="${item.date}" data-weather-time="${item.time || ""}"><i class="fas fa-cloud-sun"></i> Carregando clima...</span>`
       : "";
 
-    const editBtn =
+    const deleteBtn =
       item.type === "task"
-        ? `<button class="task-action-btn" onclick="taskPlanner.editTask('${item.id}')"><i class="fas fa-edit"></i></button>
-         <button class="task-action-btn delete-btn" onclick="taskPlanner.deleteTask('${item.id}')"><i class="fas fa-trash"></i></button>`
+        ? `<button class="task-action-btn delete-btn" onclick="event.stopPropagation(); taskPlanner.deleteTask('${item.id}')"><i class="fas fa-trash"></i></button>`
         : "";
 
     const checkBtn =
@@ -1398,8 +1412,10 @@ class TaskPlanner {
         : "";
 
     return `
-        <div class="task-item ${catClass} ${priorityClass} ${completedClass}" onclick="${
-      isClickable
+        <div class="task-item ${catClass} ${priorityClass} ${completedClass}" data-task-id="${item.id}" onclick="${
+      item.type === "task"
+        ? `taskPlanner.openTaskHub('${item.id}', this)`
+        : isClickable
         ? `taskPlanner.navigateToItem('${item.type}','${item.id}')`
         : ""
     }">
@@ -1410,7 +1426,7 @@ class TaskPlanner {
                 </div>
                 <div class="task-actions">
                     ${checkBtn}
-                    ${editBtn}
+                    ${deleteBtn}
                 </div>
             </div>
             <div class="task-badges-row">
@@ -1485,8 +1501,6 @@ class TaskPlanner {
     setCount("count-pending", this.getFilterCount("pending"));
     setCount("count-completed", this.getFilterCount("completed"));
     setCount("count-no-date", this.getFilterCount("no-date"));
-    setCount("count-work", this.getFilterCount("work"));
-    setCount("count-personal", this.getFilterCount("personal"));
   }
 
   setFilter(filter) {
@@ -1518,18 +1532,15 @@ class TaskPlanner {
     });
 
     container.innerHTML = "";
+    container.classList.remove("today-scroll-enabled");
     if (todayTasks.length === 0) {
       container.innerHTML = `<p style="font-size:0.85rem; color:var(--texto-secundario); text-align:center;">Nada para hoje.</p>`;
       return;
     }
 
-    todayTasks
-      .slice(0, 5)
-      .forEach((task) => (container.innerHTML += this.createTaskHTML(task)));
-    if (todayTasks.length > 5) {
-      container.innerHTML += `<div style="text-align:center; font-size:0.8rem; color:var(--texto-sutil); margin-top:5px;">+${
-        todayTasks.length - 5
-      } tarefas</div>`;
+    todayTasks.forEach((task) => (container.innerHTML += this.createTaskHTML(task)));
+    if (todayTasks.length > 2) {
+      container.classList.add("today-scroll-enabled");
     }
     this.populateTaskWeather();
   }
@@ -1541,6 +1552,8 @@ class TaskPlanner {
       ...data,
       completed: false,
       createdAt: new Date(),
+      parentTaskId: null,
+      childTaskId: null,
     };
     this.tasks.push(task);
 
@@ -1559,15 +1572,23 @@ class TaskPlanner {
           id: task.id + "-" + i,
           date: nextDate.toISOString().slice(0, 10),
           parent: task.id,
+          parentTaskId: null,
+          childTaskId: null,
         });
       }
     }
     this.saveTasks();
   }
 
-  editTask(id) {
+  editTask(id, fromHub = false) {
     const t = this.tasks.find((x) => x.id === id);
     if (!t) return;
+    if (fromHub) {
+      this.returnToHubTaskId = String(id);
+      this.closeTaskHubModal();
+    } else {
+      this.returnToHubTaskId = null;
+    }
     this.openTaskModal();
     document.getElementById("task-title").value = t.title;
     document.getElementById("task-description").value = t.description || "";
@@ -1676,7 +1697,10 @@ class TaskPlanner {
   // --- MODAL ---
   closeTaskModal() {
     document.getElementById("task-modal").classList.remove("active");
-    document.body.classList.remove("task-modal-open");
+    this.returnToHubTaskId = null;
+    if (!document.getElementById("task-hub-modal")?.classList.contains("active")) {
+      document.body.classList.remove("task-modal-open");
+    }
   }
 
   openTaskModal() {
@@ -1695,6 +1719,8 @@ class TaskPlanner {
 
   handleFormSubmit(e) {
     e.preventDefault();
+    const hubTaskId = this.returnToHubTaskId;
+    const wasEditing = Boolean(this.editingTaskId);
     const data = {
       title: document.getElementById("task-title").value,
       description: document.getElementById("task-description").value,
@@ -1719,12 +1745,344 @@ class TaskPlanner {
     } else {
       this.addTask(data);
     }
-    this.closeTaskModal();
+    document.getElementById("task-modal").classList.remove("active");
+    this.returnToHubTaskId = null;
+    if (hubTaskId && wasEditing) {
+      this.openTaskHub(hubTaskId);
+      return;
+    }
+    if (!document.getElementById("task-hub-modal")?.classList.contains("active")) {
+      document.body.classList.remove("task-modal-open");
+    }
   }
 
   navigateToItem(type, id) {
     if (type === "sonho") location.href = "sonhos.html";
     if (type === "estudo") location.href = "estudos.html";
+  }
+
+  closeTaskHubModal() {
+    const modal = document.getElementById("task-hub-modal");
+    if (!modal) return;
+    modal.classList.remove("active");
+    this.activeTaskHubId = null;
+    if (!document.getElementById("task-modal")?.classList.contains("active")) {
+      document.body.classList.remove("task-modal-open");
+    }
+  }
+
+  openTaskHub(taskId, sourceEl = null) {
+    const task = this.getTaskById(taskId);
+    if (!task) return;
+    const modal = document.getElementById("task-hub-modal");
+    if (!modal) return;
+
+    let anchorEl = sourceEl;
+    if (!anchorEl) {
+      anchorEl = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+    }
+    if (anchorEl && typeof anchorEl.scrollIntoView === "function") {
+      anchorEl.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+
+    document.body.classList.add("task-modal-open");
+    modal.classList.add("active");
+    this.activeTaskHubId = String(task.id);
+    this.renderTaskHub(task.id);
+    requestAnimationFrame(() => this.centerHierarchyCurrentNode("auto"));
+    setTimeout(() => this.centerHierarchyCurrentNode("auto"), 120);
+  }
+
+  renderTaskHub(taskId) {
+    const task = this.getTaskById(taskId);
+    if (!task) return;
+    const container = document.getElementById("task-hub-body");
+    if (!container) return;
+
+    this.activeTaskHubId = String(task.id);
+    const categoryMeta = this.getCategoryMeta(task);
+    const difficultyMeta = this.getDifficultyMeta(task.difficulty || "medium");
+    const rpgMeta = this.getRpgMeta(task);
+    const xpValue = this.getTaskXPValue(task);
+    const parent = task.parentTaskId ? this.getTaskById(task.parentTaskId) : null;
+    const child = task.childTaskId ? this.getTaskById(task.childTaskId) : null;
+
+    const statusLabel = task.completed ? "Concluida" : "Pendente";
+    const dateLabel = task.date
+      ? new Date(task.date + "T00:00:00").toLocaleDateString("pt-BR")
+      : "Sem data";
+    const timeLabel = task.time ? ` às ${task.time}` : "";
+    const descriptionHTML = task.description
+      ? String(task.description)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;")
+          .replace(/\n/g, "<br>")
+      : "<span class=\"task-hub-desc-empty\">Sem descricao.</span>";
+
+    const parentNode = parent
+      ? `
+          <button type="button" class="task-hierarchy-node" onclick="taskPlanner.renderTaskHub('${parent.id}')">
+            ${parent.title}
+          </button>
+          <span class="task-hierarchy-link" aria-hidden="true"></span>
+        `
+      : "";
+
+    const childNode = child
+      ? `
+          <span class="task-hierarchy-link" aria-hidden="true"></span>
+          <button type="button" class="task-hierarchy-node" onclick="taskPlanner.renderTaskHub('${child.id}')">
+            ${child.title}
+          </button>
+        `
+      : "";
+
+    container.innerHTML = `
+      <div class="task-hub-layout">
+        <div class="task-hub-main">
+          <div class="task-hub-top">
+            <span class="task-hub-icon"><i class="fas ${categoryMeta.icon}"></i></span>
+            <div class="task-hub-title-wrap">
+              <h4 class="task-hub-title">${task.title}</h4>
+              <div class="task-hub-badges">
+                <span class="task-pill task-category-tag">${categoryMeta.label}</span>
+                <span class="task-pill task-difficulty-pill difficulty-${task.difficulty || "medium"}">
+                  <span class="rank">${difficultyMeta ? difficultyMeta.rank : "-"}</span>
+                  <span class="label">${difficultyMeta ? difficultyMeta.label : "N/A"}</span>
+                </span>
+                <span class="task-pill task-xp-pill"><i class="fas ${rpgMeta.icon}"></i> +${xpValue} XP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-hub-meta-grid">
+            <div><strong>Data / Prazo:</strong> ${dateLabel}${timeLabel}</div>
+            <div><strong>Status:</strong> ${statusLabel}</div>
+          </div>
+
+          <div class="task-hub-desc-wrap">
+            <label><strong>Descricao da tarefa</strong></label>
+            <div class="task-hub-description-view">${descriptionHTML}</div>
+            <div class="task-hub-desc-actions">
+              <button type="button" class="task-hub-btn" onclick="taskPlanner.editTask('${task.id}', true)">
+                <i class="fas fa-pen"></i> Editar Completo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="task-hub-side">
+          <div class="task-hierarchy-box">
+            <h5><i class="fas fa-link"></i> Hierarquia</h5>
+            <div class="task-hierarchy-board" id="task-hierarchy-board">
+              <div class="task-hierarchy-canvas">
+                <div class="task-hierarchy-flow">
+                  <button type="button" class="hierarchy-plus-btn" onclick="taskPlanner.handleHierarchyPlus('${task.id}','parent')" title="Adicionar tarefa mãe">+</button>
+                  ${parentNode}
+                  <button type="button" class="task-hierarchy-node is-current">${task.title}</button>
+                  ${childNode}
+                  <button type="button" class="hierarchy-plus-btn" onclick="taskPlanner.handleHierarchyPlus('${task.id}','child')" title="Adicionar tarefa filha">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    `;
+
+    this.bindHierarchyBoardDrag();
+    this.centerHierarchyCurrentNode("auto");
+  }
+
+  bindHierarchyBoardDrag() {
+    const board = document.getElementById("task-hierarchy-board");
+    if (!board) return;
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startScrollLeft = 0;
+    let startScrollTop = 0;
+
+    board.onpointerdown = (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (e.target.closest("button")) return;
+      dragging = true;
+      startX = e.clientX || 0;
+      startY = e.clientY || 0;
+      startScrollLeft = board.scrollLeft;
+      startScrollTop = board.scrollTop;
+      board.classList.add("is-dragging");
+      board.setPointerCapture?.(e.pointerId);
+    };
+
+    board.onpointermove = (e) => {
+      if (!dragging) return;
+      const x = e.clientX || 0;
+      const y = e.clientY || 0;
+      const deltaX = x - startX;
+      const deltaY = y - startY;
+      board.scrollLeft = startScrollLeft - deltaX;
+      board.scrollTop = startScrollTop - deltaY;
+      e.preventDefault();
+    };
+
+    board.onpointerup = (e) => {
+      dragging = false;
+      board.classList.remove("is-dragging");
+      board.releasePointerCapture?.(e.pointerId);
+    };
+
+    board.onpointercancel = () => {
+      dragging = false;
+      board.classList.remove("is-dragging");
+    };
+
+    board.onlostpointercapture = () => {
+      dragging = false;
+      board.classList.remove("is-dragging");
+    };
+  }
+
+  centerHierarchyCurrentNode(scrollBehavior = "auto") {
+    const board = document.getElementById("task-hierarchy-board");
+    const currentNode = board?.querySelector(".task-hierarchy-node.is-current");
+    if (!board || !currentNode) return;
+
+    requestAnimationFrame(() => {
+      const boardRect = board.getBoundingClientRect();
+      const nodeRect = currentNode.getBoundingClientRect();
+      const deltaLeft = nodeRect.left - boardRect.left;
+      const deltaTop = nodeRect.top - boardRect.top;
+      const targetLeft =
+        board.scrollLeft + deltaLeft - (board.clientWidth / 2 - nodeRect.width / 2);
+      const targetTop =
+        board.scrollTop + deltaTop - (board.clientHeight / 2 - nodeRect.height / 2);
+      board.scrollTo({
+        left: Math.max(0, targetLeft),
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior,
+      });
+    });
+  }
+
+  saveTaskHubDescription(taskId) {
+    const task = this.getTaskById(taskId);
+    const field = document.getElementById("task-hub-description");
+    if (!task || !field) return;
+    task.description = field.value.trim();
+    this.saveTasks();
+  }
+
+  wouldCreateHierarchyCycle(parentId, childId) {
+    let cursor = this.getTaskById(parentId);
+    while (cursor && cursor.parentTaskId) {
+      if (String(cursor.parentTaskId) === String(childId)) return true;
+      cursor = this.getTaskById(cursor.parentTaskId);
+    }
+    return false;
+  }
+
+  linkParentChild(parentId, childId) {
+    const parent = this.getTaskById(parentId);
+    const child = this.getTaskById(childId);
+    if (!parent || !child || String(parent.id) === String(child.id)) return false;
+    if (this.wouldCreateHierarchyCycle(parent.id, child.id)) return false;
+
+    if (child.parentTaskId) {
+      const oldParent = this.getTaskById(child.parentTaskId);
+      if (oldParent && String(oldParent.childTaskId) === String(child.id)) {
+        oldParent.childTaskId = null;
+      }
+    }
+    if (parent.childTaskId) {
+      const oldChild = this.getTaskById(parent.childTaskId);
+      if (oldChild && String(oldChild.parentTaskId) === String(parent.id)) {
+        oldChild.parentTaskId = null;
+      }
+    }
+
+    child.parentTaskId = String(parent.id);
+    parent.childTaskId = String(child.id);
+    return true;
+  }
+
+  createRelatedTask(baseTask, rawTitle) {
+    const title = String(rawTitle || "").trim();
+    if (!title) return null;
+    const task = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      title,
+      description: "",
+      date: baseTask.date || null,
+      time: "",
+      priority: baseTask.priority || "medium",
+      difficulty: baseTask.difficulty || "medium",
+      category: baseTask.category || "other",
+      rpgCategory: baseTask.rpgCategory || "productivity",
+      recurring: false,
+      recurringType: "weekly",
+      completed: false,
+      createdAt: new Date(),
+      parentTaskId: null,
+      childTaskId: null,
+    };
+    this.tasks.push(task);
+    return task;
+  }
+
+  pickTaskForHierarchy(currentTaskId, relationType) {
+    const current = this.getTaskById(currentTaskId);
+    if (!current) return null;
+
+    const candidates = this.tasks.filter(
+      (t) => String(t.id) !== String(currentTaskId)
+    );
+    const options = candidates
+      .slice(0, 15)
+      .map((t, i) => `${i + 1}. ${t.title}`)
+      .join("\n");
+
+    const hint =
+      relationType === "parent"
+        ? "Escolha uma tarefa mãe"
+        : "Escolha uma tarefa filha";
+    const input = window.prompt(
+      `${hint}:\nDigite um numero para selecionar existente ou texto para criar nova.\n\n${options}`
+    );
+    if (input === null) return null;
+    const text = input.trim();
+    if (!text) return null;
+
+    const idx = Number(text);
+    if (Number.isInteger(idx) && idx >= 1 && idx <= candidates.length) {
+      return candidates[idx - 1];
+    }
+    return this.createRelatedTask(current, text);
+  }
+
+  handleHierarchyPlus(currentTaskId, relationType) {
+    const current = this.getTaskById(currentTaskId);
+    if (!current) return;
+
+    const selected = this.pickTaskForHierarchy(currentTaskId, relationType);
+    if (!selected) return;
+
+    const ok =
+      relationType === "parent"
+        ? this.linkParentChild(selected.id, current.id)
+        : this.linkParentChild(current.id, selected.id);
+
+    if (!ok) {
+      alert("Relacao invalida: uma tarefa mae nao pode ficar depois da tarefa filha.");
+      return;
+    }
+
+    this.saveTasks();
+    this.renderTaskHub(currentTaskId);
   }
 
   bindEvents() {
@@ -1766,6 +2124,8 @@ class TaskPlanner {
       this.closeTaskModal();
     document.getElementById("cancel-task").onclick = () =>
       this.closeTaskModal();
+    document.getElementById("close-task-hub-modal").onclick = () =>
+      this.closeTaskHubModal();
     document.getElementById("task-form").onsubmit = (e) =>
       this.handleFormSubmit(e);
     document.getElementById("archive-tasks-btn").onclick = () =>
@@ -1773,6 +2133,8 @@ class TaskPlanner {
 
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".calendar-task")) this.clearCalendarSelection();
+      if (e.target.id === "task-hub-modal") this.closeTaskHubModal();
+      if (e.target.id === "task-modal") this.closeTaskModal();
     });
 
     window.addEventListener("resize", () => {

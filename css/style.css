@@ -794,13 +794,33 @@ header {
   background: linear-gradient(145deg, rgba(28, 28, 28, 0.86), rgba(18, 18, 18, 0.9));
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
-.profile.rpg-profile-trigger::before,
-.profile.rpg-profile-trigger::after {
+.profile.rpg-profile-trigger::before {
   display: none;
+}
+.profile.rpg-profile-trigger::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    108deg,
+    rgba(255, 255, 255, 0) 24%,
+    rgba(255, 255, 255, 0.38) 46%,
+    rgba(255, 255, 255, 0.1) 54%,
+    rgba(255, 255, 255, 0) 76%
+  );
+  background-size: 220% 100%;
+  background-position: 130% 0;
 }
 .profile.rpg-profile-trigger:hover {
   border-color: rgba(249, 226, 175, 0.55);
   background: linear-gradient(145deg, rgba(34, 34, 34, 0.9), rgba(20, 20, 20, 0.94));
+}
+.profile.rpg-profile-trigger:hover::after {
+  opacity: 1;
+  animation: profile-shine-pass 900ms ease forwards;
 }
 .profile.rpg-profile-trigger .profile-info {
   align-items: flex-start;
@@ -849,7 +869,7 @@ header {
   overflow: visible;
 }
 .profile.rpg-profile-trigger[class*="rank-"]::before,
-.profile.rpg-profile-trigger[class*="rank-"]::after {
+.profile.rpg-profile-trigger[class*="rank-"]::before {
   display: none;
 }
 .profile.rpg-profile-trigger[class*="rank-"] .profile-avatar-wrapper {
@@ -866,6 +886,14 @@ header {
 .profile.rpg-profile-trigger[class*="rank-"] .level-badge {
   right: -5px;
   bottom: -4px;
+}
+@keyframes profile-shine-pass {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
+  }
 }
 .profile-dropdown .dropdown-menu.profile-menu {
   right: 0;

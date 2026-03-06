@@ -4,11 +4,9 @@
   const descEl = document.getElementById('dream-hero-desc');
   const badgeEl = document.getElementById('dream-hero-badge');
   const thumbsEl = document.getElementById('dream-hero-thumbs');
-  const prevBtn = document.getElementById('dream-hero-prev');
-  const nextBtn = document.getElementById('dream-hero-next');
   const linkEl = document.getElementById('dream-hero-link');
 
-  if (!track || !titleEl || !descEl || !thumbsEl || !prevBtn || !nextBtn || !badgeEl || !linkEl) return;
+  if (!track || !titleEl || !descEl || !thumbsEl || !badgeEl || !linkEl) return;
 
   const ls = (key, fallback) => {
     try {
@@ -112,22 +110,11 @@
   };
 
   const next = () => render(current + 1);
-  const prev = () => render(current - 1);
 
   const start = () => {
     if (timer) clearInterval(timer);
     timer = setInterval(next, 6500);
   };
-
-  prevBtn.addEventListener('click', () => {
-    prev();
-    start();
-  });
-
-  nextBtn.addEventListener('click', () => {
-    next();
-    start();
-  });
 
   linkEl.addEventListener('click', () => {
     if (timer) clearInterval(timer);
